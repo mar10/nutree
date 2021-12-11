@@ -1,0 +1,31 @@
+[tool.black]
+line-length = 88
+# py36 = false  # don't strip 'u' from native strings
+target-version = ['py35', 'py36', 'py37', 'py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.tox
+  | \.venv
+  | \.eggs
+  | \.cache
+  | build
+  | __pycache__
+  | dist
+  | \.*
+
+)/
+'''
+
+
+[tool.isort]
+# See https://black.readthedocs.io/en/stable/compatible_configs.html
+profile = "black"
+src_paths = ["nutree", "tests"]
+
+
+# [tool.flake8]
+# Flake8 currently does not support pyproject.toml.
+# See [flake8] section in setup.cfg instead.
