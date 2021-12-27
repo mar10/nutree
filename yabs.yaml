@@ -64,13 +64,13 @@ tasks:
       - sdist
       - bdist_wheel
 
-    # Build MSI Installer.
-  - task: exec
-    args: ["python", "setup_bdist_msi.py", "bdist_msi"]
-    always: true
-    silent: true            # `true`: suppress output
-    # stream: true
-    ignore_errors: true  # Try it (will fail on non-Windows)
+  #   # Build MSI Installer.
+  # - task: exec
+  #   args: ["python", "setup_bdist_msi.py", "bdist_msi"]
+  #   always: true
+  #   silent: true            # `true`: suppress output
+  #   # stream: true
+  #   ignore_errors: true  # Try it (will fail on non-Windows)
 
 # 'push': Push changes and tags
   - task: push
