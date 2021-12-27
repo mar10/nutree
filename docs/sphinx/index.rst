@@ -88,9 +88,12 @@ Nutree Facts
   * Set-like operations (NYI)
 
 
-.. |travis_badge| image:: https://travis-ci.org/mar10/nutree.svg?branch=master
+`Read more <installation.html>`_ ...
+
+
+.. |travis_badge| image:: https://travis-ci.com/mar10/nutree.svg?branch=main
    :alt: Build Status
-   :target: https://travis-ci.org/mar10/nutree
+   :target: https://travis-ci.com/mar10/nutree
 
 .. |pypi_badge| image:: https://img.shields.io/pypi/v/nutree.svg
    :alt: PyPI Version
@@ -98,14 +101,14 @@ Nutree Facts
 
 .. |lic_badge| image:: https://img.shields.io/pypi/l/nutree.svg
    :alt: License
-   :target: https://github.com/mar10/nutree/blob/master/LICENSE.txt
+   :target: https://github.com/mar10/nutree/blob/main/LICENSE.txt
 
 .. |rtd_badge| image:: https://readthedocs.org/projects/nutree/badge/?version=latest
    :target: https://nutree.readthedocs.io/
    :alt: Documentation Status
 
-.. |coverage_badge| image:: https://coveralls.io/repos/github/mar10/nutree/badge.svg?branch=master
-   :target: https://coveralls.io/github/mar10/nutree?branch=master
+.. |coverage_badge| image:: https://coveralls.io/repos/github/mar10/nutree/badge.svg?branch=main
+   :target: https://coveralls.io/github/mar10/nutree?branch=main
    :alt: Coverage Status
 
 .. |black_badge| image:: https://img.shields.io/badge/code%20style-black-000000.svg

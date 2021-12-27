@@ -191,6 +191,7 @@ html_theme = 'alabaster'
 #html_theme_options = {}
 html_theme_options = {
     # "logo": "favicon-32x32.png",
+    # "logo_text_align": "left",
     "show_powered_by": False,
     "github_user": "mar10",
     "github_repo": "nutree",
