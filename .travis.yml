@@ -16,13 +16,17 @@ jobs:
     #   env: TOXENV=py35
     - python: "3.10"
       env: TOXENV=py310
+      dist: bionic
     - python: "3.11-dev"
       env: TOXENV=py311
+      dist: bionic
   allow_failures:
     - python: "3.10"
       env: TOXENV=py310
+      dist: bionic
     - python: "3.11-dev"
       env: TOXENV=py311
+      dist: bionic
 
 before_install:
   # Fix for cryptography on Py36

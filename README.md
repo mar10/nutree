@@ -1,4 +1,4 @@
-# ![logo](https://raw.githubusercontent.com/mar10/nutree/main/docs/leaves_48x48.png) nutree
+# ![logo](https://raw.githubusercontent.com/mar10/nutree/main/docs/nutree_48x48.png) nutree
 
 [![Build Status](https://travis-ci.com/mar10/nutree.svg?branch=main)](https://travis-ci.com/mar10/nutree)
 [![Latest Version](https://img.shields.io/pypi/v/nutree.svg)](https://pypi.python.org/pypi/nutree/)
@@ -18,16 +18,18 @@ yet powerful, API.
 
 Search by name pattern, id, or object reference<br>
 Handle multiple references of single objects<br>
-Compare two trees and calculate patches (NYI)<br>
 Store plain strings or arbitrary objects<br>
 Different traversal methods<br>
-Export to different formats (NYI)<br>
 (De)Serialize to JSON<br>
-Set-like operations (NYI)<br>
 Pretty print<br>
 Navigation<br>
 Filtering<br>
 
+<!-- 
+Compare two trees and calculate patches (NYI)<br>
+Export to different formats (NYI)<br>
+Set-like operations (NYI)<br>
+-->
 
 **Example**
 
