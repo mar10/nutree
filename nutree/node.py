@@ -599,7 +599,8 @@ class Node:
 
             # If node is a 2nd occurence of a clone, only store the index of the
             # first occurence and do not call the mapper
-            if clone_idx := clone_idx_map.get(data_id):
+            clone_idx = clone_idx_map.get(data_id)
+            if clone_idx:
                 yield (parent_idx, clone_idx)
                 continue
             elif node.is_clone():
