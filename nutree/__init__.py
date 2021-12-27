@@ -16,7 +16,7 @@ NOTE:
     "3.0.0a4" seems not to work in this case!
 """
 # flake8: noqa
-__version__ = "0.0.1-a2"
+__version__ = "0.0.1-a3"
 
 from .node import AmbigousMatchError, IterMethod, Node, TreeError, UniqueConstraintError
 from .tree import Tree
