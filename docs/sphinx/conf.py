@@ -22,11 +22,9 @@ import sys
 import os
 # import shlex
 
-from recommonmark.parser import CommonMarkParser
+# from recommonmark.parser import CommonMarkParser
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-#import sphinx_bootstrap_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -36,6 +34,8 @@ sys.path.insert(0, package_root)
 print("Add package root to sys.path: %r" % package_root)
 # for fn in os.listdir(package_root):
 #   print("-", fn)
+
+sys.path.insert(0, os.path.abspath("_themes"))
 
 # -- General configuration ------------------------------------------------
 
@@ -99,7 +99,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'nutree'
-copyright = u'2020-2021, Martin Wendt'
+copyright = u'2020-2021, <a href="https://wwwendt.de">Martin Wendt</a>'
 author = u'Martin Wendt'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -139,7 +139,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'build', 'dist']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -157,7 +157,8 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+#pygments_style = 'sphinx'
+pygments_style = "flask_theme_support.FlaskyStyle"
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -188,6 +189,22 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #html_theme_options = {}
+html_theme_options = {
+    # "logo": "favicon-32x32.png",
+    "show_powered_by": False,
+    "github_user": "mar10",
+    "github_repo": "nutree",
+    "github_banner": True,
+    "github_button": True,
+    "github_type": "star",
+    # "github_size": "small",
+    "github_count": "true",
+    # "travis_button": True,
+    # "codecov_button": True,
+    "show_related": False,
+    "note_bg": "#FFF59C",
+}
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -226,7 +243,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = False
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
@@ -246,12 +263,14 @@ html_static_path = ['_static']
 
 # If true, links to the reST sources are added to the pages.
 #html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the

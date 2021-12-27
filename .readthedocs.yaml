@@ -28,4 +28,6 @@ python:
       #       - docs
       # - method: setuptools
       #   path: another/package
+
+  # true may break the build?
   # system_packages: true
