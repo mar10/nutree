@@ -3,6 +3,8 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
+import pytest
+
 from nutree import Tree
 
 
@@ -69,4 +71,6 @@ class TestObjects:
         # assert get_back in tree
         # assert "123-456" in tree
 
+        with pytest.raises(ValueError):
+            n.rename("foo")
         assert tree._self_check()

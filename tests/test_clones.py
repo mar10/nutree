@@ -32,16 +32,30 @@ class TestClones:
 
         # Add another 'a1' below 'B'
         tree["B"].add("a1")
+
         print(tree.format(repr="{node.data}"))
+
+        # Not allowed to add two clones to same parent
+        # with pytest.raises(UniqueConstraintError):
+        #     tree["B"].add("a1")
 
         # tree[data] expects single matches
         with pytest.raises(KeyError):
-            tree.__getitem__("not_existing")
+            tree["not_existing"]
         with pytest.raises(AmbigousMatchError):
-            tree.__getitem__("a1")
+            tree["a1"]
+
+        # # Not allowed to add two clones to same parent
+        # with pytest.raises(UniqueConstraintError):
+        #     tree.add("A")
+        # with pytest.raises(UniqueConstraintError):
+        #     tree.add(tree["A"])
 
         res = tree.find("a1")
         assert res.data == "a1"
+        assert res.is_clone()
+        assert len(res.get_clones()) == 1
+        assert len(res.get_clones(add_self=True)) == 2
 
         res = tree.find("not_existing")
         assert res is None

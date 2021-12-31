@@ -81,7 +81,7 @@ class TestNavigate:
         assert f"{records}".startswith("Node<'Records', data_id=")
         assert f"{records!r}".startswith("Node<'Records', data_id=")
 
-        assert records.is_top_level()
+        assert records.is_top()
         assert records.is_first_sibling()
         assert records.next_sibling.is_last_sibling()
         assert records.last_child.is_leaf()
@@ -106,8 +106,8 @@ class TestNavigate:
         assert records.last_sibling.name == "Books"
 
         assert len(records.get_siblings()) == 1
-        assert len(records.get_siblings(include_self=True)) == 2
-        assert len(records.get_siblings(include_self=False)) == 1
+        assert len(records.get_siblings(add_self=True)) == 2
+        assert len(records.get_siblings(add_self=False)) == 1
 
         # assert tree.last_child is tree["The Little Prince"]
 
@@ -131,6 +131,100 @@ class TestNavigate:
         assert let_it_be.get_top() is records
 
         assert tree._self_check()
+
+    def test_relations(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+
+        assert tree["a11"].get_top() is tree["A"]
+        assert not tree["a1"].is_top()
+        assert tree["B"].get_top() is tree["B"]
+        assert tree["B"].is_top()
+        assert not tree["a1"].is_leaf()
+        assert tree["a2"].is_leaf()
+
+        assert tree["a1"].is_child_of(tree["A"])
+        assert tree["a11"].is_child_of(tree["A"])
+        assert tree["a11"].is_child_of(tree["a1"])
+        assert not tree["a1"].is_child_of(tree["a1"])
+        assert not tree["a1"].is_child_of(tree["a11"])
+        assert not tree["B"].is_child_of(tree["a11"])
+
+        assert tree["a1"].is_parent_of(tree["a12"])
+        assert tree["B"].is_parent_of(tree["b11"])
+        assert not tree["B"].is_parent_of(tree["A"])
+
+        assert tree["a11"].get_common_ancestor(tree["a2"]) is tree["A"]
+        assert tree["b11"].get_common_ancestor(tree["a11"]) is None
+
+        assert tree["a11"].get_index() == 0
+        assert tree["a12"].get_index() == 1
+
+    def test_data_id(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ├── a1  <-- Clone
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        print(tree.format(repr="{node.data}"))
+
+        tree["A"].rename("new_A")
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- new_A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- a1
+               `- b1
+                  `- b11
+            """,
+        )
+        assert tree._self_check()
+
+        # tree.find_first("a1").rename("new_a1")
+        # assert fixture.check_content(
+        #     tree,
+        #     """
+        #     Tree<'fixture'>
+        #     +- A
+        #     |  +- new_a1
+        #     |  |  +- a11
+        #     |  |  `- a12
+        #     |  `- a2
+        #     `- B
+        #        +- a1
+        #        `- b1
+        #           +- b11
+        #           `- a11
+        #     """,
+        # )
+        # assert tree._self_check()
 
     def test_search(self):
         tree = self.tree
@@ -187,12 +281,23 @@ class TestNavigate:
         res = tree.find_all(match=lambda n: "y" in n.name.lower())
         assert len(res) == 1
 
+    def test_clear(self):
+        tree = fixture.create_tree()
+
+        assert tree.count == 8
+        assert tree
+        tree.clear()
+        assert not tree
+        assert len(tree) == 0
+        assert tree._self_check()
+
 
 class TestFormat:
     def test_format(self):
         tree = fixture.create_tree()
 
-        assert tree.format(repr="{node.name}") == fixture.canonical_repr(
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
             """\
             Tree<'fixture'>
             ├── A
@@ -203,12 +308,11 @@ class TestFormat:
             ╰── B
                 ╰── b1
                     ╰── b11
-        """
+        """,
         )
 
-        assert tree.format(
-            repr="{node.name}", style="ascii32"
-        ) == fixture.canonical_repr(
+        assert fixture.check_content(
+            tree.format(repr="{node.name}", style="ascii32"),
             """\
             Tree<'fixture'>
             +- A
@@ -219,7 +323,27 @@ class TestFormat:
             `- B
                `- b1
                   `- b11
-        """
+            """,
+        )
+
+        assert fixture.check_content(
+            # tree.format(repr="- {node.path!r}", style="list"),
+            tree.format(repr="{node.path}", style="list"),
+            """\
+            /A
+            /A/a1
+            /A/a1/a11
+            /A/a1/a12
+            /A/a2
+            /B
+            /B/b1
+            /B/b1/b11
+            """,
+        )
+
+        assert fixture.check_content(
+            tree.format(repr="{node.path}", style="serial"),
+            "/A,/A/a1,/A/a1/a11,/A/a1/a12,/A/a2,/B,/B/b1,/B/b1/b11",
         )
 
 
@@ -288,6 +412,7 @@ class TestMutate:
             `- B
             """,
         )
+        assert tree._self_check()
 
         tree["A"].remove_children()
         assert fixture.check_content(
@@ -357,3 +482,31 @@ class TestCopy:
 
         assert tree_1._self_check()
         assert tree_2._self_check()
+
+    def test_as_tree(self):
+        tree = fixture.create_tree()
+
+        subtree = tree["a1"].to_tree()
+        assert fixture.check_content(
+            subtree,
+            """
+            Tree<'fixture'>
+            `- a1
+               +- a11
+               `- a12
+            """,
+        )
+        assert subtree._self_check()
+
+        subtree = tree["A"].to_tree(add_self=False)
+        assert fixture.check_content(
+            subtree,
+            """
+            Tree<'fixture'>
+            +- a1
+            |  +- a11
+            |  `- a12
+            `- a2
+            """,
+        )
+        assert subtree._self_check()

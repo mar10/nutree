@@ -5,6 +5,8 @@ from typing import IO, Any, Dict, Generator, List, Union
 
 from .node import AmbigousMatchError, IterMethod, Node
 
+_DELETED_TAG = "<deleted>"
+
 
 # ------------------------------------------------------------------------------
 # - Tree
@@ -12,15 +14,16 @@ from .node import AmbigousMatchError, IterMethod, Node
 class Tree:
     """"""
 
-    def __init__(self, name: str = None, *, factory=None):
+    def __init__(self, name: str = None, *, factory=None, calc_data_id=None):
         self._lock = threading.RLock()
         self.name = str(id(self) if name is None else name)
         self._node_factory = factory or Node
         self._root = _SystemRootNode(self)
         self._node_by_id = {}
         self._nodes_by_data_id = {}
-        #: true when at least one custom data_id was passed
-        self._use_custom_data_ids = None
+        #: Optional callback that calculates data_ids from data objects
+        #: hash(data) is used by default
+        self._calc_data_id_hook = calc_data_id
 
     def __repr__(self):
         return f"Tree<{self.name!r}>"
@@ -71,6 +74,8 @@ class Tree:
         # with an unpredictable random value. Although they remain constant within an
         # individual Python process, they are not predictable between repeated invocations
         # of Python.
+        if self._calc_data_id_hook:
+            return self._calc_data_id_hook(self, data)
         return hash(data)
 
     @property
@@ -85,8 +90,11 @@ class Tree:
     def last_child(self):
         return self._root.last_child
 
-    def format(self, *, repr=None, style=None, title=True):
+    def format(self, *, repr=None, style=None, title=None):
         prefix = ""
+        if title is None:
+
+            title = Node._CONNECTORS[style or Node.DEFAULT_STYLE][0]
         if title:
             prefix = f"{self}\n" if title is True else f"{title}\n"
         return prefix + self._root.format(repr=repr, style=style)
@@ -100,6 +108,7 @@ class Tree:
     add = add_child
 
     def copy(self, *, name=None, predicate=None) -> "Tree":
+        """Return a shallow copy of the tree."""
         if name is None:
             name = f"Copy of {self}"
         new_tree = Tree(name)
@@ -107,32 +116,37 @@ class Tree:
             new_tree._root.copy_from(self._root, predicate=predicate)
         return new_tree
 
+    def clear(self) -> None:
+        """Remove all nodes from the tree"""
+        self._root.remove_children()
+
     def _register(self, node: "Node"):
-        assert node.tree is self
-        # node.tree = self
-        assert node.node_id and node.node_id not in self._node_by_id, f"{node}"
-        self._node_by_id[node.node_id] = node
+        assert node._tree is self
+        # node._tree = self
+        assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
+        self._node_by_id[node._node_id] = node
         try:
-            self._nodes_by_data_id[node.data_id].append(node)
+            self._nodes_by_data_id[node._data_id].append(node)
         except KeyError:
-            self._nodes_by_data_id[node.data_id] = [node]
+            self._nodes_by_data_id[node._data_id] = [node]
 
     def _unregister(self, node, *, clear=True):
-        """Unlink node from this tree."""
-        assert node.node_id in self._node_by_id, f"{node}"
-        del self._node_by_id[node.node_id]
+        """Unlink node from this tree (children must be unregistered first)."""
+        assert node._node_id in self._node_by_id, f"{node}"
+        del self._node_by_id[node._node_id]
 
-        clones = self._nodes_by_data_id[node.data_id]
+        clones = self._nodes_by_data_id[node._data_id]
         clones.remove(node)
         if not clones:
-            del self._nodes_by_data_id[node.data_id]
+            del self._nodes_by_data_id[node._data_id]
 
-        node.tree = None
+        node._tree = None
+        node._parent = None
         if clear:
-            node.data = "<deleted>"
-            node.node_id = None
-            node.data_id = None
-            node.children = None
+            node._data = _DELETED_TAG
+            node._data_id = None
+            node._node_id = None
+            node._children = None
         return
 
     def find_all(
@@ -174,14 +188,11 @@ class Tree:
     #: Alias for find_first
     find = find_first
 
-    def intersect(self, other):
-        raise NotImplementedError
-
     def to_dict(self, *, mapper=None) -> List[Dict]:
-        """Return a list of child node's `node.to_dict()`."""
+        """Call ``node.to_dict()`` for all childnodes and return list of results."""
         res = []
         with self:
-            for n in self._root.children:
+            for n in self._root._children:
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -237,24 +248,31 @@ class Tree:
         raise NotImplementedError
 
     def _self_check(self):
-        """Internal method to check data structure sanity."""
+        """Internal method to check data structure sanity.
+
+        This is slow: only use for debugging, e.g. ``assert tree._self_check``.
+        """
         node_list = []
         for node in self:
             node_list.append(node)
-            assert node.tree is self, node
-            # assert node.data_id == self._calc_data_id(node.data), node
-            assert node.data_id in self._nodes_by_data_id, node
-            assert node.node_id == id(node), f"{node}: {node.node_id} != {id(node)}"
+            assert node._tree is self, node
+            assert node in node._parent._children, node
+            # assert node._data_id == self._calc_data_id(node.data), node
+            assert node._data_id in self._nodes_by_data_id, node
+            assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
+            assert (
+                node._children is None or len(node._children) > 0
+            ), f"{node}: {node._children}"
 
         assert len(self._node_by_id) == len(node_list)
 
-        count_2 = 0
+        clone_count = 0
         for data_id, nodes in self._nodes_by_data_id.items():
-            count_2 += len(nodes)
+            clone_count += len(nodes)
             for node in nodes:
-                assert node.node_id in self._node_by_id, node
-                assert node.data_id == data_id, node
-        assert count_2 == len(node_list)
+                assert node._node_id in self._node_by_id, node
+                assert node._data_id == data_id, node
+        assert clone_count == len(node_list)
         return True
 
 
@@ -263,7 +281,7 @@ class _SystemRootNode(Node):
 
     def __init__(self, tree: Tree):
 
-        self.tree: Tree = tree
+        self._tree: Tree = tree
         self._parent = None
-        self.node_id = self.data_id = self.data = "__root__"
-        self.children = []
+        self._node_id = self._data_id = self._data = "__root__"
+        self._children = []

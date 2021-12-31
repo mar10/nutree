@@ -1,17 +1,21 @@
 ==========
 User Guide
 ==========
-..
-    :hidden:
 
-..
-    *Nutree* is a tool, that runs a sequence of activities in one or more
-    parallel sessions. |br|
-    The most common use case is to run a test script with HTTP commands
+The :class:`~nutree.tree.Tree` is a shallow wrapper around a single, invisible 
+system root node. All visible toplevel nodes are direct children of this
+root node.
 
+The :class:`~nutree.node.Node` represents a single element in the tree.
+
+  * `parent`
+  * `children`
+  * `data`
+  * `data_id`
+  
 .. toctree::
 
-    ug_overview
+    ug_basics
     ug_pretty_print
     ug_search_and_navigate
     ug_mutation

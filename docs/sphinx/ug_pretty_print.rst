@@ -6,7 +6,7 @@ Pretty Print
     .. toctree::
     :hidden:
 
-:meth:`nutree.tree.Tree.format` produces a pretty formatted string
+:meth:`~nutree.tree.Tree.format` produces a pretty formatted string
 representation::
 
     print(tree.format())
@@ -20,8 +20,9 @@ representation::
     ╰── 'Books'
         ╰── 'The Little Prince'
 
-Pass a formatting string to ``repr=`` to control the node display.
-For example "{node}", "{node.data.name} (#{node.data_id})", ... ::
+Pass a formatting string to `repr=` to control the node display.
+For example ``repr="{node}"``, ``repr="{node.data.name} (#{node.data_id})"``, 
+... ::
 
     print(tree.format(repr="{node}", style="lines32", title="My Store"))
 

@@ -22,6 +22,7 @@ twine = "*"
 wheel = "*"
 yabs = "*"
 nutree = {path = ".",editable = true}
+ipykernel = "*"
 
 [packages]
 PyYAML = "*"
@@ -31,4 +32,3 @@ python_version = "3.10"
 
 [pipenv]
 # allow_prereleases = true
-

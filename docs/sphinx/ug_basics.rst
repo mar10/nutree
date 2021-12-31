@@ -1,18 +1,48 @@
--------------------
-Search and Navigate
--------------------
-
-..
-    .. toctree::
-    :hidden:
+------
+Basics
+------
 
 
-Search and Navigate
+.. toctree::
+   :hidden:
+
+
+Add Nodes
+---------
+
+Nodes are usually created by adding a new data instance to a parent ::
+
+   from nutree import Tree, Node
+
+   tree = Tree("Store")
+
+   n = tree.add("Records")
+
+   n.add("Let It Be")
+   n.add("Get Yer Ya-Ya's Out!")
+
+   n = tree.add("Books")
+   n.add("The Little Prince")
+
+   print(tree.format())
+
+::
+
+   Tree<'Store'>
+   ├── 'Records'
+   │   ├── 'Let It Be'
+   │   ╰── "Get Yer Ya-Ya's Out!"
+   ╰── 'Books'
+      ╰── 'The Little Prince'
+
+
+Info and Navigation
 -------------------
 
 ::
 
     assert tree.count == 5
+    assert tree.
 
     records_node = tree["Records"]
     assert tree.first_child is records_node
