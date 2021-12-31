@@ -160,16 +160,18 @@ class Node:
                         node_map[new_data_id].extend(prev_clones)
                     except KeyError:  # still a singleton, just a new data_id
                         node_map[new_data_id] = prev_clones
-                    if new_data:
-                        for n in prev_clones:
+                    for n in prev_clones:
+                        n._data_id = new_data_id
+                        if new_data:
                             n._data = new_data
                 else:
                     # Move this one node to another slot in the map
-                    node_map[self._data_id].pop(self)
+                    node_map[self._data_id].remove(self)
                     try:  # are we adding to existing clones again?
                         node_map[new_data_id].append(self)
                     except KeyError:  # now a singleton with a new data_id
                         node_map[new_data_id] = [self]
+                    self._data_id = new_data_id
                     if new_data:
                         self._data = new_data
             else:

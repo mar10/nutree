@@ -7,7 +7,7 @@ import re
 
 import pytest
 
-from nutree import IterMethod, Node, Tree
+from nutree import AmbigousMatchError, IterMethod, Node, Tree
 
 from . import fixture
 
@@ -66,11 +66,15 @@ class TestNavigate:
         tree = self.tree
 
         assert tree.count == 5
+
         print(tree.format(repr="{node.data}"))
         print(tree.format())
 
         records = tree["Records"]
         assert isinstance(records, Node)
+
+        assert records.tree is records._tree
+
         assert tree.find(data="Records") is records
         # TODO: hashes are salted in Py3, so we can't assume stable keys in tests
         # assert tree.find(data_id="1862529381406879915") is records
@@ -207,24 +211,59 @@ class TestNavigate:
         )
         assert tree._self_check()
 
-        # tree.find_first("a1").rename("new_a1")
-        # assert fixture.check_content(
-        #     tree,
-        #     """
-        #     Tree<'fixture'>
-        #     +- A
-        #     |  +- new_a1
-        #     |  |  +- a11
-        #     |  |  `- a12
-        #     |  `- a2
-        #     `- B
-        #        +- a1
-        #        `- b1
-        #           +- b11
-        #           `- a11
-        #     """,
-        # )
-        # assert tree._self_check()
+        # Reset tree
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        with pytest.raises(AmbigousMatchError):  # not allowed for clones
+            tree.find_first("a1").rename("new_a1")
+
+        with pytest.raises(ValueError):  # missing args
+            tree.find_first("a1").set_data(None)
+
+        # Only rename first occurence:
+        tree.find_first("a1").set_data("new_a1", with_clones=False)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- A
+            |  +- new_a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- a1
+               `- b1
+                  `- b11
+            """,
+        )
+        assert tree._self_check()
+
+        # Reset tree
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        # Rename all occurences:
+        tree.find_first("a1").set_data("new_a1", with_clones=True)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- A
+            |  +- new_a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- new_a1
+               `- b1
+                  `- b11
+            """,
+        )
+        assert tree._self_check()
 
     def test_search(self):
         tree = self.tree
