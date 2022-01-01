@@ -18,7 +18,8 @@ NOTE:
 # flake8: noqa
 __version__ = "0.0.1-a5"
 
-from .node import AmbigousMatchError, IterMethod, Node, TreeError, UniqueConstraintError
+from .common import AmbigousMatchError, IterMethod, TreeError, UniqueConstraintError
+from .node import Node
 from .tree import Tree
 
 __all__ = [

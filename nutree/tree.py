@@ -3,7 +3,8 @@ import json
 import threading
 from typing import IO, Any, Dict, Generator, List, Union
 
-from .node import AmbigousMatchError, IterMethod, Node
+from .common import AmbigousMatchError, IterMethod
+from .node import Node
 
 _DELETED_TAG = "<deleted>"
 
@@ -64,6 +65,10 @@ class Tree:
     def __eq__(self, other) -> bool:
         raise NotImplementedError("Use `is` or `tree.compare()` instead.")
 
+    # def __iadd__(self, other) -> None:
+    #     """Support `tree += node(s)` syntax"""
+    #     self._root += other
+
     def iterator(self, method: IterMethod = IterMethod.PRE_ORDER, *, predicate=None):
         return self._root.iterator(method=method, predicate=predicate)
 
@@ -93,7 +98,6 @@ class Tree:
     def format(self, *, repr=None, style=None, title=None):
         prefix = ""
         if title is None:
-
             title = Node._CONNECTORS[style or Node.DEFAULT_STYLE][0]
         if title:
             prefix = f"{self}\n" if title is True else f"{title}\n"
@@ -199,7 +203,7 @@ class Tree:
     @classmethod
     def from_dict(cls, obj: List[Dict], *, mapper=None) -> "Tree":
         new_tree = Tree()
-        new_tree._root.from_dict(obj)
+        new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
 
     def to_list_iter(self, *, mapper=None) -> Generator[Dict, None, None]:

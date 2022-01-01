@@ -157,16 +157,16 @@ class TestNavigate:
         assert not tree["a1"].is_leaf()
         assert tree["a2"].is_leaf()
 
-        assert tree["a1"].is_child_of(tree["A"])
-        assert tree["a11"].is_child_of(tree["A"])
-        assert tree["a11"].is_child_of(tree["a1"])
-        assert not tree["a1"].is_child_of(tree["a1"])
-        assert not tree["a1"].is_child_of(tree["a11"])
-        assert not tree["B"].is_child_of(tree["a11"])
+        assert tree["a1"].is_descendant_of(tree["A"])
+        assert tree["a11"].is_descendant_of(tree["A"])
+        assert tree["a11"].is_descendant_of(tree["a1"])
+        assert not tree["a1"].is_descendant_of(tree["a1"])
+        assert not tree["a1"].is_descendant_of(tree["a11"])
+        assert not tree["B"].is_descendant_of(tree["a11"])
 
-        assert tree["a1"].is_parent_of(tree["a12"])
-        assert tree["B"].is_parent_of(tree["b11"])
-        assert not tree["B"].is_parent_of(tree["A"])
+        assert tree["a1"].is_ancestor_of(tree["a12"])
+        assert tree["B"].is_ancestor_of(tree["b11"])
+        assert not tree["B"].is_ancestor_of(tree["A"])
 
         assert tree["a11"].get_common_ancestor(tree["a2"]) is tree["A"]
         assert tree["b11"].get_common_ancestor(tree["a11"]) is None

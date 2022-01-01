@@ -2,37 +2,15 @@
 # (c) 2021-2022 Martin Wendt and contributors; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Stress-test your web app.
+
 """
 import re
-from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
 
-
-class TreeError(RuntimeError):
-    """Base class for all `nutree` errors."""
-
-
-class UniqueConstraintError(TreeError):
-    """Thrown when trying to add the same node_id to the same parent"""
-
-
-class AmbigousMatchError(TreeError):
-    """Thrown when a single-value lookup found multiple matches."""
-
-
-class IterMethod(Enum):
-    """Traversal order."""
-
-    #: Depth-first, pre-order
-    PRE_ORDER = "pre"
-    #: Depth-first, post-order
-    POST_ORDER = "post"
-    #: Breadth-first (aka level-order)
-    LEVEL_ORDER = "level"
+from .common import AmbigousMatchError, IterMethod, UniqueConstraintError
 
 
 # ------------------------------------------------------------------------------
@@ -69,6 +47,16 @@ class Node:
         if isinstance(other, Node):
             return self._data == other._data
         return self._data == other
+
+    # def __iadd__(self, other) -> None:
+    #     """Add child node(s)."""
+    #     if isinstance(other, (Node, str)):
+    #         self.add_child(other)
+    #     elif isinstance(other, (list, tuple)):
+    #         for o in other:
+    #             self += o
+    #     else:
+    #         raise NotImplementedError
 
     # Do not define __len__: we don't want leaf nodes to evaluate as falsy
     # def __len__(self) -> int:
@@ -304,7 +292,7 @@ class Node:
             root = root._parent
         return root
 
-    def is_child_of(self, other: "Node") -> bool:
+    def is_descendant_of(self, other: "Node") -> bool:
         parent = self._parent
         while parent is not None and parent._parent is not None:
             if parent is other:
@@ -312,8 +300,8 @@ class Node:
             parent = parent._parent
         return False
 
-    def is_parent_of(self, other: "Node") -> bool:
-        return other.is_child_of(self)
+    def is_ancestor_of(self, other: "Node") -> bool:
+        return other.is_descendant_of(self)
 
     def get_common_ancestor(self, other: "Node") -> Union["Node", None]:
         """Return the nearest node that contains `self` and `other` (may be None)."""
@@ -337,16 +325,12 @@ class Node:
             res.reverse()
         return res
 
-    def get_path(self, *, add_self=True, separator="/", repr="{node._node_id}") -> str:
-        """Return ordered list of all parent nodes."""
-        res = []
-        parent = self if add_self else self._parent
-        while parent:
-            node = parent
-            parent = parent._parent
-            if parent:
-                res.append(repr.format(node=node))
-        res.reverse()
+    def get_path(self, *, add_self=True, separator="/", repr="{node.name}") -> str:
+        """Return a breadcrumb string, e.g. '/A/a1/a12'."""
+        res = (
+            repr.format(node=p)
+            for p in self.get_parent_list(add_self=add_self, top_down=True)
+        )
         return separator + separator.join(res)
 
     # --------------------------------------------------------------------------
@@ -470,7 +454,7 @@ class Node:
             new_parent = new_parent._root
 
         if new_parent._tree is not self._tree:
-            raise NotImplementedError("Can only move nodes inside this tree")
+            raise NotImplementedError("Can only move nodes inside same tree")
 
         self._parent._children.remove(self)
         self._parent = new_parent
@@ -590,9 +574,14 @@ class Node:
             handler = getattr(self, f"_iter_{method.value}")
         except AttributeError:
             raise NotImplementedError(f"Unsupported traversal method '{method}'.")
-        if add_self:
+
+        if add_self and method != IterMethod.POST_ORDER:
             yield self
+
         yield from handler(predicate=predicate)
+
+        if add_self and method == IterMethod.POST_ORDER:
+            yield self
 
     __iter__ = iterator
 
