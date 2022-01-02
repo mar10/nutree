@@ -69,6 +69,6 @@ Read :doc:`ug_objects_and_clones` for more.
     ug_pretty_print
     ug_search_and_navigate
     ug_mutation
-    ug_objects_and_clones
     ug_serialize
+    ug_objects_and_clones
     ug_advanced

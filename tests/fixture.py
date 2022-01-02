@@ -14,45 +14,80 @@ from nutree.tree import Node, Tree
 
 
 class Person:
-    def __init__(self, name, age) -> None:
+    def __init__(self, name, *, age, guid=None) -> None:
         self.name = name
         self.age = age
+        self.guid = guid
 
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
 
 
 class Department:
-    def __init__(self, name) -> None:
+    def __init__(self, name, *, guid=None) -> None:
         self.name = name
+        self.guid = guid
 
     def __repr__(self) -> str:
         return f"Department<{self.name}>"
 
 
-# class Item:
-#     def __init__(self, name, price, count):
-#         self.name = name
-#         self.price = float(price)
-#         self.count = int(count)
+def create_tree(*, style="simple", name="fixture", clones=False, tree=None) -> Tree:
+    if tree is not None:
+        assert not tree, "must be empty"
+    else:
+        tree = Tree(name)
 
-#     def __repr__(self):
-#         return f"Item<{self.name!r}, {self.price:.2f}$>"
-
-
-def create_tree(style="1", name="fixture") -> Tree:
-    tree = tree = Tree(name)
-    if style == "1":
+    if style == "simple":
+        """
+        Tree<'fixture'>
+        ├── 'A'
+        │   ├── 'a1'
+        │   │   ├── 'a11'
+        │   │   ╰── 'a12'
+        │   ╰── 'a2'
+        ╰── 'B'
+            ╰── 'b1'
+                ├── 'a11'  <- CLONE
+                ╰── 'b11'
+        """
         a = tree.add("A")
         a1 = a.add("a1")
-        a1.add("a11")
+        a11 = a1.add("a11")
         a1.add("a12")
         a.add("a2")
         b = tree.add("B")
         b1 = b.add("b1")
         b1.add("b11")
+        if clones:
+            b1.prepend_child(a11)
+
+    elif style == "objects":
+        """
+        Tree<'2009255653136'>
+        ├── Node<'Department<Development>', data_id=125578508105>
+        │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
+        │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
+        │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
+        ╰── Node<'Department<Marketing>', data_id=125578508063>
+            ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+            ╰── Node<'Person<Dave, 54>', data_id={456-456}>
+        """
+        dev = tree.add(Department("Development"))
+        dev.add(Person("Alice", age=23, guid="{123-456}"))
+        dev.add(Person("Bob", age=32, guid="{234-456}"))
+        markt = tree.add(Department("Marketing"))
+        charleen = markt.add(Person("Charleen", age=43, guid="{345-456}"))
+        markt.add(Person("Dave", age=54, guid="{456-456}"))
+        if clones:
+            dev.add(charleen)
+
     else:
         raise NotImplementedError(style)
+    # Since the output is only displayed when a test fails, it may be handy to
+    # see:
+    tree.print()
+
     return tree
 
 

@@ -51,8 +51,14 @@ class Tree:
         Note that AmbigousMatchError is raised if multiple matches are found.
         Use tree.find_all() or tree.find_first() instead to resolve this.
         """
-        # TODO: treat data as data_id?
-        res = self.find_all(data)
+        # Treat data as data_id
+        if isinstance(data, Node):
+            raise ValueError(f"Expected data instance or data_id: {data}")
+        elif type(data) in (int, str) and data in self._nodes_by_data_id:
+            res = self.find_all(data_id=data)
+        else:
+            res = self.find_all(data)
+
         if not res:
             raise KeyError(f"{data!r}")
         if len(res) == 1:
@@ -75,6 +81,12 @@ class Tree:
     __iter__ = iterator
 
     def _calc_data_id(self, data) -> int:
+        """Called internally to calculate `data_id` for a `data` object.
+
+        This value is used to llokup nodes by data, identify clones, and for
+        (de)serlialization. It defaults to ``hash(data)`` but may be overloaded
+        when the data objects have meaningful keys that should be used instead.
+        """
         # Note By default, the __hash__() values of str and bytes objects are “salted”
         # with an unpredictable random value. Although they remain constant within an
         # individual Python process, they are not predictable between repeated invocations
@@ -85,14 +97,17 @@ class Tree:
 
     @property
     def count(self):
+        """Return the total number of nodes."""
         return len(self._node_by_id)
 
     @property
     def first_child(self):
+        """Return the first top-level node."""
         return self._root.first_child
 
     @property
     def last_child(self):
+        """Return the last top-level node."""
         return self._root.last_child
 
     def format(self, *, repr=None, style=None, title=None):
@@ -103,6 +118,10 @@ class Tree:
             prefix = f"{self}\n" if title is True else f"{title}\n"
         return prefix + self._root.format(repr=repr, style=style)
 
+    def print(self, *, repr=None, style=None, title=None):
+        """Convenience method that simply runs `print(self.format())`."""
+        print(self.format(repr=repr, style=style, title=title))
+
     def add_child(self, child: Any, *, data_id=None, node_id=None, before=None):
         return self._root.add_child(
             child, data_id=data_id, node_id=node_id, before=before
@@ -112,7 +131,11 @@ class Tree:
     add = add_child
 
     def copy(self, *, name=None, predicate=None) -> "Tree":
-        """Return a shallow copy of the tree."""
+        """Return a shallow copy of the tree.
+
+        New `Tree` and `Node` instances are created. They reference the original
+        data objects.
+        """
         if name is None:
             name = f"Copy of {self}"
         new_tree = Tree(name)

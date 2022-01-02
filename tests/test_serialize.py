@@ -72,27 +72,29 @@ class TestSerialize:
     def test_serialize_list_obj(self):
         """Save/load an object tree with clones.
 
-        Tree<'4409537248'>
-        ├── Node<'Department<Development>', data_id=275596153>
-        │   ├── Node<'Person<Alice, 23>', data_id=275596168>
-        │   ├── Node<'Person<Bob, 32>', data_id=275596177>
-        │   ╰── Node<'Person<Charleen, 43>', data_id=275596195>
-        ╰── Node<'Department<Marketing>', data_id=275596186>
-            ├── Node<'Person<Charleen, 43>', data_id=275596195>
-            ╰── Node<'Person<Dave, 54>', data_id=275596204>
+        Tree<'2009255653136'>
+        ├── Node<'Department<Development>', data_id=125578508105>
+        │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
+        │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
+        │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
+        ╰── Node<'Department<Marketing>', data_id=125578508063>
+            ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+            ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
-        tree = Tree()
 
-        dev = tree.add(fixture.Department("Development"))
-        dev.add(fixture.Person("Alice", 23))
-        dev.add(fixture.Person("Bob", 32))
-        markt = tree.add(fixture.Department("Marketing"))
-        charleen = markt.add(fixture.Person("Charleen", 43))
-        markt.add(fixture.Person("Dave", 54))
-        dev.add(charleen)
+        def _calc_id(node, data):
+            if isinstance(data, fixture.Person):
+                return data.guid
+            return hash(data)
 
-        # print(tree.format())
-        print(tree.format(repr="{node}"))
+        # Use a tree
+        tree = Tree(calc_data_id=_calc_id)
+        fixture.create_tree(style="objects", clones=True, tree=tree)
+
+        # print(tree._nodes_by_data_id)
+        assert tree["{123-456}"].data.name == "Alice"
+        alice = tree["{123-456}"].data
+        assert tree[alice].data is alice
 
         def serialize_mapper(node, data):
             if isinstance(node.data, fixture.Department):
@@ -115,12 +117,12 @@ class TestSerialize:
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
             tree.save(fp, mapper=serialize_mapper)
+            # print output
+            fp.seek(0)
+            print(fp.read())
             # Deserialize
             fp.seek(0)
             tree_2 = Tree.load(fp, mapper=deserialize_mapper)
-
-        # print(obj)
-        print(tree_2.format())
 
         assert fixture.trees_equal(tree, tree_2)
 
