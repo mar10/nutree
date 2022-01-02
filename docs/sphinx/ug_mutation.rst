@@ -2,9 +2,7 @@
 Mutation
 --------
 
-..
-    .. toctree::
-    :hidden:
+.. py:currentmodule:: nutree
 
 Some in-place modifications are available::
 
@@ -33,10 +31,3 @@ instance::
     assert tree_2.first_node.data is tree.first_node.data  # ... reference the same data
     assert tree_2.first_node == tree.first_node            # and evaluate as 'equal'
 
-Direkt modification of `node.node_id`, `node.data_id` would mess up the internal
-bookkeeping.
-
-.. note:: 
-    If `node.data` is modified, this _may_ change the result of `hash(node.data)`.
-
-.. todo::  Describe solutions.

@@ -42,7 +42,7 @@ nutree
    n = tree.add("Books")
    n.add("The Little Prince")
 
-   print(tree.format())
+   tree.print()
 
 ::
 

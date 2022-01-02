@@ -68,7 +68,7 @@ class TestNavigate:
         assert tree.count == 5
 
         print(tree.format(repr="{node.data}"))
-        print(tree.format())
+        tree.print()
 
         records = tree["Records"]
         assert isinstance(records, Node)

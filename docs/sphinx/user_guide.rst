@@ -5,11 +5,11 @@ User Guide
 A :class:`~nutree.tree.Tree` object is a shallow wrapper around a single, 
 invisible system root node. All visible toplevel nodes are direct children of
 this root node. |br|
-A Tree exposes methods to iterate, search, copy, filter, serialize, etc.
+Trees expose methods to iterate, search, copy, filter, serialize, etc.
 
-The :class:`~nutree.node.Node` represents a single element in the tree. |br|
+A :class:`~nutree.node.Node` represents a single element in the tree. |br|
 It is a shallow wrapper around a user data instance, that adds navigation,
-modifcation, and other functionality.
+modification, and other functionality.
 
 Main `Node` attributes are initialized on construction:
 
@@ -51,14 +51,13 @@ Simple strings or arbitrary object instances can be added and looked-up::
   jane_node = tree.find(match="Jane")
 
 It is also possible to lookup by custom keys if objects define them.
-Read :doc:`ug_objects_and_clones` for details.
+Read :doc:`ug_objects` for details.
 
 `Nutree` also supports the case where multiple nodes reference the same `data` 
 instance with mehods like
 :meth:`~nutree.node.Node.find_all`,
-:meth:`~nutree.node.Node.is_clone, etc.
-
-Read :doc:`ug_objects_and_clones` for more.
+:meth:`~nutree.node.Node.is_clone`, etc. |br|
+Read :doc:`ug_clones` for more.
 
 
 **Read the Details:**
@@ -69,6 +68,7 @@ Read :doc:`ug_objects_and_clones` for more.
     ug_pretty_print
     ug_search_and_navigate
     ug_mutation
+    ug_clones
     ug_serialize
-    ug_objects_and_clones
+    ug_objects
     ug_advanced

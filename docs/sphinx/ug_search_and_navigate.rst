@@ -2,13 +2,11 @@
 Search and Navigate
 -------------------
 
-..
-    .. toctree::
-    :hidden:
+.. py:currentmodule:: nutree
 
 
-Search and Navigate
--------------------
+Navigate
+--------
 
 ::
 
@@ -20,9 +18,6 @@ Search and Navigate
     assert len(records_node.children) == 2
     assert records_node.level == 1
 
-    assert tree.find("Records") is records_node
-    assert tree.find("records") is None
-
     n = records_node.first_child
     assert records_node.find("Let It Be") is n
 
@@ -32,6 +27,14 @@ Search and Navigate
     assert n.prev_sibling is None
     assert n.next_sibling.name == "Get Yer Ya-Ya's Out!"
     assert not n.children
+
+Search
+------
+
+::
+
+    assert tree.find("Records") is records_node
+    assert tree.find("records") is None
 
     res = tree.find_all(match=r"[GL]et.*")
     print(res)

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     n = tree.add("Books")
     n.add("The Little Prince")
 
-    print(tree.format())
+    tree.print()
 
     print(tree.format(repr="{node}", style="lines32", title="My Store"))
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     b = tree.add("B")
     b.add("b1")
     b.add("a2")
-    print(tree.format())
+    tree.print()
     print(tree.find("a2"))
     print(tree.find_all("a2"))
 

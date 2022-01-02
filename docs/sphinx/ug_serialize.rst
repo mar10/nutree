@@ -2,9 +2,7 @@
 (De)Serialize
 -------------
 
-..
-    .. toctree::
-    :hidden:
+.. py:currentmodule:: nutree
 
 
 Serialization
@@ -61,7 +59,7 @@ Reading is as simple as::
         tree = Tree.load(fp)
 
 .. seealso :: This example tree only contains plain string data.
-    Read :doc:`ug_objects_and_clones` on how to (de)serialize arbitrary objects.
+    Read :doc:`ug_objects` on how to (de)serialize arbitrary objects.
 
 
 (De)Serialize as List of Dicts
@@ -97,4 +95,4 @@ Reading can then be implemnted using :meth:`~nutree.tree.Tree.from_dict()`::
     tree = Tree.from_dict(obj)
 
 .. seealso :: This example tree only contains plain string data.
-    Read :doc:`ug_objects_and_clones` on how to (de)serialize arbitrary objects.
+    Read :doc:`ug_objects` on how to (de)serialize arbitrary objects.

@@ -82,7 +82,7 @@ class TestSerialize:
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
 
-        def _calc_id(node, data):
+        def _calc_id(tree, data):
             if isinstance(data, fixture.Person):
                 return data.guid
             return hash(data)
@@ -104,12 +104,15 @@ class TestSerialize:
                 data["type"] = "person"
                 data["name"] = node.data.name
                 data["age"] = node.data.age
+                data["guid"] = node.data.guid
             return data
 
         def deserialize_mapper(parent, data):
             node_type = data["type"]
             if node_type == "person":
-                data = fixture.Person(name=data["name"], age=data["age"])
+                data = fixture.Person(
+                    name=data["name"], age=data["age"], guid=data["guid"]
+                )
             elif node_type == "dept":
                 data = fixture.Department(name=data["name"])
             return data
@@ -132,6 +135,9 @@ class TestSerialize:
         # TODO: also make a test-case, where the mapper returns a data_id,
         #       so that `tree.first_child == tree_2.first_child`
         # assert tree.first_child == tree_2.first_child
+
+        alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
         assert charleen_2.is_clone(), "Restored clone"

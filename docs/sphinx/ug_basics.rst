@@ -2,9 +2,7 @@
 Basics
 ------
 
-
-.. toctree::
-   :hidden:
+.. py:currentmodule:: nutree
 
 
 Add Nodes
@@ -24,7 +22,7 @@ Nodes are usually created by adding a new data instance to a parent ::
    n = tree.add("Books")
    n.add("The Little Prince")
 
-   print(tree.format())
+   tree.print()
 
 ::
 
