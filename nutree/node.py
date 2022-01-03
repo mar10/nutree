@@ -5,6 +5,7 @@
 
 """
 import re
+from operator import attrgetter
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
@@ -629,14 +630,22 @@ class Node:
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort_children(self, *, cmp=None, node_id=None, reverse=False):
-        raise NotImplementedError
-        # if len(self._children) < 2:
-        #     return
-        # if node_id is None:
-        #     node_id = lambda node: str(node.obj).lower()
-        # self._children.sort(cmp, node_id, reverse)
-        # return
+    def sort_children(self, *, key=None, reverse=False, deep=False):
+        """Sort child nodes.
+
+        `key` defaults to ``attrgetter("name")``, so children are sorted by
+        their string representation.
+        """
+        cl = self._children
+        if not cl or len(cl) == 1 and not deep:
+            return
+        if key is None:
+            key = attrgetter("name")
+        cl.sort(key=key, reverse=reverse)
+        if deep:
+            for c in cl:
+                c.sort_children(key=key, reverse=reverse, deep=True)
+        return
 
     _CONNECTORS = {
         "space2": (True, "", "  ", "  ", "  ", "  ", "\n"),

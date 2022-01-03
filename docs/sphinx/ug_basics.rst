@@ -31,7 +31,7 @@ Nodes are usually created by adding a new data instance to a parent ::
    │   ├── 'Let It Be'
    │   ╰── "Get Yer Ya-Ya's Out!"
    ╰── 'Books'
-      ╰── 'The Little Prince'
+       ╰── 'The Little Prince'
 
 
 Info and Navigation

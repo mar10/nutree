@@ -331,6 +331,28 @@ class TestNavigate:
         assert tree._self_check()
 
 
+class TestSort:
+    def test_reverse_deep(self):
+        tree = fixture.create_tree()
+
+        tree.sort(reverse=True)
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── B
+            │   ╰── b1
+            │       ╰── b11
+            ╰── A
+                ├── a2
+                ╰── a1
+                    ├── a12
+                    ╰── a11
+        """,
+        )
+
+
 class TestFormat:
     def test_format(self):
         tree = fixture.create_tree()

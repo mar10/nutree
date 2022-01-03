@@ -3,18 +3,23 @@ Advanced
 --------
 
 ..
-    .. toctree::
-    :hidden:
+    Events
+    ------
+
+    (Not Yet Implemented.)
+
+    ::
+
+        def on_change(tree, event):
+            assert event.type == "change"
+
+        tree.on("change", on_change)
 
 
-Events
-------
+Locking
+-------
 
-(Not Yet Implemented.)
+In multithreading scenarios, we can enforce critical sections like so::
 
-::
-
-    def on_change(tree, event):
-        assert event.type == "change"
-
-    tree.on("change", on_change)
+    with tree:
+        snapshot = tree.to_dict()

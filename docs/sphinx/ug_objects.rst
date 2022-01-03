@@ -10,21 +10,21 @@ object can be stored, as long as it is `hashable`.
 Assume we have the following Objects::
 
     class Person:
-        def __init__(self, name, *, age, guid=None) -> None:
+        def __init__(self, name, *, age, guid=None):
             self.name = name
             self.age = age
             self.guid = guid
 
-        def __repr__(self) -> str:
+        def __repr__(self):
             return f"Person<{self.name}, {self.age}>"
 
 
     class Department:
-        def __init__(self, name, *, guid=None) -> None:
+        def __init__(self, name, *, guid=None):
             self.name = name
             self.guid = guid
 
-        def __repr__(self) -> str:
+        def __repr__(self):
             return f"Department<{self.name}>"
 
 We can add instances of these classes to our tree::

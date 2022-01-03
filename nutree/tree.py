@@ -215,6 +215,14 @@ class Tree:
     #: Alias for find_first
     find = find_first
 
+    def sort(self, *, key=None, reverse=False):
+        """Sort child nodes recursively.
+
+        `key` defaults to ``attrgetter("name")``, so children are sorted by
+        their string representation.
+        """
+        self._root.sort_children(key=key, reverse=reverse, deep=True)
+
     def to_dict(self, *, mapper=None) -> List[Dict]:
         """Call ``node.to_dict()`` for all childnodes and return list of results."""
         res = []
