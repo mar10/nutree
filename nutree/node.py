@@ -11,7 +11,14 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Union
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
 
-from .common import AmbigousMatchError, IterMethod, UniqueConstraintError
+from .common import (
+    CONNECTORS,
+    DEFAULT_CONNECTOR_STYLE,
+    DEFAULT_REPR,
+    AmbigousMatchError,
+    IterMethod,
+    UniqueConstraintError,
+)
 
 
 # ------------------------------------------------------------------------------
@@ -41,7 +48,7 @@ class Node:
         tree._register(self)
 
     def __repr__(self) -> str:
-        return f"Node<{self.name!r}, data_id={self.data_id}>"
+        return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
 
     def __eq__(self, other) -> bool:
         """Return true if the embedded data is equal to `other`."""
@@ -362,15 +369,17 @@ class Node:
             - <int>: prepend the new node before the existing child with this index
             - <Node>: prepend the new node before this childnode
 
-
-        child (Node|Any):
-            Either an existing Node or a data object.
-        before (bool|int|Node|None):
-            Optional position.
-        data_id (str|int|None):
-            Pass None to
-        node_id (str|int|None):
-
+        Args:
+            child (Node|Any):
+                Either an existing Node or a data object.
+            before (bool|int|Node|None):
+                Optional position.
+            data_id (str|int|None):
+                Default `None` will to calculate from `hash(node.data)`.
+            node_id (str|int|None):
+                Optional custom unique node key (defaults to `hash(node)`)
+        Returns:
+            the new :class:`node.Node` instance
         """
         if isinstance(child, Node):
             if child._tree is self._tree:
@@ -647,80 +656,98 @@ class Node:
                 c.sort_children(key=key, reverse=reverse, deep=True)
         return
 
-    _CONNECTORS = {
-        "space2": (True, "", "  ", "  ", "  ", "  ", "\n"),
-        "space4": (True, "", "    ", " |  ", "    ", "    ", "\n"),
-        "ascii22": (True, "", "  ", "| ", "`-", "+-", "\n"),
-        "ascii32": (True, "", "   ", "|  ", "`- ", "+- ", "\n"),
-        "ascii42": (True, "", "    ", " |  ", " `- ", " +- ", "\n"),
-        "ascii43": (True, "", "    ", "|   ", "`-- ", "+-- ", "\n"),
-        "lines32": (True, "", "   ", "│  ", "└─ ", "├─ ", "\n"),
-        "lines42": (True, "", "    ", " │  ", " └─ ", " ├─ ", "\n"),
-        "lines43": (True, "", "    ", " │  ", " └──", " ├──", "\n"),
-        "round21": (True, "", "  ", "│ ", "╰ ", "├ ", "\n"),
-        "round22": (True, "", "  ", "│ ", "╰─", "├─", "\n"),
-        "round32": (True, "", "   ", "│  ", "╰─ ", "├─ ", "\n"),
-        "round42": (True, "", "    ", " │  ", " ╰─ ", " ├─ ", "\n"),
-        "round43": (True, "", "    ", "│   ", "╰── ", "├── ", "\n"),
-        "serial": (False, "", "", "", "", "", ","),
-        "list": (False, "", "", "", "", "", "\n"),
-        # "bullet": (False, "  - ", "", "", "", "", "\n"),
-        "raw": (False, "", "", "", "", "", ""),
-    }
-    DEFAULT_STYLE = "round43"
-    DEFAULT_REPR = "{node.data!r}"
+    def _get_prefix(self, style, lstrip):
+        s0, s1, s2, s3 = style
 
-    def render_lines(self, *, repr=None, style=None):
-        """Produces nodes as nicely formatted strings.
-
-        Example:
-            # Print the __repr__ of the data object:
-            for s in tree.render_lines(repr="{node.data}"):
-                print(s)
-            # Print the __repr__ of the data object:
-            for s in tree.render_lines(repr="{node._node_id}-{node.name}"):
-                print(s)
-        Example:
-            def fmt(node):
-                return
-            tree.dump(lambda node: "%s" % node.obj)
-        """
-        if type(style) not in (list, tuple):
-            style = self._CONNECTORS[style or self.DEFAULT_STYLE]
-        if repr is None:
-            repr = self.DEFAULT_REPR
-
-        _title, pre, s0, s1, s2, s3, _joiner = style
-        for n in self.iterator():
-            s = [pre]
-            for p in n.get_parent_list():
-                if p.is_last_sibling():
-                    s.append(s0)  # "    "
-                else:
-                    s.append(s1)  # " |  "
-
-            if n.is_last_sibling():
-                s.append(s2)  # " `- "
+        parts = []
+        level = 0
+        for p in self.get_parent_list():
+            level += 1
+            if level <= lstrip:
+                continue
+            if p.is_last_sibling():
+                parts.append(s0)  # "    "
             else:
-                s.append(s3)  # " +- "
+                parts.append(s1)  # " |  "
+
+        if level >= lstrip:
+            if self.is_last_sibling():
+                parts.append(s2)  # " ╰─ "
+            else:
+                parts.append(s3)  # " ├─ "
+
+        return "".join(parts)
+
+    def _render_lines(self, *, repr=None, style=None, add_self=True):
+        if type(style) not in (list, tuple):
+            try:
+                style = CONNECTORS[style or DEFAULT_CONNECTOR_STYLE]
+            except KeyError:
+                raise ValueError(
+                    f"Invalid style '{style}'. Expected: {'|'.join(CONNECTORS.keys())}"
+                )
+
+        if repr is None:
+            repr = DEFAULT_REPR
+
+        # Find out if we need to strip some of the leftmost prefixes.
+        # If this was called for a normal node, we strip all parent levels
+        # (and also the own prefix when `add_self` is false).
+        # If this was called for the system root node, we do the same, but we
+        # never render self, because the the title is rendered by the caller.
+        lstrip = self.level
+        if not add_self:
+            lstrip += 1
+        if not self._parent:
+            add_self = False
+
+        for n in self.iterator(add_self=add_self):
+            prefix = n._get_prefix(style, lstrip)
 
             if callable(repr):
-                s.append(repr(n))
+                s = repr(n)
             else:
-                s.append(repr.format(node=n))
-            # s.append(eol)
+                s = repr.format(node=n)
 
-            yield "".join(s)
+            yield prefix + s
 
         return
 
-    def format(self, *, repr=None, style=None):
-        """Print formatted branch to stdout.
+    def format_iter(self, *, repr=None, style=None, add_self=True):
+        """This variant of :meth:`format` returns a line generator."""
+        if style == "list":
+            for n in self.iterator(add_self=add_self):
+                if callable(repr):
+                    yield repr(n)
+                else:
+                    yield repr.format(node=n)
+            return
+        yield from self._render_lines(repr=repr, style=style, add_self=add_self)
 
-        See render_lines() for custom formatting examples.
+    def format(self, *, repr=None, style=None, add_self=True, join="\n") -> str:
+        """Return a pretty string representation of the node hiererachy.
+
+        Args:
+            repr (str):
+                A string or callback that defines how the node is rendered
+                after the connector prefixes are generated.
+            style (str):
+                A string that defines the connector type, e.g. "round42" will
+                produce "│ ", "╰─", "├─".
+            add_self (bool):
+                If false, only the descendants of this node are formatted.
+            join (str):
+                A string that is used to terminate the single lines. Defaults
+                to "\n", but may be set to ", " together with `style="list"`
+                to create a single line output.
+
+        Example:
+
+            print(node.format(repr="{node.name}", style="round42"))
+
         """
-        joiner = Node._CONNECTORS[(style or Node.DEFAULT_STYLE)][6]
-        return joiner.join(self.render_lines(repr=repr, style=style))
+        iter_lines = self.format_iter(repr=repr, style=style, add_self=add_self)
+        return join.join(iter_lines)
 
     def to_dict(self, *, mapper=None) -> Dict:
         """Return a nested dict of this node and its children."""

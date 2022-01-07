@@ -48,3 +48,29 @@ class SkipBranch(IterationControl):
 
 class SkipAll(IterationControl):
     """Raised or returned to stop iteration."""
+
+
+#: Node connector prefixes, for use with ``style`` argument.
+CONNECTORS = {
+    "space2": ("  ", "  ", "  ", "  "),
+    "space4": ("    ", " |  ", "    ", "    "),
+    "ascii22": ("  ", "| ", "`-", "+-"),
+    "ascii32": ("   ", "|  ", "`- ", "+- "),
+    "ascii42": ("    ", " |  ", " `- ", " +- "),
+    "ascii43": ("    ", "|   ", "`-- ", "+-- "),
+    "lines32": ("   ", "│  ", "└─ ", "├─ "),
+    "lines42": ("    ", " │  ", " └─ ", " ├─ "),
+    "lines43": ("    ", " │  ", " └──", " ├──"),
+    "round21": ("  ", "│ ", "╰ ", "├ "),
+    "round22": ("  ", "│ ", "╰─", "├─"),
+    "round32": ("   ", "│  ", "╰─ ", "├─ "),
+    "round42": ("    ", " │  ", " ╰─ ", " ├─ "),
+    "round43": ("    ", "│   ", "╰── ", "├── "),
+}
+
+#: Default connector prefixes ``style`` argument.
+DEFAULT_CONNECTOR_STYLE = "round43"
+
+#: Default value for ``repr`` argument.
+# DEFAULT_REPR = "{node.data}"
+DEFAULT_REPR = "{node.data!r}"

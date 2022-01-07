@@ -20,9 +20,12 @@ representation::
     ╰── 'Books'
         ╰── 'The Little Prince'
 
-Pass a formatting string to `repr=` to control the node display.
-For example ``repr="{node}"``, ``repr="{node.data.name} (#{node.data_id})"``, 
-...::
+Pass a formatting string to `repr=` to control how a single node is rendered 
+display. For example ``repr="{node}"``, ``repr="{node.path}"``, ``repr="{node.data!r}"``, 
+``repr="{node.data.name} (#{node.data_id})"``, etc.
+
+The `style` argument selects the connector type. 
+See :attr:`~nutree.common.CONNECTORS` for possible values. ::
 
     print(tree.format(repr="{node}", style="lines32", title="My Store"))
 
@@ -52,8 +55,17 @@ Some more examples::
 
 and::
 
-    tree.format(repr="{node.path}", style="serial")
+    tree.format(repr="{node.path}", style="list", join=",")
 
 ::
 
     /A,/A/a1,/A/a1/a11,/A/a1/a12,/A/a2,/B,/B/b1,/B/b1/b11
+
+
+..
+    # Print the __repr__ of the data object:
+    for s in tree.format_iter(repr="{node.data}"):
+        print(s)
+    # Print the __repr__ of the data object:
+    for s in tree.format_iter(repr="{node._node_id}-{node.name}"):
+        print(s)

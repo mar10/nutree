@@ -47,8 +47,12 @@ Search
     assert res.name == "Let It Be"
 
 
-Iteration
+Traversal
 ---------
+
+**Iteration**
+
+Iterators are the most performant and memory efficient way to traverse the tree.
 
 Iterators are available for the hole tree or by branch. Different travesal
 methods are supported ::
@@ -62,3 +66,5 @@ methods are supported ::
 
     # Walk a branch, starting at a distinct node
     res = list(node.iterator(add_self=True))
+
+**Visit**

@@ -34,7 +34,7 @@ class Tree:
         return self._calc_data_id(data) in self._nodes_by_data_id
 
     def __len__(self):
-        """Return the number of nodes (also makes empty trees falsy)."""
+        """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
         return self.count
 
     def __enter__(self):
@@ -48,8 +48,9 @@ class Tree:
     def __getitem__(self, data: object) -> "Node":
         """Implement `tree[data]` lookup.
 
-        Note that AmbigousMatchError is raised if multiple matches are found.
-        Use tree.find_all() or tree.find_first() instead to resolve this.
+        :class:`~nutree.common.AmbigousMatchError` is raised if multiple matches
+        are found.
+        Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
         """
         # Treat data as data_id
         if isinstance(data, Node):
@@ -110,24 +111,39 @@ class Tree:
         """Return the last top-level node."""
         return self._root.last_child
 
-    def format(self, *, repr=None, style=None, title=None):
-        prefix = ""
+    def format_iter(self, *, repr=None, style=None, title=None):
+        """This variant of :meth:`format` returns a line generator."""
         if title is None:
-            title = Node._CONNECTORS[style or Node.DEFAULT_STYLE][0]
+            title = False if style == "list" else True
         if title:
-            prefix = f"{self}\n" if title is True else f"{title}\n"
-        return prefix + self._root.format(repr=repr, style=style)
+            yield f"{self}" if title is True else f"{title}"
+        has_title = title is not False
+        yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
 
-    def print(self, *, repr=None, style=None, title=None):
-        """Convenience method that simply runs `print(self.format())`."""
-        print(self.format(repr=repr, style=style, title=title))
+    def format(self, *, repr=None, style=None, title=None, join="\n"):
+        """Return a pretty string representation of the tree hiererachy.
 
-    def add_child(self, child: Any, *, data_id=None, node_id=None, before=None):
+        See the node method :meth:`~nutree.node.Node.format` for more.
+        """
+        lines_iter = self.format_iter(repr=repr, style=style, title=title)
+        return join.join(lines_iter)
+
+    def print(self, *, repr=None, style=None, title=None, join="\n"):
+        """Convenience method that simply runs print(self. :meth:`format()`)."""
+        print(self.format(repr=repr, style=style, title=title, join=join))
+
+    def add_child(
+        self, child: Any, *, data_id=None, node_id=None, before=None
+    ) -> "Node":
+        """Add a toplevel node.
+
+        See the node method :meth:`~nutree.node.Node.add_child`.
+        """
         return self._root.add_child(
             child, data_id=data_id, node_id=node_id, before=before
         )
 
-    #: Alias for `add_child`
+    #: Alias for :meth:`add_child`
     add = add_child
 
     def copy(self, *, name=None, predicate=None) -> "Tree":

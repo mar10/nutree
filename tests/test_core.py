@@ -388,7 +388,41 @@ class TestFormat:
         )
 
         assert fixture.check_content(
-            # tree.format(repr="- {node.path!r}", style="list"),
+            tree.format(repr="{node.data}", title=False),
+            """\
+            A
+            ├── a1
+            │   ├── a11
+            │   ╰── a12
+            ╰── a2
+            B
+            ╰── b1
+                ╰── b11
+            """,
+        )
+
+        assert fixture.check_content(
+            tree["A"].format(repr="{node.data}"),
+            """\
+            A
+            ├── a1
+            │   ├── a11
+            │   ╰── a12
+            ╰── a2
+            """,
+        )
+
+        assert fixture.check_content(
+            tree["A"].format(repr="{node.data}", add_self=False),
+            """\
+            a1
+            ├── a11
+            ╰── a12
+            a2
+            """,
+        )
+
+        assert fixture.check_content(
             tree.format(repr="{node.path}", style="list"),
             """\
             /A
@@ -403,7 +437,7 @@ class TestFormat:
         )
 
         assert fixture.check_content(
-            tree.format(repr="{node.path}", style="serial"),
+            tree.format(repr="{node.path}", style="list", join=","),
             "/A,/A/a1,/A/a1/a11,/A/a1/a12,/A/a2,/B,/B/b1,/B/b1/b11",
         )
 
