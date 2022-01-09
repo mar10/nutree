@@ -76,11 +76,6 @@ class Tree:
     #     """Support `tree += node(s)` syntax"""
     #     self._root += other
 
-    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER, *, predicate=None):
-        return self._root.iterator(method=method, predicate=predicate)
-
-    __iter__ = iterator
-
     def _calc_data_id(self, data) -> int:
         """Called internally to calculate `data_id` for a `data` object.
 
@@ -95,73 +90,6 @@ class Tree:
         if self._calc_data_id_hook:
             return self._calc_data_id_hook(self, data)
         return hash(data)
-
-    @property
-    def count(self):
-        """Return the total number of nodes."""
-        return len(self._node_by_id)
-
-    @property
-    def first_child(self):
-        """Return the first top-level node."""
-        return self._root.first_child
-
-    @property
-    def last_child(self):
-        """Return the last top-level node."""
-        return self._root.last_child
-
-    def format_iter(self, *, repr=None, style=None, title=None):
-        """This variant of :meth:`format` returns a line generator."""
-        if title is None:
-            title = False if style == "list" else True
-        if title:
-            yield f"{self}" if title is True else f"{title}"
-        has_title = title is not False
-        yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
-
-    def format(self, *, repr=None, style=None, title=None, join="\n"):
-        """Return a pretty string representation of the tree hiererachy.
-
-        See the node method :meth:`~nutree.node.Node.format` for more.
-        """
-        lines_iter = self.format_iter(repr=repr, style=style, title=title)
-        return join.join(lines_iter)
-
-    def print(self, *, repr=None, style=None, title=None, join="\n"):
-        """Convenience method that simply runs print(self. :meth:`format()`)."""
-        print(self.format(repr=repr, style=style, title=title, join=join))
-
-    def add_child(
-        self, child: Any, *, data_id=None, node_id=None, before=None
-    ) -> "Node":
-        """Add a toplevel node.
-
-        See the node method :meth:`~nutree.node.Node.add_child`.
-        """
-        return self._root.add_child(
-            child, data_id=data_id, node_id=node_id, before=before
-        )
-
-    #: Alias for :meth:`add_child`
-    add = add_child
-
-    def copy(self, *, name=None, predicate=None) -> "Tree":
-        """Return a shallow copy of the tree.
-
-        New `Tree` and `Node` instances are created. They reference the original
-        data objects.
-        """
-        if name is None:
-            name = f"Copy of {self}"
-        new_tree = Tree(name)
-        with self:
-            new_tree._root.copy_from(self._root, predicate=predicate)
-        return new_tree
-
-    def clear(self) -> None:
-        """Remove all nodes from the tree"""
-        self._root.remove_children()
 
     def _register(self, node: "Node"):
         assert node._tree is self
@@ -191,6 +119,90 @@ class Tree:
             node._node_id = None
             node._children = None
         return
+
+    @property
+    def count(self):
+        """Return the total number of nodes."""
+        return len(self._node_by_id)
+
+    @property
+    def first_child(self):
+        """Return the first top-level node."""
+        return self._root.first_child
+
+    @property
+    def last_child(self):
+        """Return the last top-level node."""
+        return self._root.last_child
+
+    def visit(self, callback, *, method=IterMethod.PRE_ORDER, memo=None):
+        """Call `callback(node, memo)` for all nodes.
+
+        See Node's :meth:`~nutree.node.Node.visit` method for details.
+        """
+        return self._root.visit(callback, add_self=False, method=method, memo=memo)
+
+    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER, *, predicate=None):
+        """Traverse tree structure and yield nodes.
+
+        See Node's :meth:`~nutree.node.Node.iterator` method for details.
+        """
+        return self._root.iterator(method=method, predicate=predicate)
+
+    __iter__ = iterator
+
+    def format_iter(self, *, repr=None, style=None, title=None):
+        """This variant of :meth:`format` returns a line generator."""
+        if title is None:
+            title = False if style == "list" else True
+        if title:
+            yield f"{self}" if title is True else f"{title}"
+        has_title = title is not False
+        yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
+
+    def format(self, *, repr=None, style=None, title=None, join="\n"):
+        """Return a pretty string representation of the tree hiererachy.
+
+        See Node's :meth:`~nutree.node.Node.format` method for details.
+        """
+        lines_iter = self.format_iter(repr=repr, style=style, title=title)
+        return join.join(lines_iter)
+
+    def print(self, *, repr=None, style=None, title=None, join="\n"):
+        """Convenience method that simply runs print(self. :meth:`format()`)."""
+        print(self.format(repr=repr, style=style, title=title, join=join))
+
+    def add_child(
+        self, child: Any, *, data_id=None, node_id=None, before=None
+    ) -> "Node":
+        """Add a toplevel node.
+
+        See Node's :meth:`~nutree.node.Node.add_child` method for details.
+        """
+        return self._root.add_child(
+            child, data_id=data_id, node_id=node_id, before=before
+        )
+
+    #: Alias for :meth:`add_child`
+    add = add_child
+
+    def copy(self, *, name=None, predicate=None) -> "Tree":
+        """Return a shallow copy of the tree.
+
+        New `Tree` and `Node` instances are created. They reference the original
+        data objects.
+        See also Node's :meth:`~nutree.node.Node.copy_from` method.
+        """
+        if name is None:
+            name = f"Copy of {self}"
+        new_tree = Tree(name)
+        with self:
+            new_tree._root.copy_from(self._root, predicate=predicate)
+        return new_tree
+
+    def clear(self) -> None:
+        """Remove all nodes from the tree"""
+        self._root.remove_children()
 
     def find_all(
         self, data=None, *, match=None, data_id=None, max_results: int = None
@@ -228,16 +240,16 @@ class Tree:
             return self._node_by_id.get(node_id)
         raise NotImplementedError
 
-    #: Alias for find_first
+    #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort(self, *, key=None, reverse=False):
+    def sort(self, *, key=None, reverse=False, deep=True):
         """Sort child nodes recursively.
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.
         """
-        self._root.sort_children(key=key, reverse=reverse, deep=True)
+        self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
     def to_dict(self, *, mapper=None) -> List[Dict]:
         """Call ``node.to_dict()`` for all childnodes and return list of results."""

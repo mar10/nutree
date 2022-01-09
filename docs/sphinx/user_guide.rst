@@ -33,6 +33,10 @@ data_id (int, readonly):
   The unique key of a `data` instance. This value is calculated as ``hash(data)`` 
   by default, but can be set to a custom value. |br|
   Use :meth:`~nutree.node.Node.set_data` to modify this value.
+node_id (int, readonly):
+  The unique key of a `Node` instance. This value is calculated as ``hash(node)`` 
+  by default, but can be set to a custom value in the constructor.
+  It cannot be changed later.
 
 `Nutree` tries hard to allow developers to focus on their `data` objects instead 
 of nodes.

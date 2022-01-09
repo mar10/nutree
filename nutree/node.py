@@ -17,7 +17,9 @@ from .common import (
     DEFAULT_REPR,
     AmbigousMatchError,
     IterMethod,
+    StopTraversal,
     UniqueConstraintError,
+    _call_traversal_cb,
 )
 
 
@@ -104,7 +106,7 @@ class Node:
 
     @property
     def data_id(self):
-        """Return the wrapped data instance id (use `tree.set_data()` to modify)."""
+        """Return the wrapped data instance's id (use `tree.set_data()` to modify)."""
         return self._data_id
 
     @property
@@ -282,11 +284,11 @@ class Node:
         return bool(len(self._tree._nodes_by_data_id.get(self._data_id)) > 1)
 
     def is_first_sibling(self) -> bool:
-        """Return true if this node is the first sibling."""
+        """Return true if this node is the first sibling, i.e. the first child of its parent."""
         return self is self._parent._children[0]
 
     def is_last_sibling(self) -> bool:
-        """Return true if this node is the last sibling."""
+        """Return true if this node is the last sibling, i.e. the last child of its parent."""
         return self is self._parent._children[-1]
 
     def has_children(self) -> bool:
@@ -301,6 +303,7 @@ class Node:
         return root
 
     def is_descendant_of(self, other: "Node") -> bool:
+        """Return true if this node is direct or indirect child of `other`."""
         parent = self._parent
         while parent is not None and parent._parent is not None:
             if parent is other:
@@ -309,6 +312,7 @@ class Node:
         return False
 
     def is_ancestor_of(self, other: "Node") -> bool:
+        """Return true if this node is a parent, grandparent, ... of `other`."""
         return other.is_descendant_of(self)
 
     def get_common_ancestor(self, other: "Node") -> Union["Node", None]:
@@ -542,6 +546,58 @@ class Node:
             if child_items:
                 child.from_dict(child_items)
         return
+
+    def _visit_pre(self, callback, memo):
+        """Depth-first, pre-order traversal."""
+        # Call callback and skip children SkipChildren was returned.
+        # Also a StopTraversal(value) exception may be raised.
+        if _call_traversal_cb(callback, self, memo) is False:
+            return
+
+        children = self._children
+        if children:
+            for c in children:
+                c._visit_pre(callback, memo)
+        return
+
+    def visit(
+        self, callback, *, add_self=False, method=IterMethod.PRE_ORDER, memo=None
+    ):
+        """Call `callback(node, memo)` for all subnodes.
+
+        Args:
+            callback (function(node, memo)):
+                Callback ``function(node, memo)``
+            add_self (bool):
+                If true, this node will also be visited (typically as first call).
+            method (IterMethod):
+                Traversal method, defaults to pre.order, depth-first search.
+            memo (Any):
+                This value will be passed to all calls and may be useful to
+                implement caching or collect and return traversal results.
+                If no `memo` argument is passed, an empty dict is created at
+                start, which has a life-span of the traversal only.
+        """
+        try:
+            handler = getattr(self.__class__, f"_visit_{method.value}")
+        except AttributeError:
+            raise NotImplementedError(f"Unsupported traversal method '{method}'.")
+
+        if memo is None:
+            memo = {}
+
+        try:
+            if add_self and method != IterMethod.POST_ORDER:
+                if _call_traversal_cb(callback, self, memo) is False:
+                    return
+
+            for c in self._children:
+                handler(c, callback, memo)
+
+            if add_self and method == IterMethod.POST_ORDER:
+                callback(self, memo)
+        except StopTraversal as e:
+            return e.value
 
     def _iter_pre(self, *, predicate=None):
         """Depth-first, pre-order traversal."""

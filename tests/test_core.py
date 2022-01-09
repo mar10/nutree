@@ -8,6 +8,7 @@ import re
 import pytest
 
 from nutree import AmbigousMatchError, IterMethod, Node, Tree
+from nutree.common import SkipChildren, StopTraversal
 
 from . import fixture
 
@@ -442,7 +443,7 @@ class TestFormat:
         )
 
 
-class TestIter:
+class TestTraversal:
     def test_iter(self):
         """
         Tree<'fixture'>
@@ -471,6 +472,43 @@ class TestIter:
         s = ",".join(n.data for n in tree.iterator(IterMethod.LEVEL_ORDER))
         assert s == "A,B,a1,a2,b1,a11,a12,b11"
 
+    def test_visit(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+
+        tree.visit(cb)
+
+        assert ",".join(res) == "A,a1,a11,a12,a2,B,b1,b11"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "a1":
+                return SkipChildren
+            if node.name == "b1":
+                raise StopTraversal("Found b1")
+
+        res_2 = tree.visit(cb)
+
+        assert res_2 == "Found b1"
+        assert ",".join(res) == "A,a1,a2,B,b1"
+
 
 class TestMutate:
     def test_add(self):
@@ -478,6 +516,32 @@ class TestMutate:
         b = tree["B"]
         a11 = tree["a11"]
         b.prepend_child(a11)
+
+        a1 = tree["a1"]
+        a1.prepend_sibling("pre_a1")
+        a1.append_sibling("post_a1")
+        a1.add_child("before_idx_1", before=1)
+        a1.append_child("append_child")
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- pre_a1
+            |  +- a1
+            |  |  +- a11
+            |  |  +- before_idx_1
+            |  |  +- a12
+            |  |  `- append_child
+            |  +- post_a1
+            |  `- a2
+            `- B
+               +- a11
+               `- b1
+                  `- b11
+            """,
+        )
 
     def test_delete(self):
         """

@@ -27,7 +27,7 @@ display. For example ``repr="{node}"``, ``repr="{node.path}"``, ``repr="{node.da
 The `style` argument selects the connector type. 
 See :attr:`~nutree.common.CONNECTORS` for possible values. ::
 
-    print(tree.format(repr="{node}", style="lines32", title="My Store"))
+    tree.format(repr="{node}", style="lines32", title="My Store")
 
 ::
 
@@ -38,7 +38,29 @@ See :attr:`~nutree.common.CONNECTORS` for possible values. ::
     └─ Node<'Books', data_id=-4949478653955058708>
        └─ Node<'The Little Prince', data_id=6520761245273801231>
 
-Some more examples::
+Set `title` to false to remove the root from the display. ::
+
+    tree.format(title=False)
+
+::
+
+    'Records'
+    ├── 'Let It Be'
+    ╰── "Get Yer Ya-Ya's Out!"
+    'Books'
+    ╰── 'The Little Prince'
+
+:meth:`~nutree.node.Node.format` is also implemented for nodes::
+
+    tree["Records"].format())
+
+::
+
+    'Records'
+    ├── 'Let It Be'
+    ╰── "Get Yer Ya-Ya's Out!"
+
+The 'list' style does not generate connector prefixes::
 
     tree.format(repr="{node.path}", style="list"))
 
@@ -47,13 +69,9 @@ Some more examples::
     /A
     /A/a1
     /A/a1/a11
-    /A/a1/a12
-    /A/a2
-    /B
-    /B/b1
-    /B/b1/b11
+    ...
 
-and::
+`join` defaults to ``\n``, but may be changed::
 
     tree.format(repr="{node.path}", style="list", join=",")
 

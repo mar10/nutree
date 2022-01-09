@@ -4,7 +4,7 @@
 """
 Stress-test your web app.
 """
-
+import warnings
 from enum import Enum
 
 # if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
@@ -34,20 +34,24 @@ class IterMethod(Enum):
     LEVEL_ORDER = "level"
 
 
-class IterationControl:
+class IterationControl(Exception):
     """Common base class for tree iteration controls."""
 
 
-class SkipNode(IterationControl):
-    """Raised or returned to skip current node, but continue with children and siblings."""
+class SkipChildren(IterationControl):
+    """Raised or returned by traversal callbacks to skip the current node's descendants."""
 
 
-class SkipBranch(IterationControl):
-    """Raised or returned to skip current node and children, but continue with siblings."""
+class StopTraversal(IterationControl):
+    """Raised or returned by traversal callbacks to stop iteration.
 
+    Optionally, a return value may be passed.
+    Note that if a callback returns ``False``, this will be converted to an
+    ``StopTraversal(None)`` exception.
+    """
 
-class SkipAll(IterationControl):
-    """Raised or returned to stop iteration."""
+    def __init__(self, value=None):
+        self.value = value
 
 
 #: Node connector prefixes, for use with ``style`` argument.
@@ -74,3 +78,39 @@ DEFAULT_CONNECTOR_STYLE = "round43"
 #: Default value for ``repr`` argument.
 # DEFAULT_REPR = "{node.data}"
 DEFAULT_REPR = "{node.data!r}"
+
+
+def _call_traversal_cb(fn, node, memo):
+    """Call the function and handle result and exceptions.
+
+    This method calls `fn(node, memo)` and converts all returned or raised
+    IterationControl responses to a canonical result:
+
+    - Return `False` if the method returns SkipChildren or an instance of
+      SkipChildren.
+    - Raise `StopTraversal(value)` if the method returns False, StopTraversal, or an
+      instance of StopTraversal.
+    - If a form of StopIteration is returned, we treat as StopTraversal, but
+      emit a warning.
+    - Other return values are ignored and converted to None.
+    """
+    try:
+        res = fn(node, memo)
+        if res is SkipChildren or isinstance(res, SkipChildren):
+            return False
+        elif res is StopTraversal or isinstance(res, StopTraversal):
+            raise res
+        elif res is False:
+            raise StopTraversal
+        elif res is StopIteration or isinstance(res, StopIteration):
+            # Handle wrong syntax
+            raise res
+    except SkipChildren:
+        return False
+    except StopIteration as e:
+        # raise RuntimeError("Should raise StopTraversal instead")
+        warnings.warn(
+            "Should raise StopTraversal instead of StopIteration", RuntimeWarning
+        )
+        raise StopTraversal(e.value)
+    return None

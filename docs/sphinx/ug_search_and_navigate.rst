@@ -54,8 +54,8 @@ Traversal
 
 Iterators are the most performant and memory efficient way to traverse the tree.
 
-Iterators are available for the hole tree or by branch. Different travesal
-methods are supported ::
+Iterators are available for the whole tree or by branch (i.e. starting at a node). 
+Different travesal methods are supported. ::
 
     for node in tree:
         # Depth-first, pre-order by default
@@ -67,4 +67,29 @@ methods are supported ::
     # Walk a branch, starting at a distinct node
     res = list(node.iterator(add_self=True))
 
+
 **Visit**
+
+The :meth:`~nutree.tree.Tree.visit` method is an alternative way to traverse tree 
+structures with a little more control. 
+In this case, a callback function is invoked for every node.
+
+The callback may return (or raise) :class:`~nutree.common.SkipChildren` to 
+prevent visiting of the descendant nodes. |br|
+The callback may return (or raise) :class:`~nutree.common.StopTraversal` to 
+stop traversal immediately. An optional return value may be set in the constructo. 
+
+::
+
+    from nutree import Tree, SkipChildren, StopTraversal
+
+    def callback(node, memo):
+        print(node)
+        if node.name == "secret":
+            # Prevent visiting the child nodes:
+            return SkipChildren
+        if node.data.foobar == 17:
+            raise StopTraversal("found it")
+
+    # `res` contains the value passed to the `StopTraversal`
+    res = tree.visit(callback)  # res == "found it"
