@@ -142,12 +142,12 @@ class Tree:
         """
         return self._root.visit(callback, add_self=False, method=method, memo=memo)
 
-    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER, *, predicate=None):
+    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER):
         """Traverse tree structure and yield nodes.
 
         See Node's :meth:`~nutree.node.Node.iterator` method for details.
         """
-        return self._root.iterator(method=method, predicate=predicate)
+        return self._root.iterator(method=method)
 
     __iter__ = iterator
 

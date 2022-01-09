@@ -599,41 +599,38 @@ class Node:
         except StopTraversal as e:
             return e.value
 
-    def _iter_pre(self, *, predicate=None):
+    def _iter_pre(self):
         """Depth-first, pre-order traversal."""
         children = self._children
         if children:
             for c in children:
-                if predicate is None or predicate(c) is not False:
-                    yield c
-                    yield from c._iter_pre(predicate=predicate)
+                yield c
+                yield from c._iter_pre()
         return
 
-    def _iter_post(self, *, predicate=None):
+    def _iter_post(self):
         """Depth-first, post-order traversal."""
         children = self._children
         if children:
             for c in self._children:
-                if predicate is None or predicate(c) is not False:
-                    yield from c._iter_post(predicate=predicate)
-                    yield c
+                yield from c._iter_post()
+                yield c
         return
 
-    def _iter_level(self, *, predicate=None):
+    def _iter_level(self):
         """Breadth-first (aka level-order) traversal."""
         children = self._children
         while children:
             next_level = []
             for c in children:
-                if predicate is None or predicate(c) is not False:
-                    yield c
-                    if c._children:
-                        next_level.extend(c._children)
+                yield c
+                if c._children:
+                    next_level.extend(c._children)
             children = next_level
         return
 
     def iterator(
-        self, method=IterMethod.PRE_ORDER, *, predicate=None, add_self=False
+        self, method=IterMethod.PRE_ORDER, *, add_self=False
     ) -> Generator["Node", None, None]:
         """Generator that walks the entry hierarchy."""
         try:
@@ -644,7 +641,7 @@ class Node:
         if add_self and method != IterMethod.POST_ORDER:
             yield self
 
-        yield from handler(predicate=predicate)
+        yield from handler()
 
         if add_self and method == IterMethod.POST_ORDER:
             yield self
