@@ -71,25 +71,48 @@ Different travesal methods are supported. ::
 **Visit**
 
 The :meth:`~nutree.tree.Tree.visit` method is an alternative way to traverse tree 
-structures with a little more control. 
+structures with a little bit more control. 
 In this case, a callback function is invoked for every node.
 
 The callback may return (or raise) :class:`~nutree.common.SkipChildren` to 
 prevent visiting of the descendant nodes. |br|
 The callback may return (or raise) :class:`~nutree.common.StopTraversal` to 
-stop traversal immediately. An optional return value may be set in the constructo. 
+stop traversal immediately. An optional return value may be passed to the 
+constructor. 
 
 ::
 
     from nutree import Tree, SkipChildren, StopTraversal
 
     def callback(node, memo):
-        print(node)
         if node.name == "secret":
             # Prevent visiting the child nodes:
             return SkipChildren
         if node.data.foobar == 17:
             raise StopTraversal("found it")
 
-    # `res` contains the value passed to the `StopTraversal`
+    # `res` contains the value passed to the `StopTraversal` constructor
     res = tree.visit(callback)  # res == "found it"
+
+The `memo` argument contains an empty dict by default, which is discarded after
+traversal. This may be handy to cache some calculated values during iteration
+for example. |br|
+It is also possible to pass in the `memo` argument, in order to access the data
+after the call::
+
+    def callback(node, memo):
+        if node.data.foobar > 10:
+            memo.append(node)
+
+    hits = []
+    tree.visit(callback, memo=hits)
+
+We could achieve the same using a closure if the callback is defined in the 
+same scope as the `visit()` call::
+
+    hits = []
+    def callback(node, memo):
+        if node.data.foobar > 10:
+            hits.append(node)
+
+    tree.visit(callback)

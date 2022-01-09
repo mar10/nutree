@@ -22,7 +22,9 @@ representation::
 
 Pass a formatting string to `repr=` to control how a single node is rendered 
 display. For example ``repr="{node}"``, ``repr="{node.path}"``, ``repr="{node.data!r}"``, 
-``repr="{node.data.name} (#{node.data_id})"``, etc.
+``repr="{node.data.name} (#{node.data_id})"``, etc. |br|
+Note that ``repr`` may also be a `function(node)` that returns a string for
+display.
 
 The `style` argument selects the connector type. 
 See :attr:`~nutree.common.CONNECTORS` for possible values. ::
@@ -79,6 +81,11 @@ The 'list' style does not generate connector prefixes::
 
     /A,/A/a1,/A/a1/a11,/A/a1/a12,/A/a2,/B,/B/b1,/B/b1/b11
 
+.. note::
+    It would also be easy to create custom formatting, for example::
+    
+        s = ",".join(n.data for n in tree)
+        assert s == "A,a1,a11,a12,a2,B,b1,b11"
 
 ..
     # Print the __repr__ of the data object:

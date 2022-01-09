@@ -648,7 +648,7 @@ class Node:
 
     __iter__ = iterator
 
-    def filter(self, match, *, max_results=None, add_self=False):
+    def _filter(self, match, *, max_results=None, add_self=False):
         if callable(match):
             cb_match = match
         elif type(match) is str:
@@ -682,7 +682,7 @@ class Node:
                 n for n in self.iterator(add_self=add_self) if n._data_id == data_id
             ]
         return [
-            n for n in self.filter(match, add_self=add_self, max_results=max_results)
+            n for n in self._filter(match, add_self=add_self, max_results=max_results)
         ]
 
     def find_first(self, data=None, *, match=None, data_id=None):
