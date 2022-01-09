@@ -245,9 +245,9 @@ class Node:
     @property
     def level(self) -> int:
         """Return the number of parents (return 1 for toplevel nodes)."""
-        return self.count_parents()
+        return self.calc_depth()
 
-    def count_descendants(self, leaves_only=False) -> int:
+    def count_descendants(self, *, leaves_only=False) -> int:
         """Return number of descendant nodes, not counting self."""
         all = not leaves_only
         i = 0
@@ -256,14 +256,30 @@ class Node:
                 i += 1
         return i
 
-    def count_parents(self) -> int:
+    def calc_depth(self) -> int:
         """Return depth of node, i.e. number of parents (1 for toplevel nodes)."""
-        level = 0
+        depth = 0
         pe = self._parent
         while pe is not None:
-            level += 1
+            depth += 1
             pe = pe._parent
-        return level
+        return depth
+
+    def calc_height(self) -> int:
+        """Return the maximum depth of all descendants."""
+        height = 0
+
+        def _ch(n, h):
+            nonlocal height
+            c = n._children
+            if c:
+                for n in c:
+                    _ch(n, h + 1)
+            elif h > height:
+                height = h
+
+        _ch(self, 0)
+        return height
 
     def get_index(self) -> int:
         """Return index in sibling list."""
@@ -488,11 +504,7 @@ class Node:
         return
 
     def remove(self) -> None:
-        """Remove this node.
-
-        For ObjectTrees this is different from tree.remove(obj), because only
-        this single node is removed, even if there are multiple instances.
-        """
+        """Remove this node."""
         self.remove_children()
         pc = self._parent._children
         pc.remove(self)

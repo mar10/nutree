@@ -137,6 +137,32 @@ class TestNavigate:
 
         assert tree._self_check()
 
+    def test_statistics(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+
+        assert len(tree) == 8
+        assert tree.count == 8
+        assert tree.calc_height() == 3
+
+        assert tree["a12"].calc_height() == 0
+        assert tree["a1"].calc_height() == 1
+        assert tree["a1"].calc_depth() == 2
+        assert tree["A"].count_descendants() == 4
+        assert tree["A"].count_descendants(leaves_only=True) == 3
+        assert tree["A"].calc_depth() == 1
+        assert tree["A"].calc_height() == 2
+
     def test_relations(self):
         """
         Tree<'fixture'>

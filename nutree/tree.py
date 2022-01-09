@@ -35,7 +35,7 @@ class Tree:
 
     def __len__(self):
         """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
-        return self.count
+        return len(self._node_by_id)
 
     def __enter__(self):
         self._lock.acquire()
@@ -123,7 +123,7 @@ class Tree:
     @property
     def count(self):
         """Return the total number of nodes."""
-        return len(self._node_by_id)
+        return len(self)
 
     @property
     def first_child(self):
@@ -134,6 +134,10 @@ class Tree:
     def last_child(self):
         """Return the last top-level node."""
         return self._root.last_child
+
+    def calc_height(self) -> int:
+        """Return the maximum depth of all nodes."""
+        return self._root.calc_height()
 
     def visit(self, callback, *, method=IterMethod.PRE_ORDER, memo=None):
         """Call `callback(node, memo)` for all nodes.
@@ -307,8 +311,8 @@ class Tree:
         obj = json.load(fp)
         return cls._from_list(obj, mapper=mapper)
 
-    def on(self, event_name: str, callback):
-        raise NotImplementedError
+    # def on(self, event_name: str, callback):
+    #     raise NotImplementedError
 
     def _self_check(self):
         """Internal method to check data structure sanity.
