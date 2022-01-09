@@ -93,7 +93,7 @@ Nutree Facts
 
 .. |travis_badge| image:: https://travis-ci.com/mar10/nutree.svg?branch=main
    :alt: Build Status
-   :target: https://travis-ci.com/mar10/nutree
+   :target: https://app.travis-ci.com/github/mar10/nutree
 
 .. |pypi_badge| image:: https://img.shields.io/pypi/v/nutree.svg
    :alt: PyPI Version
