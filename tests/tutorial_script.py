@@ -38,7 +38,7 @@ if __name__ == "__main__":
     assert tree.first_child is record_node
 
     assert len(record_node.children) == 2
-    assert record_node.level == 1
+    assert record_node.depth == 1
 
     assert tree.find("Records") is record_node
     assert tree.find("records") is None
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     assert record_node.find("Let It Be") is n
 
     assert n.name == "Let It Be"
-    assert n.level == 2
+    assert n.depth == 2
     assert n.parent is record_node
     assert n.prev_sibling is None
     assert n.next_sibling.name == "Get Yer Ya-Ya's Out!"

@@ -117,14 +117,14 @@ class TestNavigate:
         # assert tree.last_child is tree["The Little Prince"]
 
         assert len(records.children) == 2
-        assert records.level == 1
+        assert records.depth == 1
         with pytest.raises(NotImplementedError):
             assert tree == tree  # __eq__ not implemented
 
         let_it_be = records.first_child
         assert records.find("Let It Be") is let_it_be
         assert let_it_be.name == "Let It Be"
-        assert let_it_be.level == 2
+        assert let_it_be.depth == 2
         assert let_it_be.parent is records
 
         assert let_it_be.has_children() is False

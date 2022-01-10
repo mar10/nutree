@@ -243,7 +243,7 @@ class Node:
         return [n for n in clones if n is not self]
 
     @property
-    def level(self) -> int:
+    def depth(self) -> int:
         """Return the number of parents (return 1 for toplevel nodes)."""
         return self.calc_depth()
 
@@ -266,7 +266,7 @@ class Node:
         return depth
 
     def calc_height(self) -> int:
-        """Return the maximum depth of all descendants."""
+        """Return the maximum depth of all descendants (0 for leaves)."""
         height = 0
 
         def _ch(n, h):
@@ -725,17 +725,17 @@ class Node:
         s0, s1, s2, s3 = style
 
         parts = []
-        level = 0
+        depth = 0
         for p in self.get_parent_list():
-            level += 1
-            if level <= lstrip:
+            depth += 1
+            if depth <= lstrip:
                 continue
             if p.is_last_sibling():
                 parts.append(s0)  # "    "
             else:
                 parts.append(s1)  # " |  "
 
-        if level >= lstrip:
+        if depth >= lstrip:
             if self.is_last_sibling():
                 parts.append(s2)  # " ╰─ "
             else:
@@ -760,7 +760,7 @@ class Node:
         # (and also the own prefix when `add_self` is false).
         # If this was called for the system root node, we do the same, but we
         # never render self, because the the title is rendered by the caller.
-        lstrip = self.level
+        lstrip = self.depth
         if not add_self:
             lstrip += 1
         if not self._parent:
