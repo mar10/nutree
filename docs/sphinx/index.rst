@@ -47,11 +47,11 @@ nutree
 ::
 
    Tree<'Store'>
-   ├── 'Records'
-   │   ├── 'Let It Be'
-   │   ╰── "Get Yer Ya-Ya's Out!"
-   ╰── 'Books'
-       ╰── 'The Little Prince'
+   ├─── 'Records'
+   │    ├─── 'Let It Be'
+   │    ╰─── "Get Yer Ya-Ya's Out!"
+   ╰─── 'Books'
+        ╰─── 'The Little Prince'
 
 
 Tree nodes wrap the data and also expose methods for navigation, searching,
@@ -68,14 +68,22 @@ iteration, ... ::
 
    Node<'Let It Be', data_id=510268653885439170>
 
+Nodes may be strings or arbitrary objects::
+
+   alice = Person("Alice", age=23, guid="{123-456}")
+   tree.add(alice)
+
+   # Lookup nodes by object, data_id, name pattern, ...
+   assert isinstance(tree[alice].data, Person)
 
 
 Nutree Facts
 ============
 
+  * Handle multiple references of single objects ('clones')
   * Search by name pattern, id, or object reference
-  * Handle multiple references of single objects
-  * Store plain strings or arbitrary objects
+  * Unobtrusive handling of arbitrary objects
+  * Nodes can be plain strings or objects
   * Different traversal methods
   * (De)Serialize to JSON
   * Pretty print

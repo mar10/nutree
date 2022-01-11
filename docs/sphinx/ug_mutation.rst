@@ -23,7 +23,8 @@ Filtering and set-like operations usually return the result as a new tree
 instance::
 
     def pred(node):
-        return "q" in node.data.name.lower()
+        # Return false to skip node and its children
+        return "q" in node.data.age >= 18
 
     tree_2 = tree.copy(predicate=pred)
 

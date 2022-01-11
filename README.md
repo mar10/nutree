@@ -16,9 +16,10 @@ yet powerful, API.
 
 **Nutree Facts**
 
+Handle multiple references of single objects ('clones')<br>
 Search by name pattern, id, or object reference<br>
-Handle multiple references of single objects<br>
-Store plain strings or arbitrary objects<br>
+Unobtrusive handling of arbitrary objects<br>
+Nodes can be plain strings or objects<br>
 Different traversal methods<br>
 (De)Serialize to JSON<br>
 Pretty print<br>
@@ -53,11 +54,11 @@ tree.print()
 
 ```ascii
 Tree<'Store'>
-├── 'Records'
-│   ├── 'Let It Be'
-│   ╰── "Get Yer Ya-Ya's Out!"
-╰── 'Books'
-    ╰── 'The Little Prince'
+├─── 'Records'
+│    ├─── 'Let It Be'
+│    ╰─── "Get Yer Ya-Ya's Out!"
+╰─── 'Books'
+     ╰─── 'The Little Prince'
 ```
 
 Tree nodes wrap the data and also expose methods for navigation, searching,
@@ -73,6 +74,16 @@ print(records_node.first_child)
 
 ```ascii
 Node<'Let It Be', data_id=510268653885439170>
+```
+
+Nodes may be strings or arbitrary objects:
+
+```py
+alice = Person("Alice", age=23, guid="{123-456}")
+tree.add(alice)
+
+# Lookup nodes by object, data_id, name pattern, ...
+assert isinstance(tree[alice].data, Person)
 ```
 
 [Read the Docs](https://nutree.readthedocs.io/) for more.

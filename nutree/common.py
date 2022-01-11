@@ -6,9 +6,16 @@ Stress-test your web app.
 """
 import warnings
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Callable, Union
 
-# if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-#     from .tree import Node, Tree
+if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
+    from .tree import Node
+
+PredicateCallbackType = Callable[["Node"], Union[None, bool]]
+MatchCallbackType = Callable[["Node"], bool]
+TraversalCallbackType = Callable[
+    ["Node", Any], Union[None, bool, "StopTraversal", "SkipChildren"]
+]
 
 
 class TreeError(RuntimeError):
@@ -103,8 +110,13 @@ def _call_traversal_cb(fn, node, memo):
         elif res is False:
             raise StopTraversal
         elif res is StopIteration or isinstance(res, StopIteration):
-            # Handle wrong syntax
+            # Converts wrong syntax in exception handler...
             raise res
+        elif res is not None:
+            raise ValueError(
+                "callback should not return values except for "
+                f"False, SkipChildren, or StopTraversal: {res!r}."
+            )
     except SkipChildren:
         return False
     except StopIteration as e:

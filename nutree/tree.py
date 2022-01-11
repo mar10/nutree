@@ -3,7 +3,12 @@ import json
 import threading
 from typing import IO, Any, Dict, Generator, List, Union
 
-from .common import AmbigousMatchError, IterMethod
+from .common import (
+    AmbigousMatchError,
+    IterMethod,
+    PredicateCallbackType,
+    TraversalCallbackType,
+)
 from .node import Node
 
 _DELETED_TAG = "<deleted>"
@@ -139,7 +144,9 @@ class Tree:
         """Return the maximum depth of all nodes."""
         return self._root.calc_height()
 
-    def visit(self, callback, *, method=IterMethod.PRE_ORDER, memo=None):
+    def visit(
+        self, callback: TraversalCallbackType, *, method=IterMethod.PRE_ORDER, memo=None
+    ):
         """Call `callback(node, memo)` for all nodes.
 
         See Node's :meth:`~nutree.node.Node.visit` method for details.
@@ -190,7 +197,9 @@ class Tree:
     #: Alias for :meth:`add_child`
     add = add_child
 
-    def copy(self, *, name=None, predicate=None) -> "Tree":
+    def copy(
+        self, *, name: str = None, predicate: PredicateCallbackType = None
+    ) -> "Tree":
         """Return a shallow copy of the tree.
 
         New `Tree` and `Node` instances are created. They reference the original
@@ -221,8 +230,10 @@ class Tree:
             if res:
                 return res[max_results:] if max_results else res
             return []
+
         elif match is not None:
             return self._root.find_all(match=match, max_results=max_results)
+
         raise NotImplementedError
 
     def find_first(

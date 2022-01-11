@@ -18,6 +18,7 @@ from .common import (
     AmbigousMatchError,
     IterMethod,
     StopTraversal,
+    TraversalCallbackType,
     UniqueConstraintError,
     _call_traversal_cb,
 )
@@ -573,7 +574,12 @@ class Node:
         return
 
     def visit(
-        self, callback, *, add_self=False, method=IterMethod.PRE_ORDER, memo=None
+        self,
+        callback: TraversalCallbackType,
+        *,
+        add_self=False,
+        method=IterMethod.PRE_ORDER,
+        memo=None
     ):
         """Call `callback(node, memo)` for all subnodes.
 
