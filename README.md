@@ -84,6 +84,8 @@ tree.add(alice)
 
 # Lookup nodes by object, data_id, name pattern, ...
 assert isinstance(tree[alice].data, Person)
+
+del tree[alice]
 ```
 
 [Read the Docs](https://nutree.readthedocs.io/) for more.

@@ -35,12 +35,11 @@ class Tree:
         return f"Tree<{self.name!r}>"
 
     def __contains__(self, data):
-        # TODO: treat data as data_id?
-        return self._calc_data_id(data) in self._nodes_by_data_id
+        return bool(self.find_first(data))
 
-    def __len__(self):
-        """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
-        return len(self._node_by_id)
+    def __delitem__(self, data: object) -> None:
+        """Implement `del tree[data]` as alias for tree[data].remove()."""
+        self[data].remove()
 
     def __enter__(self):
         self._lock.acquire()
@@ -49,6 +48,9 @@ class Tree:
     def __exit__(self, type, value, traceback):
         self._lock.release()
         return
+
+    def __eq__(self, other) -> bool:
+        raise NotImplementedError("Use `is` or `tree.compare()` instead.")
 
     def __getitem__(self, data: object) -> "Node":
         """Implement `tree[data]` lookup.
@@ -74,12 +76,13 @@ class Tree:
             "Use tree.find_all() or tree.find_first() to resolve this."
         )
 
-    def __eq__(self, other) -> bool:
-        raise NotImplementedError("Use `is` or `tree.compare()` instead.")
-
     # def __iadd__(self, other) -> None:
     #     """Support `tree += node(s)` syntax"""
     #     self._root += other
+
+    def __len__(self):
+        """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
+        return len(self._node_by_id)
 
     def _calc_data_id(self, data) -> int:
         """Called internally to calculate `data_id` for a `data` object.

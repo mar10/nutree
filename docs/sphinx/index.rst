@@ -76,6 +76,8 @@ Nodes may be strings or arbitrary objects::
    # Lookup nodes by object, data_id, name pattern, ...
    assert isinstance(tree[alice].data, Person)
 
+   del tree[alice]
+
 
 Nutree Facts
 ============

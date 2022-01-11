@@ -585,7 +585,7 @@ class TestMutate:
 
         print(tree.format(repr="{node.data}", style="round43"))
         tree["a11"].remove()
-        tree["b1"].remove()
+        del tree["b1"]
         assert fixture.check_content(
             tree,
             """

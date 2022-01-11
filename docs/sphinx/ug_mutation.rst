@@ -19,6 +19,9 @@ Some in-place modifications are available::
     node.remove_children()
     node.sort_children()
 
+    # del will call `remove()`
+    del tree["A"]
+
 Filtering and set-like operations usually return the result as a new tree
 instance::
 
