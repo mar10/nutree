@@ -32,6 +32,16 @@ class Department:
         return f"Department<{self.name}>"
 
 
+# class Item:
+#     def __init__(self, name, price, count):
+#         self.name = name
+#         self.price = float(price)
+#         self.count = int(count)
+
+#     def __repr__(self):
+#         return f"Item<{self.name!r}, {self.price:.2f}$>"
+
+
 def create_tree(*, style="simple", name="fixture", clones=False, tree=None) -> Tree:
     if tree is not None:
         assert not tree, "must be empty"

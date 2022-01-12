@@ -9,15 +9,6 @@ from nutree import AmbigousMatchError, Node, Tree
 
 from . import fixture
 
-# class Item:
-#     def __init__(self, name, price, count):
-#         self.name = name
-#         self.price = float(price)
-#         self.count = int(count)
-
-#     def __repr__(self):
-#         return f"Item<{self.name!r}, {self.price:.2f}$>"
-
 
 class TestClones:
     def setup_method(self):
@@ -34,6 +25,9 @@ class TestClones:
         tree["B"].add("a1")
 
         print(tree.format(repr="{node.data}"))
+
+        assert tree.count == 9
+        assert tree.count_data == 8
 
         # Not allowed to add two clones to same parent
         # with pytest.raises(UniqueConstraintError):

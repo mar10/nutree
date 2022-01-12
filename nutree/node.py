@@ -28,7 +28,11 @@ from .common import (
 # - Node
 # ------------------------------------------------------------------------------
 class Node:
-    """"""
+    """
+    A Node represents a single element in the tree.
+    It is a shallow wrapper around a user data instance, that adds navigation,
+    modification, and other functionality.
+    """
 
     def __init__(self, data, *, parent: "Node", data_id=None, node_id=None):
         self._data = data
@@ -54,7 +58,15 @@ class Node:
         return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
 
     def __eq__(self, other) -> bool:
-        """Return true if the embedded data is equal to `other`."""
+        """Implement ``node == other`` syntax to compare embedded data.
+
+        If `other` is a :class:`Node` instance, ``self.data == other.data`` is
+        evaluated.
+        Otherwise ``self.data == other`` is compared.
+
+        Use ``node is other`` syntax instead to check if two nodes are truely
+        identical.
+        """
         if isinstance(other, Node):
             return self._data == other._data
         return self._data == other
@@ -85,7 +97,7 @@ class Node:
 
     @property
     def tree(self) -> "Tree":
-        """Return container Tree instance."""
+        """Return container :class:`~nutree.tree.Tree` instance."""
         return self._tree
 
     @property
@@ -102,12 +114,12 @@ class Node:
 
     @property
     def data(self) -> Any:
-        """Return the wrapped data instance (use `tree.set_data()` to modify)."""
+        """Return the wrapped data instance (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
         return self._data
 
     @property
     def data_id(self):
-        """Return the wrapped data instance's id (use `tree.set_data()` to modify)."""
+        """Return the wrapped data instance's id (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
         return self._data_id
 
     @property
@@ -116,6 +128,7 @@ class Node:
         return self._node_id
 
     def rename(self, new_name: str) -> None:
+        """Set `self.data` to a new string (assuming plain string node)."""
         if type(self._data) is str:
             return self.set_data(new_name)
         raise ValueError("Can only rename plain string nodes")
@@ -522,7 +535,10 @@ class Node:
         return
 
     def to_tree(self, *, add_self=True, predicate=None) -> "Tree":
-        """."""
+        """Return a new :class:`~nutree.tree.Tree` instance from this branch.
+
+        See also :meth:`copy_from`.
+        """
         new_tree = self._tree.__class__()
         if add_self:
             root = new_tree.add(self)
@@ -562,7 +578,7 @@ class Node:
 
     def _visit_pre(self, callback, memo):
         """Depth-first, pre-order traversal."""
-        # Call callback and skip children SkipChildren was returned.
+        # Call callback and skip children if SkipChildren was returned.
         # Also a StopTraversal(value) exception may be raised.
         if _call_traversal_cb(callback, self, memo) is False:
             return
@@ -571,6 +587,30 @@ class Node:
         if children:
             for c in children:
                 c._visit_pre(callback, memo)
+        return
+
+    def _visit_post(self, callback, memo):
+        """Depth-first, post-order traversal."""
+        # Callback may raise StopTraversal (also if callback returns false)
+        # but SkipChildren is not supported with post-order traversal
+        children = self._children
+        if children:
+            for c in self._children:
+                c._visit_post(callback, memo)
+        _call_traversal_cb(callback, self, memo)
+
+    def _visit_level(self, callback, memo):
+        """Breadth-first (aka level-order) traversal."""
+        # Note that this is non-recursive.
+        children = self._children
+        while children:
+            next_level = []
+            for c in children:
+                if _call_traversal_cb(callback, c, memo) is False:
+                    continue
+                if c._children:
+                    next_level.extend(c._children)
+            children = next_level
         return
 
     def visit(
@@ -583,13 +623,23 @@ class Node:
     ):
         """Call `callback(node, memo)` for all subnodes.
 
+        The callback may return :class:`SkipChildren` (or an instance
+        thereof) to omit childnodes but continue traversal otherwise.
+        Raising `SkipChildren` has the same effect. |br|
+        Note that skipping of children is only available ...
+
+        The callback may return ``False`` or :class:`StopIteration` to immediately
+        interrupt traversal.
+        Raising `StopTraversal(value)` has the same effect but also allows to
+        specify a return value for the visit method.
+
         Args:
             callback (function(node, memo)):
                 Callback ``function(node, memo)``
             add_self (bool):
                 If true, this node will also be visited (typically as first call).
             method (IterMethod):
-                Traversal method, defaults to pre.order, depth-first search.
+                Traversal method, defaults to pre-order, depth-first search.
             memo (Any):
                 This value will be passed to all calls and may be useful to
                 implement caching or collect and return traversal results.
@@ -605,6 +655,14 @@ class Node:
             memo = {}
 
         try:
+            # Level-order is non-recursive
+            if method == IterMethod.LEVEL_ORDER:
+                if add_self:
+                    if _call_traversal_cb(callback, self, memo) is False:
+                        return
+                self._visit_level(callback, memo)
+                return
+            # Otherwise pre- or post-order
             if add_self and method != IterMethod.POST_ORDER:
                 if _call_traversal_cb(callback, self, memo) is False:
                     return
@@ -613,7 +671,8 @@ class Node:
                 handler(c, callback, memo)
 
             if add_self and method == IterMethod.POST_ORDER:
-                callback(self, memo)
+                if _call_traversal_cb(callback, self, memo) is False:
+                    return
         except StopTraversal as e:
             return e.value
 
@@ -650,7 +709,7 @@ class Node:
     def iterator(
         self, method=IterMethod.PRE_ORDER, *, add_self=False
     ) -> Generator["Node", None, None]:
-        """Generator that walks the entry hierarchy."""
+        """Generator that walks the hierarchy."""
         try:
             handler = getattr(self, f"_iter_{method.value}")
         except AttributeError:
@@ -664,6 +723,7 @@ class Node:
         if add_self and method == IterMethod.POST_ORDER:
             yield self
 
+    #: Implement ``for subnode in node:`` syntax to iterate nodes.
     __iter__ = iterator
 
     def _filter(self, match, *, max_results=None, add_self=False):
@@ -691,6 +751,7 @@ class Node:
     def find_all(
         self, data=None, *, match=None, data_id=None, add_self=False, max_results=None
     ):
+        """Return a list of matching nodes (list may be empty)."""
         if data:
             assert data_id is None
             data_id = self._tree._calc_data_id(data)
@@ -704,6 +765,7 @@ class Node:
         ]
 
     def find_first(self, data=None, *, match=None, data_id=None):
+        """Return the first matching node or `None`."""
         res = self.find_all(data, match=match, data_id=data_id, max_results=1)
         return res[0] if res else None
 
@@ -796,7 +858,9 @@ class Node:
         yield from self._render_lines(repr=repr, style=style, add_self=add_self)
 
     def format(self, *, repr=None, style=None, add_self=True, join="\n") -> str:
-        """Return a pretty string representation of the node hiererachy.
+        r"""Return a pretty string representation of the node hiererachy.
+
+        more
 
         Args:
             repr (str):

@@ -518,8 +518,15 @@ class TestTraversal:
             res.append(node.name)
 
         tree.visit(cb)
-
         assert ",".join(res) == "A,a1,a11,a12,a2,B,b1,b11"
+
+        res = []
+        tree.visit(cb, method=IterMethod.POST_ORDER)
+        assert ",".join(res) == "a11,a12,a1,a2,A,b11,b1,B"
+
+        res = []
+        tree.visit(cb, method=IterMethod.LEVEL_ORDER)
+        assert ",".join(res) == "A,B,a1,a2,b1,a11,a12,b11"
 
         res = []
 
@@ -584,8 +591,11 @@ class TestMutate:
         tree = fixture.create_tree()
 
         print(tree.format(repr="{node.data}", style="round43"))
+
         tree["a11"].remove()
+
         del tree["b1"]
+
         assert fixture.check_content(
             tree,
             """

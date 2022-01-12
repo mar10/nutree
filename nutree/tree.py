@@ -18,7 +18,11 @@ _DELETED_TAG = "<deleted>"
 # - Tree
 # ------------------------------------------------------------------------------
 class Tree:
-    """"""
+    """
+    A Tree object is a shallow wrapper around a single, invisible system root node.
+    All visible toplevel nodes are direct children of this root node.
+    Trees expose methods to iterate, search, copy, filter, serialize, etc.
+    """
 
     def __init__(self, name: str = None, *, factory=None, calc_data_id=None):
         self._lock = threading.RLock()
@@ -35,13 +39,15 @@ class Tree:
         return f"Tree<{self.name!r}>"
 
     def __contains__(self, data):
+        """Implement ``data in tree`` syntax to check for node existence."""
         return bool(self.find_first(data))
 
     def __delitem__(self, data: object) -> None:
-        """Implement `del tree[data]` as alias for tree[data].remove()."""
+        """Implement ``del tree[data]`` syntax to remove nodes."""
         self[data].remove()
 
     def __enter__(self):
+        """Implement ``with tree: ...`` syntax to acquire an RLock."""
         self._lock.acquire()
         return self
 
@@ -53,7 +59,7 @@ class Tree:
         raise NotImplementedError("Use `is` or `tree.compare()` instead.")
 
     def __getitem__(self, data: object) -> "Node":
-        """Implement `tree[data]` lookup.
+        """Implement ``tree[data]`` syntax to lookup a node.
 
         :class:`~nutree.common.AmbigousMatchError` is raised if multiple matches
         are found.
@@ -134,6 +140,17 @@ class Tree:
         return len(self)
 
     @property
+    def count_data(self):
+        """Return the total number of `unique` nodes.
+
+        Multiple references to the same data object ('clones') are only counted
+        once.
+        This is different from :meth:`count`, which returns the number of `all`
+        nodes.
+        """
+        return len(self._nodes_by_data_id)
+
+    @property
     def first_child(self):
         """Return the first top-level node."""
         return self._root.first_child
@@ -205,8 +222,9 @@ class Tree:
     ) -> "Tree":
         """Return a shallow copy of the tree.
 
-        New `Tree` and `Node` instances are created. They reference the original
-        data objects.
+        New :class:`Tree` and :class:`Node` instances are created.
+        They reference the original data objects.
+
         See also Node's :meth:`~nutree.node.Node.copy_from` method.
         """
         if name is None:
@@ -217,12 +235,16 @@ class Tree:
         return new_tree
 
     def clear(self) -> None:
-        """Remove all nodes from the tree"""
+        """Remove all nodes from the tree."""
         self._root.remove_children()
 
     def find_all(
         self, data=None, *, match=None, data_id=None, max_results: int = None
     ) -> List["Node"]:
+        """Return a list of matching nodes (list may be empty).
+
+        See also Node's :meth:`~nutree.node.Node.find_all` method.
+        """
         if data is not None:
             assert data_id is None
             data_id = self._calc_data_id(data)
@@ -242,6 +264,10 @@ class Tree:
     def find_first(
         self, data=None, *, match=None, data_id=None, node_id=None
     ) -> Union["Node", None]:
+        """Return the first matching node or `None`.
+
+        See also Node's :meth:`~nutree.node.Node.find_first` method.
+        """
         if data is not None:
             assert data_id is None
             data_id = self._calc_data_id(data)
@@ -270,7 +296,8 @@ class Tree:
         self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
     def to_dict(self, *, mapper=None) -> List[Dict]:
-        """Call ``node.to_dict()`` for all childnodes and return list of results."""
+        """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
+        childnodes and return list of results."""
         res = []
         with self:
             for n in self._root._children:
@@ -279,6 +306,11 @@ class Tree:
 
     @classmethod
     def from_dict(cls, obj: List[Dict], *, mapper=None) -> "Tree":
+        """Return a new :class:`Tree` instance from a list of dicts.
+
+        See also :meth:`~nutree.tree.Tree.to_dict` method and
+        Node's :meth:`~nutree.node.Node.find_first` method.
+        """
         new_tree = Tree()
         new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
@@ -288,7 +320,10 @@ class Tree:
         return self._root.to_list_iter(mapper=mapper)
 
     def save(self, fp: IO[str], *, mapper=None) -> None:
-        """Store in a compact JSON file stream."""
+        """Store tree in a compact JSON file stream.
+
+        See also :meth:`to_list_iter` and :meth:`load` methods.
+        """
         with self:
             iter = self.to_list_iter(mapper=mapper)
             # Materialize so we can lock the snapshot.
@@ -321,7 +356,10 @@ class Tree:
 
     @classmethod
     def load(cls, fp: IO[str], *, mapper=None) -> "Tree":
-        """Load from a JSON file stream."""
+        """Create a new :class:`Tree` instance from a JSON file stream.
+
+        See also :meth:`save`.
+        """
         obj = json.load(fp)
         return cls._from_list(obj, mapper=mapper)
 

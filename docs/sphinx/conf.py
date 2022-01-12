@@ -461,3 +461,11 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = False
 napoleon_use_rtype = False
+
+# -- Extension configuration -------------------------------------------------
+autosummary_generate = True
+autodoc_default_options = {
+    'members': True,
+    'inherited-members': True,
+    'exclude-members': 'with_traceback',
+}
