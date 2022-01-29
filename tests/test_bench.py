@@ -4,46 +4,137 @@
 """
 """
 # from nutree import AmbigousMatchError, IterMethod, Node, Tree
+import sys
 
-# from . import fixture
+import pytest
+
+from nutree.common import IterMethod
+
+from . import fixture
+
+benchmark = pytest.mark.skipif(
+    "--benchmarks" not in sys.argv,
+    reason="`--benchmarks` not set",
+)
 
 
+@benchmark
 class TestBenchmarks:
     def test_index(self, capsys):
         """ """
 
-        # results = ["Benchmark results"]
-        # tree = fixture.create_tree()
+        results = ["Benchmark results"]
+        tree = fixture.create_tree()
 
-        # results.append(
-        #     fixture.run_timings(
-        #         "access by index",
-        #         """\
-        #     _ = tree["a1"]
-        # """,
-        #         globals=locals(),
-        #     )
-        # )
+        results.append(
+            fixture.run_timings(
+                "access tree[key]",
+                """\
+            _ = tree["a1"]
+        """,
+                globals=locals(),
+                time_unit="nsec",
+            )
+        )
 
-        # results.append(
-        #     fixture.run_timings(
-        #         "access by find()",
-        #         """\
-        #     _ = tree.find("a1")
-        # """,
-        #         globals=locals(),
-        #     )
-        # )
+        results.append(
+            fixture.run_timings(
+                "tree.find()",
+                """\
+            _ = tree.find("a1")
+        """,
+                globals=locals(),
+            )
+        )
 
-        # results.append(
-        #     fixture.run_timings(
-        #         "access by find_all()",
-        #         """\
-        #     _ = tree.find_all("a1")
-        # """,
-        #         globals=locals(),
-        #     )
-        # )
+        results.append(
+            fixture.run_timings(
+                "tree.find_all()",
+                """\
+            _ = tree.find_all("a1")
+        """,
+                globals=locals(),
+            )
+        )
 
-        # with capsys.disabled():
-        #     print("\n  - ".join(results))
+        with capsys.disabled():
+            print("\n  - ".join(results))
+
+    def test_properties(self, capsys):
+        """ """
+
+        results = ["Benchmark results"]
+        tree = fixture.create_tree()
+        node = tree.first_child
+
+        results.append(
+            fixture.run_timings(
+                "access node.data (property)",
+                """\
+            _ = node.data
+        """,
+                globals=locals(),
+            )
+        )
+
+        results.append(
+            fixture.run_timings(
+                "access node._data (attribute)",
+                """\
+            _ = node._data
+        """,
+                globals=locals(),
+            )
+        )
+
+        with capsys.disabled():
+            print("\n  - ".join(results))
+
+    def test_iter(self, capsys):
+        """ """
+
+        results = ["Benchmark results"]
+        tree = fixture.create_tree()
+        node = tree.first_child
+
+        results.append(
+            fixture.run_timings(
+                "for _ in tree: ...",
+                """\
+            for _ in tree: pass
+        """,
+                globals=locals(),
+            )
+        )
+
+        results.append(
+            fixture.run_timings(
+                "for _ in tree.iterator(): ...",
+                """\
+            for _ in tree.iterator(): pass
+        """,
+                globals=locals(),
+            )
+        )
+        LEVEL_ORDER = IterMethod.LEVEL_ORDER
+        results.append(
+            fixture.run_timings(
+                "for _ in tree.iterator(LEVEL_ORDER): ...",
+                """\
+            for _ in tree.iterator(LEVEL_ORDER): pass
+        """,
+                globals=locals(),
+            )
+        )
+        results.append(
+            fixture.run_timings(
+                "tree.visit(lambda node, memo: None)",
+                """\
+            tree.visit(lambda node, memo: None)
+        """,
+                globals=locals(),
+            )
+        )
+
+        with capsys.disabled():
+            print("\n  - ".join(results))

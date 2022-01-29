@@ -5,8 +5,8 @@
 Test helpers.
 """
 import re
-
-# import timeit
+import time
+import timeit
 from textwrap import dedent, indent
 from typing import Union
 
@@ -146,97 +146,183 @@ def trees_equal(tree_1, tree_2, ignore_tree_name=True) -> bool:
     return check_content(tree_1, tree_2, ignore_tree_name=ignore_tree_name)
 
 
-# def run_timings(
-#     name: str, stmt: str, setup="pass", *, verbose=0, number=0, globals=None
-# ):
-#     """Taken from Python `timeit.main()` module."""
-#     timer = timeit.default_timer
-#     # if o in ("-p", "--process"):
-#     #     timer = time.process_time
-#     # number = 0  # auto-determine
-#     repeat = timeit.default_repeat
-#     time_unit = None
-#     units = {"nsec": 1e-9, "usec": 1e-6, "msec": 1e-3, "sec": 1.0}
-#     precision = 4 if verbose else 3
+def byteNumberString(
+    number, thousandsSep=True, partition=True, base1024=False, appendBytes=False, prec=0
+):
+    """Convert bytes into human-readable representation."""
+    magsuffix = ""
+    bytesuffix = ""
+    assert appendBytes in (False, True, "short", "iec")
+    if partition:
+        magnitude = 0
+        if base1024:
+            while number >= 1024:
+                magnitude += 1
+                #                 number = number >> 10
+                number /= 1024.0
+        else:
+            while number >= 1000:
+                magnitude += 1
+                number /= 1000.0
+        magsuffix = ["", "K", "M", "G", "T", "P"][magnitude]
+        if magsuffix:
+            magsuffix = " " + magsuffix
 
-#     stmt = dedent(stmt).strip()
-#     if isinstance(setup, str):
-#         setup = dedent(setup).strip()
-#     # print(stmt)
-#     # print(setup)
-#     t = timeit.Timer(stmt, setup, timer, globals=globals)
+    if appendBytes:
+        if appendBytes == "iec" and magsuffix:
+            bytesuffix = "iB" if base1024 else "B"
+        elif appendBytes == "short" and magsuffix:
+            bytesuffix = "B"
+        elif number == 1:
+            bytesuffix = " Byte"
+        else:
+            bytesuffix = " Bytes"
 
-#     if number == 0:
-#         # determine number so that 0.2 <= total time < 2.0
-#         callback = None
-#         if verbose:
+    if thousandsSep and (number >= 1000 or magsuffix):
+        # locale.setlocale(locale.LC_ALL, "")
+        # TODO: make precision configurable
+        if prec > 0:
+            # fs = "%.{}f".format(prec)
+            # snum = locale.format_string(fs, number, thousandsSep)
+            snum = f"{number:,.{prec}g}"
+        else:
+            # snum = locale.format("%d", number, thousandsSep)
+            snum = f"{number:,g}"
+        # Some countries like france use non-breaking-space (hex=a0) as group-
+        # seperator, that's not plain-ascii, so we have to replace the hex-byte
+        # "a0" with hex-byte "20" (space)
+        # snum = hexlify(snum).replace("a0", "20").decode("hex")
+    else:
+        snum = str(number)
 
-#             def callback(number, time_taken):
-#                 msg = "{num} loop{s} -> {secs:.{prec}g} secs"
-#                 plural = number != 1
-#                 print(
-#                     msg.format(
-#                         num=number,
-#                         s="s" if plural else "",
-#                         secs=time_taken,
-#                         prec=precision,
-#                     )
-#                 )
+    return f"{snum}{magsuffix}{bytesuffix}"
 
-#         try:
-#             number, _ = t.autorange(callback)
-#         except Exception:
-#             t.print_exc()
-#             return 1
 
-#         if verbose:
-#             print()
+def run_timings(
+    name: str,
+    stmt: str,
+    setup="pass",
+    *,
+    verbose=0,
+    number=0,
+    globals=None,
+    time_unit=None,
+):
+    """Taken from Python `timeit.main()` module."""
+    timer = timeit.default_timer
+    # if o in ("-p", "--process"):
+    #     timer = time.process_time
+    # number = 0  # auto-determine
+    repeat = timeit.default_repeat
+    # time_unit = None
+    units = {"nsec": 1e-9, "usec": 1e-6, "msec": 1e-3, "sec": 1.0}
+    precision = 4 if verbose else 3
 
-#     try:
-#         raw_timings = t.repeat(repeat, number)
-#     except Exception:
-#         t.print_exc()
-#         return 1
+    stmt = dedent(stmt).strip()
+    if isinstance(setup, str):
+        setup = dedent(setup).strip()
+    # print(stmt)
+    # print(setup)
+    t = timeit.Timer(stmt, setup, timer, globals=globals)
 
-#     def format_time(dt):
-#         unit = time_unit
+    if number == 0:
+        # determine number so that 0.2 <= total time < 2.0
+        callback = None
+        if verbose:
 
-#         if unit is not None:
-#             scale = units[unit]
-#         else:
-#             scales = [(scale, unit) for unit, scale in units.items()]
-#             scales.sort(reverse=True)
-#             for scale, unit in scales:
-#                 if dt >= scale:
-#                     break
+            def callback(number, time_taken):
+                msg = "{num} loop{s} -> {secs:.{prec}g} secs"
+                plural = number != 1
+                print(
+                    msg.format(
+                        num=number,
+                        s="s" if plural else "",
+                        secs=time_taken,
+                        prec=precision,
+                    )
+                )
 
-#         return "%.*g %s" % (precision, dt / scale, unit)
+        number, _ = t.autorange(callback)
+        # try:
+        #     number, _ = t.autorange(callback)
+        # except Exception:
+        #     t.print_exc()
+        #     return 1
 
-#     timings = [dt / number for dt in raw_timings]
+        if verbose:
+            print()
 
-#     best = min(timings)
+    raw_timings = t.repeat(repeat, number)
+    # try:
+    #     raw_timings = t.repeat(repeat, number)
+    # except Exception:
+    #     t.print_exc()
+    #     return 1
 
-#     result = "%s: %d loop%s, best of %d: %s per loop" % (
-#         name,
-#         number,
-#         "s" if number != 1 else "",
-#         repeat,
-#         format_time(best),
-#     )
+    def format_time(dt):
+        unit = time_unit
 
-#     best = min(timings)
-#     worst = max(timings)
-#     if worst >= best * 4:
-#         import warnings
+        if unit is not None:
+            scale = units[unit]
+        else:
+            scales = [(scale, unit) for unit, scale in units.items()]
+            scales.sort(reverse=True)
+            for scale, _unit in scales:
+                if dt >= scale:
+                    break
 
-#         warnings.warn_explicit(
-#             "The test results are likely unreliable. "
-#             "The worst time ({}) was more than four times "
-#             "slower than the best time ({}).".format(
-#                 format_time(worst), format_time(best)
-#             ),
-#             UserWarning,
-#             "",
-#             0,
-#         )
-#     return result
+        # return "%.*g %s" % (precision, dt / scale, unit)
+        return "{secs:,.{prec}f} {unit}".format(
+            prec=precision, secs=dt / scale, unit=unit
+        )
+
+    timings = [dt / number for dt in raw_timings]
+
+    best = min(timings)
+
+    result = "{}: {:,d} loop{}, best of {:,}: {} per loop ({} per sec.)".format(
+        name,
+        number,
+        "s" if number != 1 else "",
+        repeat,
+        format_time(best),
+        byteNumberString(number / best),
+    )
+
+    best = min(timings)
+    worst = max(timings)
+    if worst >= best * 4:
+        import warnings
+
+        warnings.warn_explicit(
+            "The test results are likely unreliable. "
+            "The worst time ({}) was more than four times "
+            "slower than the best time ({}).".format(
+                format_time(worst), format_time(best)
+            ),
+            UserWarning,
+            "",
+            0,
+        )
+    return result
+
+
+class Timing:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.start = time.monotonic()
+        self.elap = None
+
+    def __repr__(self):
+        if self.elap is None:
+            elap = time.monotonic() - self.start
+            return f"Timing<{self.name}> Running since {elap}..."
+        return f"Timing<{self.name}> took {self.elap}."
+
+    def __enter__(self):
+        self.start = time.monotonic()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.elap = time.monotonic() - self.start
+        print(f"{self}")
