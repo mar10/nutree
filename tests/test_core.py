@@ -504,7 +504,6 @@ class TestTraversal:
         assert len(s) == 8
 
         s = [n.data for n in tree.iterator(IterMethod.RANDOM_ORDER)]
-        print(s)
         assert len(s) == 8
 
     def test_visit(self):

@@ -383,7 +383,7 @@ class Node:
         *,
         before: Union["Node", bool, int, None] = None,
         data_id=None,
-        node_id=None
+        node_id=None,
     ) -> "Node":
         """Append or insert a new subnode.
 
@@ -487,7 +487,7 @@ class Node:
         self,
         new_parent: Union["Node", "Tree"],
         *,
-        before: Union["Node", bool, None] = None
+        before: Union["Node", bool, None] = None,
     ):
         """Move this node before or after `otherNode` ."""
         if new_parent is None:
@@ -619,7 +619,7 @@ class Node:
         *,
         add_self=False,
         method=IterMethod.PRE_ORDER,
-        memo=None
+        memo=None,
     ):
         """Call `callback(node, memo)` for all subnodes.
 
