@@ -215,7 +215,14 @@ def run_timings(
     # number = 0  # auto-determine
     repeat = timeit.default_repeat
     # time_unit = None
-    units = {"nsec": 1e-9, "usec": 1e-6, "msec": 1e-3, "sec": 1.0}
+    units = {
+        "fsec": 1e-15,  # femto
+        "psec": 1e-12,  # pico
+        "nsec": 1e-9,  # nano
+        "μsec": 1e-6,  # micro
+        "msec": 1e-3,  # milli
+        "sec": 1.0,
+    }
     precision = 4 if verbose else 3
 
     stmt = dedent(stmt).strip()
@@ -261,14 +268,14 @@ def run_timings(
 
     def format_time(dt):
         unit = time_unit
-
         if unit is not None:
             scale = units[unit]
         else:
             scales = [(scale, unit) for unit, scale in units.items()]
             scales.sort(reverse=True)
-            for scale, _unit in scales:
+            for scale, unit_2 in scales:
                 if dt >= scale:
+                    unit = unit_2
                     break
 
         # return "%.*g %s" % (precision, dt / scale, unit)

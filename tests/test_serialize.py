@@ -161,4 +161,4 @@ class TestSerialize:
 
         res = [line for line in tree.to_dot()]
         print("\n".join(res))
-        assert False
+        # assert False
