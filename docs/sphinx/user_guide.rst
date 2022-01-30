@@ -75,4 +75,5 @@ Read :doc:`ug_clones` for more.
     ug_clones
     ug_serialize
     ug_objects
+    ug_graphs
     ug_advanced

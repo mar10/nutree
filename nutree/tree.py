@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
+import os
 import threading
+from pathlib import PurePath
 from typing import IO, Any, Dict, Generator, List, Union
 
 from .common import (
@@ -8,6 +10,7 @@ from .common import (
     IterMethod,
     PredicateCallbackType,
     TraversalCallbackType,
+    pydot,
 )
 from .node import Node
 
@@ -362,6 +365,70 @@ class Tree:
         """
         obj = json.load(fp)
         return cls._from_list(obj, mapper=mapper)
+
+    def to_dot(
+        self,
+        *,
+        add_root=True,
+        single_inst=True,
+        node_mapper=None,
+        edge_mapper=None,
+    ) -> Generator[str, None, None]:
+        yield from self._root.to_dot(
+            add_self=add_root,
+            single_inst=single_inst,
+            node_mapper=node_mapper,
+            edge_mapper=edge_mapper,
+        )
+
+    def to_dotfile(
+        self,
+        target: Union[IO[str], str, PurePath],
+        *,
+        format=None,
+        add_root=True,
+        single_inst=True,
+        node_mapper=None,
+        edge_mapper=None,
+    ):
+        if isinstance(target, (str, PurePath)):
+            with open(target, "w") as fp:
+                self.to_dotfile(
+                    fp,
+                    add_root=add_root,
+                    single_inst=single_inst,
+                    node_mapper=node_mapper,
+                    edge_mapper=edge_mapper,
+                )
+            if format:
+                if not pydot:
+                    raise RuntimeError("Need pydot installed to convert DOT output.")
+                pydot.call_graphviz(
+                    "dot",
+                    ["-O", f"-T{format}", target],
+                    working_dir=os.path.dirname(target),
+                )
+                # https://graphviz.org/docs/outputs/
+                # check_call(f"dot -h")
+                # check_call(f"dot -O -T{format} {target}")
+                # check_call(f"dot -o{target}.{format} -T{format} {target}")
+            return
+
+        if format:
+            raise RuntimeError("Need a filepath to convert DOT output.")
+
+        with self:
+            for line in self.to_dot(
+                add_root=add_root,
+                single_inst=single_inst,
+                node_mapper=node_mapper,
+                edge_mapper=edge_mapper,
+            ):
+                target.write(line + "\n")
+        return
+
+    # def from_dot(self, dot):
+    #     pass
 
     # def on(self, event_name: str, callback):
     #     raise NotImplementedError

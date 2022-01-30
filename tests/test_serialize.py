@@ -145,3 +145,20 @@ class TestSerialize:
 
         assert tree._self_check()
         assert tree_2._self_check()
+
+    def test_serialize_dot(self):
+        """Save/load as  object tree with clones."""
+
+        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+
+        # tree.to_dotfile("/Users/martin/Downloads/tree.gv", format="png")
+        # tree.to_dotfile(
+        #     "/Users/martin/Downloads/tree.gv",
+        #     format="png",
+        #     # add_root=False,
+        #     # single_inst=False,
+        # )
+
+        res = [line for line in tree.to_dot()]
+        print("\n".join(res))
+        assert False

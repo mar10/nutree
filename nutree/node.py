@@ -957,3 +957,57 @@ class Node:
 
             yield (parent_idx, data)
         return
+
+    def to_dot(
+        self,
+        *,
+        add_self=False,
+        single_inst=True,
+        node_mapper=None,
+        edge_mapper=None,
+    ) -> Generator[str, None, None]:
+        """Generate DOT formatted output.
+
+        Args:
+            mapper (method):
+            add_self (bool):
+            single_inst (bool):
+        """
+        indent = "  "
+        name = self.tree.name
+        used_keys = set()
+
+        def _key(n: Node):
+            return n._data_id if single_inst else n._node_id
+
+        yield "// Generator: https://github.com/mar10/nutree/"
+        yield f"digraph {name} {{"
+
+        yield f"{indent}// Node definitions"
+        if add_self:
+            if self._parent:
+                yield f"{indent}{_key(self)}"
+            else:  # __root__ inherits tree name
+                yield f'{indent}{_key(self)} [label="{name}" shape="box"]'
+
+        for n in self:
+            if single_inst:
+                key = n._data_id
+                if key in used_keys:
+                    continue
+                used_keys.add(key)
+            else:
+                key = n._node_id
+
+            yield f'{indent}{key} [label="{n.name}"]'
+
+        yield ""
+        yield f"{indent}// Edge definitions"
+        for n in self:
+            if not add_self and n._parent is self:
+                continue
+            # parent_key = _key(n._parent) if n._parent else 0
+            # yield f"{indent}{parent_key} -> {_key(n)}"
+            yield f"{indent}{_key(n._parent)} -> {_key(n)}"
+
+        yield "}"
