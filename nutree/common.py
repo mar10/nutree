@@ -44,6 +44,11 @@ class IterMethod(Enum):
     POST_ORDER = "post"
     #: Breadth-first (aka level-order)
     LEVEL_ORDER = "level"
+    #: Random order traversal
+    RANDOM_ORDER = "random"
+    #: Fastest traversal in unpredictable order.
+    #: It may appear to be the order of node insertion, but do not rely on this!
+    UNORDERED = "unordered"
 
 
 class IterationControl(Exception):

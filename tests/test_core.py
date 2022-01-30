@@ -135,6 +135,8 @@ class TestNavigate:
 
         assert let_it_be.get_top() is records
 
+        assert isinstance(tree.get_random_node(), Node)
+
         assert tree._self_check()
 
     def test_statistics(self):
@@ -497,6 +499,13 @@ class TestTraversal:
 
         s = ",".join(n.data for n in tree.iterator(IterMethod.LEVEL_ORDER))
         assert s == "A,B,a1,a2,b1,a11,a12,b11"
+
+        s = [n.data for n in tree.iterator(IterMethod.UNORDERED)]
+        assert len(s) == 8
+
+        s = [n.data for n in tree.iterator(IterMethod.RANDOM_ORDER)]
+        print(s)
+        assert len(s) == 8
 
     def test_visit(self):
         """

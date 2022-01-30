@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import random
 import threading
 from pathlib import PurePath
 from typing import IO, Any, Dict, Generator, List, Union
@@ -163,6 +164,11 @@ class Tree:
         """Return the last top-level node."""
         return self._root.last_child
 
+    def get_random_node(self) -> Node:
+        """Return a random node."""
+        nbid = self._node_by_id
+        return nbid[random.choice(list(nbid.keys()))]
+
     def calc_height(self) -> int:
         """Return the maximum depth of all nodes."""
         return self._root.calc_height()
@@ -181,6 +187,12 @@ class Tree:
 
         See Node's :meth:`~nutree.node.Node.iterator` method for details.
         """
+        if method == IterMethod.UNORDERED:
+            return (n for n in self._node_by_id.values())
+        elif method == IterMethod.RANDOM_ORDER:
+            values = list(self._node_by_id.values())
+            random.shuffle(values)
+            return (n for n in values)
         return self._root.iterator(method=method)
 
     __iter__ = iterator

@@ -62,28 +62,32 @@ This DOT graph may be rendered in different formats like so::
 .. image:: tree.gv.png
 
 .. note::
-    Reading and writing of DOT formats requires the 
-    `pydot <https://github.com/pydot/pydot>`_ library to be available. |br|
+    Writing of plain DOT formats is natively implemented by `nutree`. |br|
+    Reading of DOT formats requires the 
+    `pydot <https://github.com/pydot/pydot>`_ library to be installed. |br|
     Rendering of output formats like `png`, `svg`, etc. requires an installation
-    of `Graphwiz <https://www.graphviz.org>`_ in addition.
+    of `pydot` and `Graphwiz <https://www.graphviz.org>`_.
 
 
 **Reading Digraphs**
 
+.. note:: Reading of DOT files is not yet implemented.
+    
 Every tree is a digraph, however not every digraph can be directly displayed as 
-tree.
+tree, because arbitrary directed graphs 
 
+  1. may contain closed circles (i.e. the graph is not 'acyclic')
+  2. may have loops (arrows that directly connect nodes to themselves), which
+     is a special case of 1.
+  3. may have multiple arrows with same source and target nodes
+  4. may not have an obvious root node (i.e. the graph is not 'rooted')
+  5. may be the target of more than one arrow
 
-  - `Simple directed graphs` are directed graphs that have no loops 
-    (arrows that directly connect vertices to themselves) and no multiple arrows 
-    with same source and target nodes.
-    ->
-    Multiple instances must not appear under the same parent node.
+As a consequence, 
 
-  - `acyclic`
-
-  - `rooted`
-
-  - `??` nodes may be the target of more than one edge.
-
-
+  1. Circles would result in trees of infinite depth. We stop adding a
+     child node if it already appears as its own parent.
+  2. See 1.: we do not add a node as child of itself.
+  3. We do not allow to add the same node a second time under one parent.
+  4. We pick the first node, or search for a good candidate using heuristics.
+  5. This node appears multiple times as child of different parents.

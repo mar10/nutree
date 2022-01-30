@@ -116,16 +116,40 @@ class TestBenchmarks:
                 globals=locals(),
             )
         )
-        LEVEL_ORDER = IterMethod.LEVEL_ORDER
+
+        ORDER = IterMethod.LEVEL_ORDER
         results.append(
             fixture.run_timings(
-                "for _ in tree.iterator(LEVEL_ORDER): ...",
+                f"for _ in tree.iterator({ORDER}): ...",
                 """\
-            for _ in tree.iterator(LEVEL_ORDER): pass
+            for _ in tree.iterator(ORDER): pass
         """,
                 globals=locals(),
             )
         )
+
+        ORDER = IterMethod.RANDOM_ORDER
+        results.append(
+            fixture.run_timings(
+                f"for _ in tree.iterator({ORDER}): ...",
+                """\
+            for _ in tree.iterator(ORDER): pass
+        """,
+                globals=locals(),
+            )
+        )
+
+        ORDER = IterMethod.UNORDERED
+        results.append(
+            fixture.run_timings(
+                f"for _ in tree.iterator({ORDER}): ...",
+                """\
+            for _ in tree.iterator(ORDER): pass
+        """,
+                globals=locals(),
+            )
+        )
+
         results.append(
             fixture.run_timings(
                 "tree.visit(lambda node, memo: None)",
