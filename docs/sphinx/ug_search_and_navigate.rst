@@ -50,7 +50,7 @@ Search
 Traversal
 ---------
 
-**Iteration**
+.. rubric:: Iteration
 
 Iterators are the most performant and memory efficient way to traverse the tree.
 
@@ -68,7 +68,7 @@ Different travesal methods are supported. ::
     res = list(node.iterator(add_self=True))
 
 
-**Visit**
+.. rubric:: Visit
 
 The :meth:`~nutree.tree.Tree.visit` method is an alternative way to traverse tree 
 structures with a little bit more control. 

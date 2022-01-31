@@ -18,6 +18,16 @@ locations::
         ├── 'b1'
         ╰── 'a2'  <- 2nd occurence
 
+.. seealso::
+    `Clones` have several appliances in the real world, for example store items
+    may be listed in different categories, or files may be linked into multiple
+    parent folders.
+
+    When a tree is used to visualize a `directed graph`, clones are used to
+    represent a node that is connected by multiple edges.
+    See :doc:`ug_graphs` for an example.
+
+
 .. note:: Multiple instances must not appear under the same parent node.
 
 In this case, a lookup using the indexing syntax (`tree[data]`) is not allowed. |br|

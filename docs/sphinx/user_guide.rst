@@ -64,7 +64,7 @@ instance with mehods like
 Read :doc:`ug_clones` for more.
 
 
-**Read the Details:**
+**Read the Details**
 
 .. toctree::
 

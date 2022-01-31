@@ -46,3 +46,12 @@ faster to access attributes directly.
     Use with care. Accessing or even modifying internal attributes may break
     the internal data structures.
 
+When optimizing: 
+
+  1. Correctness before performance: |br|
+     Write simple, error free code first and cover it with unit tests, 
+     before starting to optimize.
+
+  2. Do not guess or assume: |br|
+     write `benchmarks <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ !
+

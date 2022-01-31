@@ -68,6 +68,20 @@ Run selective tests::
     $ tox -e py39 -- -k test_core
 
 
+Run Benchmarks
+==============
+
+Benchmarks are unit tests that execute small variants of code and measure the
+elapsed time.
+See `here <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ 
+for some examples.
+
+Since this takes some time, benchmarks are not run with the default test suite, 
+but has to be enabled like so::
+
+    $ pytest --benchmarks
+
+
 Code
 ====
 

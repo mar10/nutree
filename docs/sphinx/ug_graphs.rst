@@ -4,7 +4,7 @@ Graphs
 
 .. py:currentmodule:: nutree
 
-**Writing Digraphs**
+.. rubric:: Writing Digraphs
 
 
 A tree is a `directed graph <https://en.wikipedia.org/wiki/Directed_graph>`_
@@ -69,7 +69,7 @@ This DOT graph may be rendered in different formats like so::
     of `pydot` and `Graphwiz <https://www.graphviz.org>`_.
 
 
-**Reading Digraphs**
+.. rubric:: Reading Digraphs
 
 .. note:: Reading of DOT files is not yet implemented.
     
