@@ -2,7 +2,7 @@
 # (c) 2021-2022 Martin Wendt and contributors; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-
+Declare the :class:`~nutree.node.Node` class.
 """
 import re
 from operator import attrgetter

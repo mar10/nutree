@@ -27,7 +27,7 @@ Note that ``repr`` may also be a `function(node)` that returns a string for
 display.
 
 The `style` argument selects the connector type. 
-See :attr:`~nutree.common.CONNECTORS` for possible values. ::
+See :data:`~nutree.common.CONNECTORS` for possible values. ::
 
     tree.format(repr="{node}", style="lines32", title="My Store")
 

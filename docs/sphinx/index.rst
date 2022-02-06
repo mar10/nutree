@@ -86,6 +86,7 @@ Nutree Facts
   * Search by name pattern, id, or object reference
   * Unobtrusive handling of arbitrary objects
   * Nodes can be plain strings or objects
+  * Save as DOT file and graphwiz diagram
   * Different traversal methods
   * (De)Serialize to JSON
   * Pretty print
