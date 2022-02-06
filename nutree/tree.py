@@ -5,7 +5,6 @@
 Declare the :class:`~nutree.tree.Tree` class.
 """
 import json
-import os
 import random
 import threading
 from pathlib import PurePath
@@ -16,8 +15,8 @@ from .common import (
     IterMethod,
     PredicateCallbackType,
     TraversalCallbackType,
-    pydot,
 )
+from .dot import tree_to_dotfile
 from .node import Node
 
 _DELETED_TAG = "<deleted>"
@@ -408,41 +407,16 @@ class Tree:
         node_mapper=None,
         edge_mapper=None,
     ):
-        if isinstance(target, (str, PurePath)):
-            with open(target, "w") as fp:
-                self.to_dotfile(
-                    fp,
-                    add_root=add_root,
-                    single_inst=single_inst,
-                    node_mapper=node_mapper,
-                    edge_mapper=edge_mapper,
-                )
-            if format:
-                if not pydot:
-                    raise RuntimeError("Need pydot installed to convert DOT output.")
-                pydot.call_graphviz(
-                    "dot",
-                    ["-O", f"-T{format}", target],
-                    working_dir=os.path.dirname(target),
-                )
-                # https://graphviz.org/docs/outputs/
-                # check_call(f"dot -h")
-                # check_call(f"dot -O -T{format} {target}")
-                # check_call(f"dot -o{target}.{format} -T{format} {target}")
-            return
-
-        if format:
-            raise RuntimeError("Need a filepath to convert DOT output.")
-
-        with self:
-            for line in self.to_dot(
-                add_root=add_root,
-                single_inst=single_inst,
-                node_mapper=node_mapper,
-                edge_mapper=edge_mapper,
-            ):
-                target.write(line + "\n")
-        return
+        res = tree_to_dotfile(
+            self,
+            target,
+            format=format,
+            add_root=add_root,
+            single_inst=single_inst,
+            node_mapper=node_mapper,
+            edge_mapper=edge_mapper,
+        )
+        return res
 
     # def from_dot(self, dot):
     #     pass

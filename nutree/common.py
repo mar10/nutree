@@ -9,11 +9,6 @@ import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Union
 
-try:
-    import pydot
-except ImportError:
-    pydot = None
-
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Node
 

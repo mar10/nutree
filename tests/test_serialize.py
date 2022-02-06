@@ -160,5 +160,9 @@ class TestSerialize:
         # )
 
         res = [line for line in tree.to_dot()]
-        print("\n".join(res))
+        assert len(res) == 24
+        res = "\n".join(res)
+        print(res)
+        assert '__root__ [label="Root" shape="box"]' in res
+        assert "__root__ -> " in res
         # assert False
