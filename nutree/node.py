@@ -35,6 +35,17 @@ class Node:
     modification, and other functionality.
     """
 
+    # Slots may reduce node size (about 20% smaller):
+    __slots__ = (
+        "__weakref__",  # Allow weak references to Nodes
+        "_children",
+        "_data_id",
+        "_data",
+        "_node_id",
+        "_parent",
+        "_tree",
+    )
+
     def __init__(self, data, *, parent: "Node", data_id=None, node_id=None):
         self._data = data
         self._parent: Node = parent

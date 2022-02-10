@@ -7,8 +7,9 @@ Test helpers.
 import re
 import time
 import timeit
+from random import randint
 from textwrap import dedent, indent
-from typing import Union
+from typing import List, Union
 
 from nutree.tree import Node, Tree
 
@@ -97,6 +98,29 @@ def create_tree(*, style="simple", name="fixture", clones=False, tree=None) -> T
     # Since the output is only displayed when a test fails, it may be handy to
     # see:
     tree.print()
+
+    return tree
+
+
+def generate_tree(level_defs: List, root=None) -> "Tree":
+    """Generate a tree.
+
+    Example:
+        generate_tree([10, 100, 100])
+    """
+    if root is None:
+        tree = Tree()
+        root = tree._root
+        name = "n"
+    else:
+        tree = None
+        name = root.name
+    level_def, *rest = level_defs
+    min_childs, max_childs = level_def, level_def
+    for i in range(randint(min_childs, max_childs)):
+        node = root.add(f"{name}.{i + 1}")
+        if rest:
+            generate_tree(rest, node)
 
     return tree
 

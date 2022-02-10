@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from nutree.common import IterMethod
+from nutree import IterMethod, Node
 
 from . import fixture
 
@@ -162,3 +162,84 @@ class TestBenchmarks:
 
         with capsys.disabled():
             print("\n  - ".join(results))
+
+
+@benchmark
+class TestMemory:
+    def test_node_size(self, capsys):
+        """ """
+        from pympler.asizeof import asized, asizeof
+
+        results = ["Memory results"]
+        tree = fixture.generate_tree([10, 9])
+        assert len(tree) == 100
+        # tree.print()
+
+        node_count = len(tree)
+        tree_size = asizeof(tree)
+        node_size = tree_size / node_count
+
+        results.append(
+            f"Tree 10x9: {node_count:,} nodes, {tree_size:,} bytes, node-size: {node_size:.1f} bytes"
+        )
+
+        print(asized(tree.first_child, detail=1).format())
+
+        tree = fixture.generate_tree([100, 100, 99])
+        assert len(tree) == 1000100
+
+        node_count = len(tree)
+        tree_size = asizeof(tree)
+        node_size = tree_size / node_count
+
+        results.append(
+            f"Tree 100x100x99: {node_count:,} nodes, {tree_size:,} bytes, node-size: {node_size:.1f} bytes"
+        )
+        with capsys.disabled():
+            print("\n  - ".join(results))
+
+    # def test_tree_mem(self, capsys):
+    #     """ """
+    #     from pympler import tracker
+
+    #     results = ["Memory results"]
+
+    #     tr = tracker.SummaryTracker()
+    #     tr.print_diff()
+    #     tree = fixture.generate_tree([10, 5])
+    #     tr.print_diff()
+
+    #     tree.clear()
+    #     tr.print_diff()
+
+    #     tree = None
+    #     tr.print_diff()
+
+    #     assert len(tree) == 60
+
+    #     with capsys.disabled():
+    #         print("\n  - ".join(results))
+
+    # def test_tree_mem_2(self, capsys):
+    #     """ """
+    #     from pympler import classtracker
+
+    #     results = ["Memory results"]
+
+    #     tr = classtracker.ClassTracker()
+    #     tr.track_class(Node)
+    #     tr.create_snapshot()
+
+    #     tree = fixture.generate_tree([10, 5])
+
+    #     tr.create_snapshot()
+    #     tr.stats.print_summary()
+
+    #     tree.clear()
+
+    #     tree = None
+
+    #     assert len(tree) == 60
+
+    #     with capsys.disabled():
+    #         print("\n  - ".join(results))
