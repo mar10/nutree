@@ -40,7 +40,6 @@ Info and Navigation
 ::
 
     assert tree.count == 5
-    assert tree.
 
     records_node = tree["Records"]
     assert tree.first_child is records_node
@@ -75,15 +74,21 @@ Info and Navigation
 Iteration
 ---------
 
-Iterators are available for the hole tree or by branch. Different travesal
+Iterators are available for the hole tree or by branch. Different traversal
 methods are supported ::
 
     for node in tree:
         # Depth-first, pre-order by default
         ...
 
-    for node in tree.iterator(method=IterMethod.POST_ORDER):
-        ...
+    # Alternatively use `visit` with a callback
 
-    # Walk a branch, starting at a distinct node
-    res = list(node.iterator(add_self=True))
+    def callback(node, memo):
+        if node.name == "secret":
+            # Prevent visiting the child nodes:
+            return SkipBranch
+        if node.data.foobar == 17:
+            raise StopTraversal("found it")
+
+    # `res` contains the value passed to the `StopTraversal` constructor
+    res = tree.visit(callback)  # res == "found it"

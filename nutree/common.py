@@ -12,12 +12,6 @@ from typing import TYPE_CHECKING, Any, Callable, Union
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Node
 
-PredicateCallbackType = Callable[["Node"], Union[None, bool]]
-MatchCallbackType = Callable[["Node"], bool]
-TraversalCallbackType = Callable[
-    ["Node", Any], Union[None, bool, "StopTraversal", "SkipChildren"]
-]
-
 
 class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
@@ -51,8 +45,21 @@ class IterationControl(Exception):
     """Common base class for tree iteration controls."""
 
 
-class SkipChildren(IterationControl):
-    """Raised or returned by traversal callbacks to skip the current node's descendants."""
+class SkipBranch(IterationControl):
+    """Raised or returned by traversal callbacks to skip the current node's descendants.
+
+    If `and_self` is true, some iterators will consider the node itself, but
+    still skip the descendants. For example :meth:`~nutree.tree.Tree.copy` and
+    :meth:`~nutree.tree.Tree.find_all`.
+    If `and_self` is false, some iterators will consider the node's children only.
+    """
+
+    def __init__(self, *, and_self=None):
+        self.add_self = and_self
+
+
+class SelectBranch(IterationControl):
+    """Raised or returned by traversal callbacks unconditionally accept all descendants."""
 
 
 class StopTraversal(IterationControl):
@@ -66,6 +73,12 @@ class StopTraversal(IterationControl):
     def __init__(self, value=None):
         self.value = value
 
+
+PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
+MatchCallbackType = Callable[["Node"], bool]
+TraversalCallbackType = Callable[
+    ["Node", Any], Union[None, bool, "StopTraversal", "SkipBranch"]
+]
 
 #: Node connector prefixes, for use with ``format(style=...)`` argument.
 CONNECTORS = {
@@ -93,14 +106,31 @@ DEFAULT_CONNECTOR_STYLE = "round43"
 DEFAULT_REPR = "{node.data!r}"
 
 
-def _call_traversal_cb(fn, node, memo):
+def call_predicate(fn, node):
+    """Call the function and handle result and exceptions.
+
+    This method calls `fn(node)` and converts all raised
+    IterationControl responses to a canonical result.
+    """
+    if fn is None:
+        return None
+    try:
+        res = fn(node)
+    except IterationControl as e:
+        return e
+    except StopIteration as e:  # Also accept this builtin exception
+        return StopTraversal(e.value)
+    return res
+
+
+def call_traversal_cb(fn, node, memo):
     """Call the function and handle result and exceptions.
 
     This method calls `fn(node, memo)` and converts all returned or raised
     IterationControl responses to a canonical result:
 
-    - Return `False` if the method returns SkipChildren or an instance of
-      SkipChildren.
+    - Return `False` if the method returns SkipBranch or an instance of
+      SkipBranch.
     - Raise `StopTraversal(value)` if the method returns False, StopTraversal, or an
       instance of StopTraversal.
     - If a form of StopIteration is returned, we treat as StopTraversal, but
@@ -109,7 +139,7 @@ def _call_traversal_cb(fn, node, memo):
     """
     try:
         res = fn(node, memo)
-        if res is SkipChildren or isinstance(res, SkipChildren):
+        if res is SkipBranch or isinstance(res, SkipBranch):
             return False
         elif res is StopTraversal or isinstance(res, StopTraversal):
             raise res
@@ -121,9 +151,9 @@ def _call_traversal_cb(fn, node, memo):
         elif res is not None:
             raise ValueError(
                 "callback should not return values except for "
-                f"False, SkipChildren, or StopTraversal: {res!r}."
+                f"False, SkipBranch, or StopTraversal: {res!r}."
             )
-    except SkipChildren:
+    except SkipBranch:
         return False
     except StopIteration as e:
         # raise RuntimeError("Should raise StopTraversal instead")

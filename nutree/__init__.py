@@ -21,21 +21,28 @@ __version__ = "0.1.1-a1"
 from .common import (
     AmbigousMatchError,
     IterMethod,
-    SkipChildren,
+    SelectBranch,
+    SkipBranch,
     StopTraversal,
     TreeError,
     UniqueConstraintError,
 )
+from .diff import DiffClassification, diff_node_formatter
+from .fs import load_tree_from_fs
 from .node import Node
 from .tree import Tree
 
 __all__ = [
     Tree,
     Node,
+    AmbigousMatchError,
+    diff_node_formatter,
+    DiffClassification,
     IterMethod,
-    SkipChildren,
+    load_tree_from_fs,
+    SelectBranch,
+    SkipBranch,
     StopTraversal,
     TreeError,
-    AmbigousMatchError,
     UniqueConstraintError,
 ]

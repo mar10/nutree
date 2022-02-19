@@ -16,6 +16,87 @@ Advanced
         tree.on("change", on_change)
 
 
+Callbacks
+---------
+
+In the following sections we cover :ref:`Search`, :ref:`Traversal`, 
+:ref:`mutation`, etc. in detail. |br|
+Some methods described there, accept a `predicate` argument, for example
+:meth:`~nutree.tree.Tree.copy`, :meth:`~nutree.tree.Tree.filter`, 
+:meth:`~nutree.tree.Tree.find_all` ...
+
+In all cases, the `predicate` callback is called with one single `node`
+argument and should return control value:
+
+.. note::
+    The special values
+    :data:`~nutree.common.StopTraversal`, :data:`~nutree.common.SkipBranch`,
+    and :data:`~nutree.common.SelectBranch` can be returned as value or raised
+    as exception.
+
+:meth:`~nutree.tree.Tree.find`, 
+:meth:`~nutree.tree.Tree.find_first`
+
+    The `match` callback can return these values:
+
+    - `False` or `None`: No match: skip the node and continue traversal.
+    - `True`: Stop iteration and return this node as result.
+    - :data:`~nutree.common.StopTraversal`:
+      Stop iteration and return `None` as result.
+
+:meth:`~nutree.tree.Tree.find_all`
+
+    The `match` callback can return these values:
+
+    - `False` or `None`: No match: skip the node and continue traversal.
+    - `True`: Add node to results and continue traversal.
+    - :data:`~nutree.common.SkipBranch`:
+      Skip node and its descendants, but continue iteration with next sibling. |br|
+      Return `SkipBranch(add_self=True)` to add the node to results, but skip
+      descendants.
+    - :data:`~nutree.common.StopTraversal`:
+      Stop iteration and return current results.
+
+:meth:`~nutree.tree.Tree.visit`
+
+    The `callback` callback can return these values:
+
+    - `False`:
+      Stop iteration immediately.
+    - :data:`~nutree.common.StopTraversal`:
+      Stop iteration immediately. Return or raise `StopTraversal(value)` to
+      specify a return value for the visit method.
+    - :data:`~nutree.common.SkipBranch`:
+      Skip descendants, but continue iteration with next sibling.
+    - `True`, `None`, and all other values: 
+      No action: continue traversal.
+
+:meth:`~nutree.tree.Tree.copy`, 
+:meth:`~nutree.node.Node.copy_from`, 
+:meth:`~nutree.tree.Tree.filter`, 
+:meth:`~nutree.tree.Tree.filtered`,
+:meth:`~nutree.node.Node.copy`
+
+    The `predicate` callback can return these values:
+
+    - `True`: Keep the node and visit children.
+    - `False` or `None`: Visit children and keep this node if at least one 
+      descendant is true.
+    - :data:`~nutree.common.SkipBranch`:
+      Skip node and its descendants, but continue iteration with next sibling. |br|
+      Return `SkipBranch(add_self=True)` to keep the node, but skip descendants.
+    - :data:`~nutree.common.SelectBranch`:
+      Unconditionally accept node and all descendants (do not call `predicate()`).
+      In other words: copy the whole branch.
+
+:meth:`~nutree.tree.Tree.to_dict`,
+:meth:`~nutree.tree.Tree.to_list_iter`
+
+    The `mapper` callback can return these values:
+
+    - TODO
+
+
 Locking
 -------
 
@@ -53,5 +134,5 @@ When optimizing:
      before starting to optimize.
 
   2. Do not guess or assume: |br|
-     write `benchmarks <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ !
+     Write `benchmarks <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ !
 

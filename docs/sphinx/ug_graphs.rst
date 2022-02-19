@@ -73,12 +73,12 @@ This DOT graph may be rendered in different formats like so::
 
 .. note:: Reading of DOT files is not yet implemented.
     
-Every tree is a digraph, however not every digraph can be directly displayed as 
-tree, because arbitrary directed graphs 
+Every tree is a digraph, however not every digraph can be directly represented 
+as tree, because arbitrary directed graphs 
 
   1. may contain closed circles (i.e. the graph is not 'acyclic')
   2. may have loops (arrows that directly connect nodes to themselves), which
-     is a special case of 1.
+     is a special case of 1.)
   3. may have multiple arrows with same source and target nodes
   4. may not have an obvious root node (i.e. the graph is not 'rooted')
   5. may be the target of more than one arrow
@@ -87,7 +87,7 @@ As a consequence,
 
   1. Circles would result in trees of infinite depth. We stop adding a
      child node if it already appears as its own parent.
-  2. See 1.: we do not add a node as child of itself.
+  2. See 1.): we do not add a node as child of itself.
   3. We do not allow to add the same node a second time under one parent.
   4. We pick the first node, or search for a good candidate using heuristics.
   5. This node appears multiple times as child of different parents.

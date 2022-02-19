@@ -85,6 +85,7 @@ Nutree Facts
   * Handle multiple references of single objects ('clones')
   * Search by name pattern, id, or object reference
   * Unobtrusive handling of arbitrary objects
+  * Compare two trees and calculate patches
   * Nodes can be plain strings or objects
   * Save as DOT file and graphwiz diagram
   * Different traversal methods
@@ -94,7 +95,6 @@ Nutree Facts
   * Filtering
 
 ..
-  * Compare two trees and calculate patches (NYI)
   * Export to different formats (NYI)
   * Set-like operations (NYI)
 
@@ -138,11 +138,3 @@ Nutree Facts
 .. |nutree| raw:: html
 
    <a href="https://en.wikipedia.org/wiki/Stressor"><abbr title="A nutree is a chemical or biological agent, environmental condition, external stimulus or an event that causes stress to an organism.">nutree</abbr></a>
-
-.. |NU| raw:: html
-
-   &#120526; &#120500;
-
-.. |nutree| raw:: html
-
-   &#120500;utree

@@ -17,10 +17,14 @@ from .common import (
     DEFAULT_REPR,
     AmbigousMatchError,
     IterMethod,
+    PredicateCallbackType,
+    SelectBranch,
+    SkipBranch,
     StopTraversal,
     TraversalCallbackType,
     UniqueConstraintError,
-    _call_traversal_cb,
+    call_predicate,
+    call_traversal_cb,
 )
 from .dot import node_to_dot
 
@@ -41,12 +45,15 @@ class Node:
         "_children",
         "_data_id",
         "_data",
+        "_meta",
         "_node_id",
         "_parent",
         "_tree",
     )
 
-    def __init__(self, data, *, parent: "Node", data_id=None, node_id=None):
+    def __init__(
+        self, data, *, parent: "Node", data_id=None, node_id=None, meta: Dict = None
+    ):
         self._data = data
         self._parent: Node = parent
 
@@ -63,6 +70,8 @@ class Node:
             self._node_id: int = id(self)
         else:
             self._node_id = node_id
+
+        self._meta = meta
 
         tree._register(self)
 
@@ -138,6 +147,51 @@ class Node:
     def node_id(self):
         """Return the node's unique key."""
         return self._node_id
+
+    @property
+    def meta(self) -> Union[Dict, None]:
+        """Return the node's metadata dictionary or None if empty.
+
+        See also :meth:`get_meta`, :meth:`set_meta`, :meth:`update_meta`,
+        :meth:`clear_meta`.
+        """
+        return self._meta
+
+    def get_meta(self, key: str, default=None):
+        """Return metadata value."""
+        m = self._meta
+        return default if m is None else m.get(key, default)
+
+    def set_meta(self, key: str, value) -> None:
+        """Set metadata value (pass value `None` to remove)."""
+        if value is None:
+            self.clear_meta(key)
+        elif self._meta is None:
+            self._meta = {key: value}
+        else:
+            self._meta[key] = value
+
+    def clear_meta(self, key: str = None):
+        """Reset all metadata or a distinct entry."""
+        if key is None:
+            self._meta = None
+            return
+        m = self._meta
+        if m is not None:
+            m.pop(key, None)
+            if len(m) == 0:
+                self._meta = None
+        return
+
+    def update_meta(self, values: dict, *, replace: bool = False):
+        """Add `values` dict to current metadata.
+
+        If `replace` is true, previous metatdata will be cleared.
+        """
+        if replace or self._meta is None:
+            self._meta = values.copy()
+        else:
+            self._meta.update(values)
 
     def rename(self, new_name: str) -> None:
         """Set `self.data` to a new string (assuming plain string node)."""
@@ -255,13 +309,13 @@ class Node:
         """Return last node, that share own parent (may be `self`)."""
         return self._parent._children[-1]
 
-    def get_siblings(self, add_self=False) -> List["Node"]:
+    def get_siblings(self, *, add_self=False) -> List["Node"]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if add_self:
             return self._parent._children
         return [n for n in self._parent._children if n is not self]
 
-    def get_clones(self, add_self=False) -> List["Node"]:
+    def get_clones(self, *, add_self=False) -> List["Node"]:
         """Return a list of all nodes that reference the same data if any."""
         clones = self._tree._nodes_by_data_id[self._data_id]
         if add_self:
@@ -546,7 +600,7 @@ class Node:
         self._children = None
         return
 
-    def to_tree(self, *, add_self=True, predicate=None) -> "Tree":
+    def copy(self, *, add_self=True, predicate=None) -> "Tree":
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
         See also :meth:`copy_from`.
@@ -559,15 +613,127 @@ class Node:
         root.copy_from(self, predicate=predicate)
         return new_tree
 
-    def copy_from(self, src_node: "Node", *, predicate=None):
-        """Append copies of all source children to self."""
-        assert not self._children
-        for child in src_node._children:
-            if predicate and predicate(child) is False:
-                continue
+    def copy_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
+        """Append copies of all source descendants to self.
+
+        See also :ref:`callbacks`.
+        """
+        if predicate:
+            return self._add_filtered(other, predicate)
+
+        assert not self.has_children()
+        for child in other.children:
             new_child = self.add_child(child.data, data_id=child._data_id)
             if child.has_children():
-                new_child.copy_from(child, predicate=predicate)
+                new_child.copy_from(child, predicate=None)
+        return
+
+    def _add_filtered(self, other: "Node", predicate: PredicateCallbackType) -> None:
+        """Append a filtered copy of `other` and its descendants as children.
+
+        See also :ref:`callbacks`.
+        """
+        # Stack of parent node objects 2-tuples (is_existing, node), used to
+        # create optional parents on demand.
+        # If existing, `node` references this tree. Otherwise, `node` references
+        # the `other` tree.
+        parent_stack = [(True, self)]
+
+        def _create_parents() -> Node:
+            """Materialize all virtual parents and return the last one."""
+            # print("_create_parents", parent_stack)
+            p = parent_stack[0][1]
+            for idx, (existing, n) in enumerate(parent_stack):
+                if existing:
+                    p = n
+                else:
+                    p = p.add(n)
+                    parent_stack[idx] = (True, p)
+            return p
+
+        def _visit(other: Node):
+            """Return True if any descendant returned True."""
+
+            # print("_visit", parent_stack, other)
+            for n in other.children:
+                parent_stack.append((False, n))
+
+                res = call_predicate(predicate, n)
+                if isinstance(res, SkipBranch):
+                    if res.and_self is False:
+                        # Add the node itself if user explicitly returned
+                        # `SkipBranch(and_self=False)`
+                        p = _create_parents()
+                        p.add_child(n)
+                elif isinstance(res, StopTraversal):
+                    raise res
+                elif isinstance(res, SelectBranch):
+                    # Unconditionally copy whole branch: no need to visit children
+                    p = _create_parents()
+                    p.copy_from(n)
+                elif res in (None, False):  # Add only if has a `true` descendant
+                    _visit(n)
+                elif res is True:  # Add this node (and also check children)
+                    p = _create_parents()
+                    p.add_child(n)
+                    _visit(n)
+
+                parent_stack.pop()
+            return
+
+        try:
+            _visit(other)
+        except StopTraversal:
+            pass
+        return
+
+    def filtered(self, predicate: PredicateCallbackType) -> "Tree":
+        """Return a filtered copy of this node and descendants as tree.
+
+        See also :ref:`callbacks`.
+        """
+        return self.copy(add_self=True, predicate=predicate)
+
+    def filter(self, predicate: PredicateCallbackType) -> None:
+        """In-place removal of mismatching nodes.
+
+        See also :ref:`callbacks`.
+        """
+
+        def _visit(parent: Node) -> bool:
+            """Return True if any descendant returned True."""
+            remove_nodes = []
+            must_keep = None
+
+            for n in parent.children:
+                res = call_predicate(predicate, n)
+                if res in (None, False):  # Keep only if has a `true` descendant
+                    if _visit(n):
+                        must_keep = True
+                    else:
+                        remove_nodes.append(n)
+                elif res is True:  # Keep this node (and also check children)
+                    _visit(n)
+                    must_keep = True
+                elif isinstance(res, SelectBranch):
+                    # Unconditionally keep whole branch: no need to visit children
+                    must_keep = True
+                elif isinstance(res, SkipBranch):
+                    if res.and_self is False:
+                        remove_nodes = n.children
+                    else:
+                        remove_nodes.append(n)
+                elif isinstance(res, StopTraversal):
+                    raise res
+
+            for n in remove_nodes:
+                n.remove()
+            return must_keep
+
+        try:
+            _visit(self)
+        except StopTraversal:
+            pass
         return
 
     def from_dict(self, obj: List[Dict], *, mapper=None):
@@ -590,9 +756,9 @@ class Node:
 
     def _visit_pre(self, callback, memo):
         """Depth-first, pre-order traversal."""
-        # Call callback and skip children if SkipChildren was returned.
+        # Call callback and skip children if SkipBranch was returned.
         # Also a StopTraversal(value) exception may be raised.
-        if _call_traversal_cb(callback, self, memo) is False:
+        if call_traversal_cb(callback, self, memo) is False:
             return
 
         children = self._children
@@ -604,12 +770,12 @@ class Node:
     def _visit_post(self, callback, memo):
         """Depth-first, post-order traversal."""
         # Callback may raise StopTraversal (also if callback returns false)
-        # but SkipChildren is not supported with post-order traversal
+        # but SkipBranch is not supported with post-order traversal
         children = self._children
         if children:
             for c in self._children:
                 c._visit_post(callback, memo)
-        _call_traversal_cb(callback, self, memo)
+        call_traversal_cb(callback, self, memo)
 
     def _visit_level(self, callback, memo):
         """Breadth-first (aka level-order) traversal."""
@@ -618,7 +784,7 @@ class Node:
         while children:
             next_level = []
             for c in children:
-                if _call_traversal_cb(callback, c, memo) is False:
+                if call_traversal_cb(callback, c, memo) is False:
                     continue
                 if c._children:
                     next_level.extend(c._children)
@@ -635,9 +801,9 @@ class Node:
     ):
         """Call `callback(node, memo)` for all subnodes.
 
-        The callback may return :class:`SkipChildren` (or an instance
+        The callback may return :class:`SkipBranch` (or an instance
         thereof) to omit childnodes but continue traversal otherwise.
-        Raising `SkipChildren` has the same effect. |br|
+        Raising `SkipBranch` has the same effect. |br|
         Note that skipping of children is only available ...
 
         The callback may return ``False`` or :class:`StopIteration` to immediately
@@ -670,20 +836,20 @@ class Node:
             # Level-order is non-recursive
             if method == IterMethod.LEVEL_ORDER:
                 if add_self:
-                    if _call_traversal_cb(callback, self, memo) is False:
+                    if call_traversal_cb(callback, self, memo) is False:
                         return
                 self._visit_level(callback, memo)
                 return
             # Otherwise pre- or post-order
             if add_self and method != IterMethod.POST_ORDER:
-                if _call_traversal_cb(callback, self, memo) is False:
+                if call_traversal_cb(callback, self, memo) is False:
                     return
 
             for c in self._children:
                 handler(c, callback, memo)
 
             if add_self and method == IterMethod.POST_ORDER:
-                if _call_traversal_cb(callback, self, memo) is False:
+                if call_traversal_cb(callback, self, memo) is False:
                     return
         except StopTraversal as e:
             return e.value
@@ -735,10 +901,10 @@ class Node:
         if add_self and method == IterMethod.POST_ORDER:
             yield self
 
-    #: Implement ``for subnode in node:`` syntax to iterate nodes.
+    #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
     __iter__ = iterator
 
-    def _filter(self, match, *, max_results=None, add_self=False):
+    def _search(self, match, *, max_results=None, add_self=False):
         if callable(match):
             cb_match = match
         elif type(match) is str:
@@ -773,7 +939,7 @@ class Node:
                 n for n in self.iterator(add_self=add_self) if n._data_id == data_id
             ]
         return [
-            n for n in self._filter(match, add_self=add_self, max_results=max_results)
+            n for n in self._search(match, add_self=add_self, max_results=max_results)
         ]
 
     def find_first(self, data=None, *, match=None, data_id=None):

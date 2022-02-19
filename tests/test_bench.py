@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from nutree import IterMethod, Node
+from nutree import IterMethod
 
 from . import fixture
 

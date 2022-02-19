@@ -28,6 +28,7 @@ Navigate
     assert n.next_sibling.name == "Get Yer Ya-Ya's Out!"
     assert not n.children
 
+
 Search
 ------
 
@@ -64,7 +65,16 @@ Different travesal methods are supported. ::
     for node in tree.iterator(method=IterMethod.POST_ORDER):
         ...
 
-    # Walk a branch, starting at a distinct node
+    # Walk a branch (not including the root node)
+    for n in node:
+        ...
+
+    # Walk a branch (including the root node)
+    for n in node.iterator(add_self=True):
+        ...
+
+    # Keep in mind that iterators are generators, so at times we may need 
+    to materialize:
     res = list(node.iterator(add_self=True))
 
 
@@ -74,7 +84,7 @@ The :meth:`~nutree.tree.Tree.visit` method is an alternative way to traverse tre
 structures with a little bit more control. 
 In this case, a callback function is invoked for every node.
 
-The callback may return (or raise) :class:`~nutree.common.SkipChildren` to 
+The callback may return (or raise) :class:`~nutree.common.SkipBranch` to 
 prevent visiting of the descendant nodes. |br|
 The callback may return (or raise) :class:`~nutree.common.StopTraversal` to 
 stop traversal immediately. An optional return value may be passed to the 
@@ -82,12 +92,12 @@ constructor.
 
 ::
 
-    from nutree import Tree, SkipChildren, StopTraversal
+    from nutree import Tree, SkipBranch, StopTraversal
 
     def callback(node, memo):
         if node.name == "secret":
             # Prevent visiting the child nodes:
-            return SkipChildren
+            return SkipBranch
         if node.data.foobar == 17:
             raise StopTraversal("found it")
 
@@ -95,9 +105,9 @@ constructor.
     res = tree.visit(callback)  # res == "found it"
 
 The `memo` argument contains an empty dict by default, which is discarded after
-traversal. This may be handy to cache some calculated values during iteration
-for example. |br|
-It is also possible to pass in the `memo` argument, in order to access the data
+traversal. This may be handy to cache and pass along some calculated values 
+during iteration. |br|
+It is also possible to pass-in the `memo` argument, in order to access the data
 after the call::
 
     def callback(node, memo):

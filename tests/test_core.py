@@ -8,7 +8,7 @@ import re
 import pytest
 
 from nutree import AmbigousMatchError, IterMethod, Node, Tree
-from nutree.common import SkipChildren, StopTraversal
+from nutree.common import SkipBranch, StopTraversal
 
 from . import fixture
 
@@ -49,6 +49,32 @@ class TestBasics:
             """,
         )
 
+    def test_meta(aelf):
+        tree = fixture.create_tree()
+        node = tree.first_child
+
+        assert node._meta is None
+
+        node.set_meta("foo", 42)
+        assert node._meta == {"foo": 42}
+
+        node.set_meta("bar", "baz")
+        assert node._meta == {"foo": 42, "bar": "baz"}
+
+        assert node.get_meta("foo") == 42
+
+        node.update_meta({"qux": False})
+        assert node._meta == {"foo": 42, "bar": "baz", "qux": False}
+
+        node.update_meta({"qux": True, "bar": "new"}, replace=True)
+        assert node._meta == {"bar": "new", "qux": True}
+
+        node.set_meta("bar", None)
+        assert node._meta == {"qux": True}
+
+        node.clear_meta("qux")
+        assert node._meta is None, "reset empty meta dict to None"
+
 
 class TestNavigate:
     def setup_method(self):
@@ -73,6 +99,11 @@ class TestNavigate:
 
         records = tree["Records"]
         assert isinstance(records, Node)
+
+        # Index syntax works for different keys
+        assert tree[records.data_id] is records
+        assert tree[records.data] is records
+        assert tree[records.node_id] is records
 
         assert records.tree is records._tree
 
@@ -310,6 +341,7 @@ class TestNavigate:
         assert tree.find("Let It Boo") is None
 
         assert tree.find_first(node_id=records.node_id) is records
+        assert tree.find_first(node_id=records.node_id) is records
 
         assert "Let It Be" in tree
         assert "Let It Boo" not in tree
@@ -541,7 +573,7 @@ class TestTraversal:
         def cb(node, memo):
             res.append(node.name)
             if node.name == "a1":
-                return SkipChildren
+                return SkipBranch
             if node.name == "b1":
                 raise StopTraversal("Found b1")
 
@@ -689,7 +721,7 @@ class TestCopy:
     def test_as_tree(self):
         tree = fixture.create_tree()
 
-        subtree = tree["a1"].to_tree()
+        subtree = tree["a1"].copy()
         assert fixture.check_content(
             subtree,
             """
@@ -701,7 +733,7 @@ class TestCopy:
         )
         assert subtree._self_check()
 
-        subtree = tree["A"].to_tree(add_self=False)
+        subtree = tree["A"].copy(add_self=False)
         assert fixture.check_content(
             subtree,
             """
@@ -713,3 +745,47 @@ class TestCopy:
             """,
         )
         assert subtree._self_check()
+
+    def test_filter(self):
+        tree = fixture.create_tree()
+
+        def pred(node):
+            return "2" not in node.name.lower()
+
+        tree.filter(predicate=pred)
+
+        assert tree._self_check()
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            ├── A
+            │   ╰── a1
+            │       ╰── a11
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
+
+    def test_filtered(self):
+        tree = fixture.create_tree()
+
+        def pred(node):
+            return "2" in node.name.lower()
+
+        tree_2 = tree.filtered(predicate=pred)
+
+        assert tree_2._self_check()
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            ╰── A
+                ├── a1
+                │   ╰── a12
+                │       ╰── a12
+                ╰── a2
+                    ╰── a2
+            """,
+        )

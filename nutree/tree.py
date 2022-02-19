@@ -10,6 +10,8 @@ import threading
 from pathlib import PurePath
 from typing import IO, Any, Dict, Generator, List, Union
 
+from nutree.diff import diff_tree
+
 from .common import (
     AmbigousMatchError,
     IterMethod,
@@ -69,26 +71,35 @@ class Tree:
     def __getitem__(self, data: object) -> "Node":
         """Implement ``tree[data]`` syntax to lookup a node.
 
+        `data` may be a plain string, data object, data_id, or node_id.
+
         :class:`~nutree.common.AmbigousMatchError` is raised if multiple matches
         are found.
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
         """
-        # Treat data as data_id
         if isinstance(data, Node):
-            raise ValueError(f"Expected data instance or data_id: {data}")
-        elif type(data) in (int, str) and data in self._nodes_by_data_id:
+            raise ValueError(f"Expected data instance, data_id, or node_id: {data}")
+
+        # Support node_id lookup
+        if type(data) is int:
+            res = self._node_by_id.get(data)
+            if res is not None:
+                return res
+
+        # Treat data as data_id
+        if type(data) in (int, str) and data in self._nodes_by_data_id:
             res = self.find_all(data_id=data)
         else:
             res = self.find_all(data)
 
         if not res:
             raise KeyError(f"{data!r}")
-        if len(res) == 1:
-            return res[0]
-        raise AmbigousMatchError(
-            f"{data!r} has {len(res)} occurrences. "
-            "Use tree.find_all() or tree.find_first() to resolve this."
-        )
+        elif len(res) > 1:
+            raise AmbigousMatchError(
+                f"{data!r} has {len(res)} occurrences. "
+                "Use tree.find_all() or tree.find_first() to resolve this."
+            )
+        return res[0]
 
     # def __iadd__(self, other) -> None:
     #     """Support `tree += node(s)` syntax"""
@@ -199,6 +210,7 @@ class Tree:
             return (n for n in values)
         return self._root.iterator(method=method)
 
+    #: Implement ``for node in tree: ...`` syntax to iterate nodes depth-first.
     __iter__ = iterator
 
     def format_iter(self, *, repr=None, style=None, title=None):
@@ -253,6 +265,14 @@ class Tree:
             new_tree._root.copy_from(self._root, predicate=predicate)
         return new_tree
 
+    def filter(self, predicate: PredicateCallbackType) -> None:
+        """In-place removal of matching nodes."""
+        self._root.filter(predicate=predicate)
+
+    def filtered(self, predicate: PredicateCallbackType) -> "Tree":
+        """Return a filtered copy of this tree."""
+        return self.copy(predicate=predicate)
+
     def clear(self) -> None:
         """Remove all nodes from the tree."""
         self._root.remove_children()
@@ -283,8 +303,10 @@ class Tree:
     def find_first(
         self, data=None, *, match=None, data_id=None, node_id=None
     ) -> Union["Node", None]:
-        """Return the first matching node or `None`.
+        """Return the one matching node or `None`.
 
+        Note that 'first' sometimes means 'one arbitrary' matching node, which
+        is not neccessarily the first of a specific iteration method.
         See also Node's :meth:`~nutree.node.Node.find_first` method.
         """
         if data is not None:
@@ -327,8 +349,9 @@ class Tree:
     def from_dict(cls, obj: List[Dict], *, mapper=None) -> "Tree":
         """Return a new :class:`Tree` instance from a list of dicts.
 
-        See also :meth:`~nutree.tree.Tree.to_dict` method and
-        Node's :meth:`~nutree.node.Node.find_first` method.
+        See also :meth:`~nutree.tree.Tree.to_dict` and
+        Node's :meth:`~nutree.node.Node.find_first` methods, and
+        :ref:`callbacks`.
         """
         new_tree = Tree()
         new_tree._root.from_dict(obj, mapper=mapper)
@@ -420,6 +443,24 @@ class Tree:
 
     # def from_dot(self, dot):
     #     pass
+
+    def diff(self, other: "Tree", *, ordered=False, reduce=False) -> "Tree":
+        """Compare this tree against `other` and return a merged, annotated copy.
+
+        The resulting tree contains a union of all nodes from this and the
+        other tree.
+        Additional metadata is added to the resulting nodes to classify changes
+        from the perspective of this tree. For example a node that only exists
+        in `other`, will have ``node.get_meta("dc") == DiffClassification.ADDED``
+        defined.
+
+        If `ordered` is true, changes in the child order are also considered a
+        change. |br|
+        If `reduce` is true, unchanged nodes are removed, leaving a compact tree
+        with only the modifications.
+        """
+        t = diff_tree(self, other, ordered=ordered, reduce=reduce)
+        return t
 
     # def on(self, event_name: str, callback):
     #     raise NotImplementedError

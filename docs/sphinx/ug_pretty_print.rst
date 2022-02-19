@@ -92,5 +92,5 @@ The 'list' style does not generate connector prefixes::
     for s in tree.format_iter(repr="{node.data}"):
         print(s)
     # Print the __repr__ of the data object:
-    for s in tree.format_iter(repr="{node._node_id}-{node.name}"):
+    for s in tree.format_iter(repr="{node.node_id}-{node.name}"):
         print(s)

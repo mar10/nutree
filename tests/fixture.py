@@ -33,17 +33,9 @@ class Department:
         return f"Department<{self.name}>"
 
 
-# class Item:
-#     def __init__(self, name, price, count):
-#         self.name = name
-#         self.price = float(price)
-#         self.count = int(count)
-
-#     def __repr__(self):
-#         return f"Item<{self.name!r}, {self.price:.2f}$>"
-
-
-def create_tree(*, style="simple", name="fixture", clones=False, tree=None) -> Tree:
+def create_tree(
+    *, style="simple", name="fixture", clones=False, tree=None, print=True
+) -> Tree:
     if tree is not None:
         assert not tree, "must be empty"
     else:
@@ -96,8 +88,9 @@ def create_tree(*, style="simple", name="fixture", clones=False, tree=None) -> T
     else:
         raise NotImplementedError(style)
     # Since the output is only displayed when a test fails, it may be handy to
-    # see:
-    tree.print()
+    # see (unless caller modifies afterwards and then prints):
+    if print:
+        tree.print()
 
     return tree
 
@@ -137,9 +130,11 @@ def flatten_nodes(tree):
     return ",".join(res)
 
 
-def canonical_repr(obj: Union[str, Tree, Node]) -> str:
+def canonical_repr(obj: Union[str, Tree, Node], *, repr=None, style="ascii32") -> str:
+    if repr is None:
+        repr = "{node.data}"
     if isinstance(obj, (Node, Tree)):
-        res = obj.format(repr="{node.data}", style="ascii32")
+        res = obj.format(repr=repr, style=style)
     else:
         res = obj
     res = dedent(res).strip()
@@ -150,9 +145,17 @@ tree_header_pattern = re.compile(r"Tree<.*>")
 canonical_tree_header = "Tree<*>"
 
 
-def check_content(tree: Tree, expect_ascii, *, msg="", ignore_tree_name=True):
-    s1 = indent(canonical_repr(tree), "    ")
-    s2 = indent(canonical_repr(expect_ascii), "    ")
+def check_content(
+    tree: Tree, expect_ascii, *, msg="", ignore_tree_name=True, repr=None, style=None
+):
+    if style is None:
+        if "├── " in expect_ascii or "╰── " in expect_ascii:
+            style = "round43"
+        else:
+            style = "ascii32"
+
+    s1 = indent(canonical_repr(tree, repr=repr, style=style), "    ")
+    s2 = indent(canonical_repr(expect_ascii, repr=repr, style=style), "    ")
     if ignore_tree_name:
         s1 = tree_header_pattern.sub(canonical_tree_header, s1, count=1)
         s2 = tree_header_pattern.sub(canonical_tree_header, s2, count=1)
