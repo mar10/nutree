@@ -71,11 +71,28 @@ annotations)::
         ╰── b1 - [Moved here]
             ╰── b11
 
+Pass ``reduce=True`` to remove all unmodified nodes from the result::
+
+    tree_2 = tree_0.diff(tree_1, reduce=True)
+
+::
+
+    Tree<"diff('T0', 'T1')">
+    ├── A
+    │   ├── a1
+    │   │   ╰── a11 - [Removed]
+    │   ╰── a2
+    │       ╰── a21 - [Added]
+    ├── B
+    │   ╰── b1 - [Moved away]
+    ╰── C - [Added]
+        ╰── b1 - [Moved here]
+
 Pass ``ordered=True`` to check for changes in child order as well::
 
     tree_2 = tree_0.diff(tree_1, ordered=True)
 
-::
+"a12" moved from index 1 to index 0 because "a11" was removed::
 
     Tree<"diff('T0', 'T1')">
     ├── A

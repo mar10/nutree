@@ -6,7 +6,8 @@
 import json
 import tempfile
 
-from nutree import Tree
+from nutree import Node, Tree
+from nutree.diff import DiffClassification, diff_node_formatter
 
 from . import fixture
 
@@ -146,23 +147,92 @@ class TestSerialize:
         assert tree._self_check()
         assert tree_2._self_check()
 
+
+class TestDot:
     def test_serialize_dot(self):
         """Save/load as  object tree with clones."""
 
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
-        # tree.to_dotfile("/Users/martin/Downloads/tree.gv", format="png")
         # tree.to_dotfile(
-        #     "/Users/martin/Downloads/tree.gv",
+        #     "/Users/martin/Downloads/tree.png",
         #     format="png",
-        #     # add_root=False,
+        #     add_root=False,
         #     # single_inst=False,
         # )
+        # assert False
 
         res = [line for line in tree.to_dot()]
-        assert len(res) == 24
+        assert len(res) == 25
         res = "\n".join(res)
         print(res)
         assert '__root__ [label="Root" shape="box"]' in res
         assert "__root__ -> " in res
         # assert False
+
+    def test_serialize_dot_2(self):
+        tree_0 = fixture.create_tree(name="T0", print=True)
+
+        tree_1 = fixture.create_tree(name="T1", print=False)
+
+        tree_1["a2"].add("a21")
+        tree_1["a11"].remove()
+        tree_1.add_child("C")
+        tree_1["b1"].move(tree_1["C"])
+        tree_1.print()
+
+        tree_2 = tree_0.diff(tree_1, reduce=False)
+
+        tree_2.print(repr=diff_node_formatter)
+
+        def node_mapper(node: Node, attr_def: dict):
+            dc = node.get_meta("dc")
+            if dc == DiffClassification.ADDED:
+                attr_def["color"] = "#00c000"
+            elif dc == DiffClassification.REMOVED:
+                attr_def["color"] = "#c00000"
+
+        def edge_mapper(node: Node, attr_def: dict):
+            # https://renenyffenegger.ch/notes/tools/Graphviz/examples/index
+            # https://graphs.grevian.org/reference
+            # https://graphviz.org/doc/info/attrs.html
+            dc = node.get_meta("dc")
+            if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
+                attr_def["color"] = "#00C000"
+            elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
+                attr_def["style"] = "dashed"
+                attr_def["color"] = "#C00000"
+            # # attr_def["label"] = "\E"
+            # # attr_def["label"] = "child of"
+            # attr_def["color"] = "green"
+            # # attr_def["style"] = "dashed"
+            # attr_def["penwidth"] = 1.0
+            # # attr_def["weight"] = 1.0
+
+        # tree_2.to_dotfile(
+        #     "/Users/martin/Downloads/tree_diff.png",
+        #     format="png",
+        #     # add_root=False,
+        #     # single_inst=False,
+        #     graph_attrs={"label": "Diff T0/T1"},
+        #     node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
+        #     edge_attrs={},
+        #     node_mapper=node_mapper,
+        #     edge_mapper=edge_mapper,
+        # )
+        # raise
+
+        res = [
+            line
+            for line in tree_2.to_dot(
+                graph_attrs={"label": "Diff T0/T1"},
+                node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
+                edge_attrs={},
+                node_mapper=node_mapper,
+                edge_mapper=edge_mapper,
+            )
+        ]
+        res = "\n".join(res)
+        print(res)
+        assert 'node  [style="filled" fillcolor="#e0e0e0"]' in res
+        assert '[label="C" color="#00c000"]' in res

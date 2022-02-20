@@ -2,11 +2,9 @@
 # (c) 2021-2022 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
-modules.
+Functions and declarations to implement `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
 """
-import os
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Generator, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
@@ -23,11 +21,15 @@ def node_to_dot(
     *,
     add_self=False,
     single_inst=True,
+    graph_attrs=None,
+    node_attrs=None,
+    edge_attrs=None,
     node_mapper=None,
     edge_mapper=None,
 ) -> Generator[str, None, None]:
-    """Generate DOT formatted output.
+    """Generate DOT formatted output line-by-line.
 
+    https://graphviz.org/doc/info/attrs.html
     Args:
         mapper (method):
         add_self (bool):
@@ -40,15 +42,40 @@ def node_to_dot(
     def _key(n: "Node"):
         return n._data_id if single_inst else n._node_id
 
-    yield "// Generator: https://github.com/mar10/nutree/"
-    yield f"digraph {name} {{"
+    def _attr_str(attr_def: dict, mapper=None, node=None):
+        if mapper:
+            if attr_def is None:
+                attr_def = {}
+            mapper(node, attr_def)
+        if not attr_def:
+            return ""
+        attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())
+        return " [" + attr_str + "]"
 
-    yield f"{indent}// Node definitions"
+    yield "# Generator: https://github.com/mar10/nutree/"
+    yield f'digraph "{name}" {{'
+
+    if graph_attrs or node_attrs or edge_attrs:
+        yield ""
+        yield f"{indent}# Default Definitions"
+        if graph_attrs:
+            yield f"{indent}graph {_attr_str(graph_attrs)}"
+        if node_attrs:
+            yield f"{indent}node {_attr_str(node_attrs)}"
+        if edge_attrs:
+            yield f"{indent}edge {_attr_str(edge_attrs)}"
+
+    yield ""
+    yield f"{indent}# Node Definitions"
+
     if add_self:
         if node._parent:
-            yield f"{indent}{_key(node)}"
-        else:  # __root__ inherits tree name
-            yield f'{indent}{_key(node)} [label="{name}" shape="box"]'
+            attr_def = {}
+        else:  # __root__ inherits tree name by default
+            attr_def = {"label": f"{name}", "shape": "box"}
+
+        attr_str = _attr_str(attr_def, node_mapper, node)
+        yield f"{indent}{_key(node)}{attr_str}"
 
     for n in node:
         if single_inst:
@@ -59,16 +86,18 @@ def node_to_dot(
         else:
             key = n._node_id
 
-        yield f'{indent}{key} [label="{n.name}"]'
+        attr_def = {"label": n.name}
+        attr_str = _attr_str(attr_def, node_mapper, n)
+        yield f"{indent}{key}{attr_str}"
 
     yield ""
-    yield f"{indent}// Edge definitions"
+    yield f"{indent}# Edge Definitions"
     for n in node:
         if not add_self and n._parent is node:
             continue
-        # parent_key = _key(n._parent) if n._parent else 0
-        # yield f"{indent}{parent_key} -> {_key(n)}"
-        yield f"{indent}{_key(n._parent)} -> {_key(n)}"
+        attr_def = {}
+        attr_str = _attr_str(attr_def, edge_mapper, n)
+        yield f"{indent}{_key(n._parent)} -> {_key(n)}{attr_str}"
 
     yield "}"
 
@@ -80,32 +109,60 @@ def tree_to_dotfile(
     format=None,
     add_root=True,
     single_inst=True,
+    graph_attrs=None,
+    node_attrs=None,
+    edge_attrs=None,
     node_mapper=None,
     edge_mapper=None,
 ):
-    if isinstance(target, (str, PurePath)):
-        with open(target, "w") as fp:
-            tree.to_dotfile(
-                fp,
+    if isinstance(target, str):
+        target = Path(target)
+
+    if isinstance(target, PurePath):
+        if format:
+            dot_path = target.with_suffix(".gv")
+        else:
+            dot_path = target
+
+        # print("write", dot_path)
+        with open(dot_path, "w") as fp:
+            tree_to_dotfile(
+                tree=tree,
+                target=fp,
                 add_root=add_root,
                 single_inst=single_inst,
+                graph_attrs=graph_attrs,
+                node_attrs=node_attrs,
+                edge_attrs=edge_attrs,
                 node_mapper=node_mapper,
                 edge_mapper=edge_mapper,
             )
+
         if format:
             if not pydot:
                 raise RuntimeError("Need pydot installed to convert DOT output.")
+            # print("convert", dot_path, format, target)
             pydot.call_graphviz(
                 "dot",
-                ["-O", f"-T{format}", target],
-                working_dir=os.path.dirname(target),
+                [
+                    "-o",
+                    target,
+                    f"-T{format}",
+                    dot_path,
+                ],
+                working_dir=target.parent,
             )
             # https://graphviz.org/docs/outputs/
             # check_call(f"dot -h")
             # check_call(f"dot -O -T{format} {target}")
             # check_call(f"dot -o{target}.{format} -T{format} {target}")
+
+            # Remove DOT file that was created as input for the conversion
+            # TODO:
+            # dot_path.unlink()
         return
 
+    # `target` is suppoesed to be an open, writable filelike
     if format:
         raise RuntimeError("Need a filepath to convert DOT output.")
 
@@ -113,12 +170,11 @@ def tree_to_dotfile(
         for line in tree.to_dot(
             add_root=add_root,
             single_inst=single_inst,
+            graph_attrs=graph_attrs,
+            node_attrs=node_attrs,
+            edge_attrs=edge_attrs,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         ):
             target.write(line + "\n")
     return
-
-
-# def tree_from_dot(tree, dot):
-#     pass

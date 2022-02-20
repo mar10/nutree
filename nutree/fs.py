@@ -2,7 +2,7 @@
 # (c) 2021-2022 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Test helpers.
+Methods and classes to support file system related functionality.
 """
 from pathlib import Path
 
@@ -53,7 +53,7 @@ def load_tree_from_fs(path: str) -> Tree:
                 if "." not in c.name:
                     # Skip system folders
                     visit(pn, c)
-            else:
+            elif c.is_file():
                 stat = c.stat()
                 o = FileSystemEntry(c.name, False, stat.st_size, stat.st_mtime)
                 node.add(o)

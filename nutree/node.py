@@ -1141,6 +1141,9 @@ class Node:
         *,
         add_self=False,
         single_inst=True,
+        graph_attrs=None,
+        node_attrs=None,
+        edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ) -> Generator[str, None, None]:
@@ -1155,6 +1158,9 @@ class Node:
             self,
             add_self=add_self,
             single_inst=single_inst,
+            graph_attrs=graph_attrs,
+            node_attrs=node_attrs,
+            edge_attrs=edge_attrs,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

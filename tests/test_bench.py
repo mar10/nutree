@@ -3,7 +3,6 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
-# from nutree import AmbigousMatchError, IterMethod, Node, Tree
 import sys
 
 import pytest

@@ -410,12 +410,18 @@ class Tree:
         *,
         add_root=True,
         single_inst=True,
+        graph_attrs=None,
+        node_attrs=None,
+        edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ) -> Generator[str, None, None]:
         yield from self._root.to_dot(
             add_self=add_root,
             single_inst=single_inst,
+            graph_attrs=graph_attrs,
+            node_attrs=node_attrs,
+            edge_attrs=edge_attrs,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )
@@ -427,6 +433,9 @@ class Tree:
         format=None,
         add_root=True,
         single_inst=True,
+        graph_attrs=None,
+        node_attrs=None,
+        edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ):
@@ -436,6 +445,9 @@ class Tree:
             format=format,
             add_root=add_root,
             single_inst=single_inst,
+            graph_attrs=graph_attrs,
+            node_attrs=node_attrs,
+            edge_attrs=edge_attrs,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )
@@ -503,3 +515,4 @@ class _SystemRootNode(Node):
         self._parent = None
         self._node_id = self._data_id = self._data = "__root__"
         self._children = []
+        self._meta = None

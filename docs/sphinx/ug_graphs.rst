@@ -25,7 +25,7 @@ Given this tree ::
             ├── 'a11'  <- second occurence
             ╰── 'b11'
 
-we can create DOT format like so::
+we can write a DOT formatted file like so::
 
     tree.to_dotfile("graph.gv")
 
@@ -57,37 +57,93 @@ we can create DOT format like so::
 
 This DOT graph may be rendered in different formats like so::
 
-    tree.to_dotfile("graph.png", format="png")
+    tree.to_dotfile("tree_graph.png", format="png")
 
-.. image:: tree.gv.png
+.. image:: tree_graph.png
+
+Note that in the previous image, the `clone` tree node "a11" is represented 
+as a single graph node.
+Separate nodes can be created by passing the ``single_inst=False`` argument::
+
+    tree.to_dotfile("graph.png", format="png", single_inst=False)
+
+.. image:: tree_graph_single_inst.png
+
+Pass the ``add_root=False`` argument to remove the root node::
+
+    tree.to_dotfile("graph.png", format="png", add_root=False)
+
+.. image:: tree_graph_no_root.png
+
+The DOT output can be customized with default attribute definitions by passing 
+the `graph_attrs`, `node_attrs`, and `edge_attrs` arguments. |br|
+In addition, the default attributes can be overriden per node and edge by passing 
+mapper callbacks.
+See also `list of available attributes <https://graphviz.org/doc/info/attrs.html>`_.
+
+Let's visualize the result of the :ref:`Diff and Merge` example::
+
+    tree_2 = tree_0.diff(tree_1)
+
+    def node_mapper(node: Node, attr_def: dict):
+        dc = node.get_meta("dc")
+        if dc == DiffClassification.ADDED:
+            attr_def["color"] = "#00c000"
+        elif dc == DiffClassification.REMOVED:
+            attr_def["color"] = "#c00000"
+
+    def edge_mapper(node: Node, attr_def: dict):
+        dc = node.get_meta("dc")
+        if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
+            attr_def["color"] = "#00C000"
+        elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
+            attr_def["style"] = "dashed"
+            attr_def["color"] = "#C00000"
+
+    tree_2.to_dotfile(
+        "result.png",
+        format="png",
+        graph_attrs={},
+        node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
+        edge_attrs={},
+        node_mapper=node_mapper,
+        edge_mapper=edge_mapper,
+    )
+
+.. image:: tree_graph_diff.png
 
 .. note::
     Writing of plain DOT formats is natively implemented by `nutree`. |br|
-    Reading of DOT formats requires the 
-    `pydot <https://github.com/pydot/pydot>`_ library to be installed. |br|
     Rendering of output formats like `png`, `svg`, etc. requires an installation
-    of `pydot` and `Graphwiz <https://www.graphviz.org>`_.
+    of `pydot <https://github.com/pydot/pydot>`_ 
+    and `Graphwiz <https://www.graphviz.org>`_.
 
 
-.. rubric:: Reading Digraphs
+..
+    .. rubric:: Reading Digraphs
 
-.. note:: Reading of DOT files is not yet implemented.
-    
-Every tree is a digraph, however not every digraph can be directly represented 
-as tree, because arbitrary directed graphs 
+    .. note:: Reading of DOT files is not yet implemented.
 
-  1. may contain closed circles (i.e. the graph is not 'acyclic')
-  2. may have loops (arrows that directly connect nodes to themselves), which
-     is a special case of 1.)
-  3. may have multiple arrows with same source and target nodes
-  4. may not have an obvious root node (i.e. the graph is not 'rooted')
-  5. may be the target of more than one arrow
+    .. note::
+        Writing of plain DOT formats is natively implemented by `nutree`. |br|
+        Reading of DOT formats requires the 
+        `pydot <https://github.com/pydot/pydot>`_ library to be installed. |br|
 
-As a consequence, 
+    Every tree is a digraph, however not every digraph can be directly represented 
+    as tree, because arbitrary directed graphs 
 
-  1. Circles would result in trees of infinite depth. We stop adding a
-     child node if it already appears as its own parent.
-  2. See 1.): we do not add a node as child of itself.
-  3. We do not allow to add the same node a second time under one parent.
-  4. We pick the first node, or search for a good candidate using heuristics.
-  5. This node appears multiple times as child of different parents.
+    1. may contain closed circles (i.e. the graph is not 'acyclic')
+    2. may have loops (arrows that directly connect nodes to themselves), which
+        is a special case of 1.)
+    3. may have multiple arrows with same source and target nodes
+    4. may not have an obvious root node (i.e. the graph is not 'rooted')
+    5. may be the target of more than one arrow
+
+    As a consequence, 
+
+    1. Circles would result in trees of infinite depth. We stop adding a
+        child node if it already appears as its own parent.
+    2. See 1.): we do not add a node as child of itself.
+    3. We do not allow to add the same node a second time under one parent.
+    4. We pick the first node, or search for a good candidate using heuristics.
+    5. This node appears multiple times as child of different parents.
