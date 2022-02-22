@@ -145,8 +145,8 @@ tree_header_pattern = re.compile(r"Tree<.*>")
 canonical_tree_header = "Tree<*>"
 
 
-def check_content(
-    tree: Tree, expect_ascii, *, msg="", ignore_tree_name=True, repr=None, style=None
+def _check_content(
+    tree: Tree, expect_ascii, msg="", ignore_tree_name=True, repr=None, style=None
 ):
     if style is None:
         if "├── " in expect_ascii or "╰── " in expect_ascii:
@@ -162,10 +162,16 @@ def check_content(
 
     if s1 != s2:
         err = f"Mismatch {msg}: Expected:\n{s2}\nbut got:\n{s1}"
-        # print(err)
-        raise AssertionError(err) from None
+        return err
+    return None
 
-    # assert s1 == s2
+
+def check_content(
+    tree: Tree, expect_ascii, *, msg="", ignore_tree_name=True, repr=None, style=None
+):
+    err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)
+    if err:
+        raise AssertionError(err) from None
     return True
 
 

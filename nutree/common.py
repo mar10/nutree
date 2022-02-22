@@ -55,7 +55,7 @@ class SkipBranch(IterationControl):
     """
 
     def __init__(self, *, and_self=None):
-        self.add_self = and_self
+        self.and_self = and_self
 
 
 class SelectBranch(IterationControl):

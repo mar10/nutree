@@ -154,13 +154,18 @@ class TestDot:
 
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
-        # tree.to_dotfile(
-        #     "/Users/martin/Downloads/tree.png",
-        #     format="png",
-        #     add_root=False,
-        #     # single_inst=False,
-        # )
-        # assert False
+        with tempfile.NamedTemporaryFile("w", suffix=".gv") as path:
+            tree.to_dotfile(path.name)
+
+        # with tempfile.NamedTemporaryFile("w", suffix=".png") as path:
+        #     tree.to_dotfile(
+        #         path.name,
+        #         # "/Users/martin/Downloads/tree.png",
+        #         format="png",
+        #         add_root=False,
+        #         # single_inst=False,
+        #     )
+        #     assert False
 
         res = [line for line in tree.to_dot()]
         assert len(res) == 25

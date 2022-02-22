@@ -1,6 +1,0 @@
-- name: User_1
-  password: secret
-  custom: foo
-- name: User_2
-  password: guessme
-  custom: bar

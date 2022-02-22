@@ -166,7 +166,7 @@ def diff_tree(t0: "Tree", t1: "Tree", *, ordered=False, reduce=False) -> "Tree":
             for n in removed_clones:
                 n.set_meta("dc", DC.MOVED_TO)
 
-    # TODO: purge unchanged parts from tree
+    # Purge unchanged parts from tree
     if reduce:
 
         def pred(node):

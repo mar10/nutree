@@ -251,18 +251,18 @@ class Tree:
     def copy(
         self, *, name: str = None, predicate: PredicateCallbackType = None
     ) -> "Tree":
-        """Return a shallow copy of the tree.
+        """Return a copy of the tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
-        They reference the original data objects.
+        The nodes reference the original data objects.
 
-        See also Node's :meth:`~nutree.node.Node.copy_from` method.
+        See also :ref:`callbacks`.
         """
         if name is None:
             name = f"Copy of {self}"
         new_tree = Tree(name)
         with self:
-            new_tree._root.copy_from(self._root, predicate=predicate)
+            new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
 
     def filter(self, predicate: PredicateCallbackType) -> None:

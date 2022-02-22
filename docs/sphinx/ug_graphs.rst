@@ -138,6 +138,7 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
     3. may have multiple arrows with same source and target nodes
     4. may not have an obvious root node (i.e. the graph is not 'rooted')
     5. may be the target of more than one arrow
+    6. may have other edge semantics as 'child of'
 
     As a consequence, 
 
@@ -147,3 +148,4 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
     3. We do not allow to add the same node a second time under one parent.
     4. We pick the first node, or search for a good candidate using heuristics.
     5. This node appears multiple times as child of different parents.
+    6. TODO:

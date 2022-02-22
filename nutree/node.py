@@ -445,17 +445,26 @@ class Node:
 
     def add_child(
         self,
-        child: Union["Node", Any],
+        child: Union["Node", "Tree", Any],
         *,
         before: Union["Node", bool, int, None] = None,
+        deep: bool = False,
         data_id=None,
         node_id=None,
     ) -> "Node":
-        """Append or insert a new subnode.
+        """Append or insert a new subnode or branch as child.
 
-        If `child` is an existing Node instance, a copy of this node will be
-        created that references the same `child.data` object. |br|
-        Otherwise, `child` itself will become the `data` object of the new node.
+        If `child` is an existing :class:`~nutree.node.Node` instance, a copy
+        of this node will be created, that references the same `child.data`
+        object. |br|
+        If `deep` is true, the children are copied recursively.
+
+        If `child` is a :class:`~nutree.tree.Tree`, all of its topnodes are
+        added recursively.
+
+        If `child` is neither a :class:`~nutree.node.Node` nor a
+        :class:`~nutree.tree.Tree`, `child` itself will become the
+        `data` object of a new node thas is added.
 
         The source node may come from the same or from a foreign tree. |br|
         Note that adding the same data below one parent is not allowed.
@@ -470,27 +479,50 @@ class Node:
             - <Node>: prepend the new node before this childnode
 
         Args:
-            child (Node|Any):
+            child (Node|Tree|Any):
                 Either an existing Node or a data object.
             before (bool|int|Node|None):
                 Optional position.
+            deep (bool):
+                Copy descendants if any.
+                This argument defaults to false and is only used when `child`
+                is a :class:`~nutree.node Node`.
             data_id (str|int|None):
-                Default `None` will to calculate from `hash(node.data)`.
+                Allow to override the new node's `data_id`.
+                This argument is only allowed for single nodes, but not for
+                deep copies.
+                Default `None` will to calculate from ``hash(node.data)``.
             node_id (str|int|None):
-                Optional custom unique node key (defaults to `hash(node)`)
+                Optional custom unique node key (defaults to ``id(node)``)
+                This argument is only allowed for single nodes, but not for
+                deep copies.
         Returns:
-            the new :class:`node.Node` instance
+            the new :class:`~nutree.node.Node` instance
         """
+        if isinstance(child, self._tree.__class__):
+            if data_id or node_id:
+                raise ValueError
+            topnodes = child._root.children
+            if isinstance(before, (int, Node)) or before is True:
+                topnodes.reverse()
+            for n in topnodes:
+                self.add_child(n, before=before, deep=deep)
+            return
+
+        source_node = None
         if isinstance(child, Node):
-            if child._tree is self._tree:
-                if child._parent is self._parent:
-                    raise UniqueConstraintError(f"Same parent not allowed: {child}")
+            source_node = child
+            if source_node._tree is self._tree:
+                if source_node._parent is self._parent:
+                    raise UniqueConstraintError(
+                        f"Same parent not allowed: {source_node}"
+                    )
             else:
                 pass
                 # raise NotImplementedError("Cross-tree adding")
-            if data_id and data_id != child._data_id:
-                raise UniqueConstraintError(f"data_id conflict: {child}")
-            node = Node(child.data, parent=self, data_id=data_id, node_id=node_id)
+            if data_id and data_id != source_node._data_id:
+                raise UniqueConstraintError(f"data_id conflict: {source_node}")
+            node = Node(source_node.data, parent=self, data_id=data_id, node_id=node_id)
         else:
             node = Node(child, parent=self, data_id=data_id, node_id=node_id)
 
@@ -503,11 +535,15 @@ class Node:
         elif type(before) is int:
             children.insert(before, node)
         elif before:
-            assert before._parent is self
+            if before._parent is not self:
+                raise ValueError("`before=node` argument must be a child of this node")
             idx = children.index(before)  # raises ValueError
             children.insert(idx, node)
         else:
             children.append(node)
+
+        if deep and source_node:
+            node._add_from(source_node)
 
         return node
 
@@ -603,17 +639,17 @@ class Node:
     def copy(self, *, add_self=True, predicate=None) -> "Tree":
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
-        See also :meth:`copy_from`.
+        See also :meth:`_add_from`.
         """
         new_tree = self._tree.__class__()
         if add_self:
             root = new_tree.add(self)
         else:
             root = new_tree._root
-        root.copy_from(self, predicate=predicate)
+        root._add_from(self, predicate=predicate)
         return new_tree
 
-    def copy_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
+    def _add_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
         """Append copies of all source descendants to self.
 
         See also :ref:`callbacks`.
@@ -625,7 +661,7 @@ class Node:
         for child in other.children:
             new_child = self.add_child(child.data, data_id=child._data_id)
             if child.has_children():
-                new_child.copy_from(child, predicate=None)
+                new_child._add_from(child, predicate=None)
         return
 
     def _add_filtered(self, other: "Node", predicate: PredicateCallbackType) -> None:
@@ -670,7 +706,7 @@ class Node:
                 elif isinstance(res, SelectBranch):
                     # Unconditionally copy whole branch: no need to visit children
                     p = _create_parents()
-                    p.copy_from(n)
+                    p._add_from(n)
                 elif res in (None, False):  # Add only if has a `true` descendant
                     _visit(n)
                 elif res is True:  # Add this node (and also check children)

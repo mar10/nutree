@@ -4,11 +4,13 @@
 """
 """
 import re
+from pathlib import Path
 
 import pytest
 
 from nutree import AmbigousMatchError, IterMethod, Node, Tree
 from nutree.common import SkipBranch, StopTraversal
+from nutree.fs import load_tree_from_fs
 
 from . import fixture
 
@@ -75,6 +77,11 @@ class TestBasics:
         node.clear_meta("qux")
         assert node._meta is None, "reset empty meta dict to None"
 
+        node.update_meta({"qux": False})
+        assert node._meta == {"qux": False}
+        node.clear_meta()
+        assert node._meta is None
+
 
 class TestNavigate:
     def setup_method(self):
@@ -104,6 +111,8 @@ class TestNavigate:
         assert tree[records.data_id] is records
         assert tree[records.data] is records
         assert tree[records.node_id] is records
+        with pytest.raises(ValueError):
+            tree[records]
 
         assert records.tree is records._tree
 
@@ -586,6 +595,7 @@ class TestTraversal:
 class TestMutate:
     def test_add(self):
         tree = fixture.create_tree()
+
         b = tree["B"]
         a11 = tree["a11"]
         b.prepend_child(a11)
@@ -611,6 +621,71 @@ class TestMutate:
             |  `- a2
             `- B
                +- a11
+               `- b1
+                  `- b11
+            """,
+        )
+
+    def test_copy_branch(self):
+        # Copy a node
+        tree = fixture.create_tree()
+        tree["A"].add(tree["b1"])
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  +- a2
+            |  `- b1
+            `- B
+               `- b1
+                  `- b11
+            """,
+        )
+
+        # Copy a branch deep
+        tree = fixture.create_tree()
+        tree["A"].add(tree["b1"], deep=True)
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  +- a2
+            |  `- b1
+            |     `- b11
+            `- B
+               `- b1
+                  `- b11
+            """,
+        )
+
+    def test_copy_tree(self):
+        tree = fixture.create_tree()
+
+        tree_2 = tree["a1"].copy()
+        assert isinstance(tree_2, Tree)
+
+        tree["B"].add(tree_2, before=tree["b1"], deep=True)
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- a1
+               |  +- a11
+               |  `- a12
                `- b1
                   `- b11
             """,
@@ -787,5 +862,20 @@ class TestCopy:
                 │       ╰── a12
                 ╰── a2
                     ╰── a2
+            """,
+        )
+
+
+class TestFS:
+    def test_fs(self):
+        path = Path(__file__).parent / "fixtures"
+        tree = load_tree_from_fs(path)
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            ├── 'file_1.txt', 13 bytes
+            ╰── [folder_1]
+                ╰── 'file_1_1.txt', 15 bytes
             """,
         )

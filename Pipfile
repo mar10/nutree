@@ -13,6 +13,7 @@ isort = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
+PyYAML = "*"
 recommonmark = "*"
 setuptools = ">=42.0"
 Sphinx = "*"
@@ -25,7 +26,6 @@ nutree = {path = ".",editable = true}
 ipykernel = "*"
 
 [packages]
-PyYAML = "*"
 
 [requires]
 python_version = "3.10"

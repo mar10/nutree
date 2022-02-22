@@ -72,7 +72,6 @@ argument and should return control value:
       No action: continue traversal.
 
 :meth:`~nutree.tree.Tree.copy`, 
-:meth:`~nutree.node.Node.copy_from`, 
 :meth:`~nutree.tree.Tree.filter`, 
 :meth:`~nutree.tree.Tree.filtered`,
 :meth:`~nutree.node.Node.copy`
