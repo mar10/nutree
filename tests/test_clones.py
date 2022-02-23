@@ -5,7 +5,7 @@
 """
 import pytest
 
-from nutree import AmbigousMatchError, Node, Tree
+from nutree import AmbiguousMatchError, Node, Tree
 
 from . import fixture
 
@@ -27,7 +27,7 @@ class TestClones:
         print(tree.format(repr="{node.data}"))
 
         assert tree.count == 9
-        assert tree.count_data == 8
+        assert tree.count_unique == 8
 
         # Not allowed to add two clones to same parent
         # with pytest.raises(UniqueConstraintError):
@@ -36,7 +36,7 @@ class TestClones:
         # tree[data] expects single matches
         with pytest.raises(KeyError):
             tree["not_existing"]
-        with pytest.raises(AmbigousMatchError):
+        with pytest.raises(AmbiguousMatchError):
             tree["a1"]
 
         # # Not allowed to add two clones to same parent

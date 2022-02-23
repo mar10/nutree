@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from nutree import AmbigousMatchError, IterMethod, Node, Tree
+from nutree import AmbiguousMatchError, IterMethod, Node, Tree
 from nutree.common import SkipBranch, StopTraversal
 from nutree.fs import load_tree_from_fs
 
@@ -284,7 +284,7 @@ class TestNavigate:
         tree = fixture.create_tree()
         tree["B"].prepend_child("a1")
 
-        with pytest.raises(AmbigousMatchError):  # not allowed for clones
+        with pytest.raises(AmbiguousMatchError):  # not allowed for clones
             tree.find_first("a1").rename("new_a1")
 
         with pytest.raises(ValueError):  # missing args

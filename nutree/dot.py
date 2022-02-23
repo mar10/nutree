@@ -20,7 +20,7 @@ def node_to_dot(
     node: "Node",
     *,
     add_self=False,
-    single_inst=True,
+    unique_nodes=True,
     graph_attrs=None,
     node_attrs=None,
     edge_attrs=None,
@@ -33,14 +33,14 @@ def node_to_dot(
     Args:
         mapper (method):
         add_self (bool):
-        single_inst (bool):
+        unique_nodes (bool):
     """
     indent = "  "
     name = node.tree.name
     used_keys = set()
 
     def _key(n: "Node"):
-        return n._data_id if single_inst else n._node_id
+        return n._data_id if unique_nodes else n._node_id
 
     def _attr_str(attr_def: dict, mapper=None, node=None):
         if mapper:
@@ -78,7 +78,7 @@ def node_to_dot(
         yield f"{indent}{_key(node)}{attr_str}"
 
     for n in node:
-        if single_inst:
+        if unique_nodes:
             key = n._data_id
             if key in used_keys:
                 continue
@@ -108,7 +108,7 @@ def tree_to_dotfile(
     *,
     format=None,
     add_root=True,
-    single_inst=True,
+    unique_nodes=True,
     graph_attrs=None,
     node_attrs=None,
     edge_attrs=None,
@@ -130,7 +130,7 @@ def tree_to_dotfile(
                 tree=tree,
                 target=fp,
                 add_root=add_root,
-                single_inst=single_inst,
+                unique_nodes=unique_nodes,
                 graph_attrs=graph_attrs,
                 node_attrs=node_attrs,
                 edge_attrs=edge_attrs,
@@ -169,7 +169,7 @@ def tree_to_dotfile(
     with tree:
         for line in tree.to_dot(
             add_root=add_root,
-            single_inst=single_inst,
+            unique_nodes=unique_nodes,
             graph_attrs=graph_attrs,
             node_attrs=node_attrs,
             edge_attrs=edge_attrs,

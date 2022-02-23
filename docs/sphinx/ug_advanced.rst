@@ -52,7 +52,7 @@ argument and should return control value:
     - `True`: Add node to results and continue traversal.
     - :data:`~nutree.common.SkipBranch`:
       Skip node and its descendants, but continue iteration with next sibling. |br|
-      Return `SkipBranch(add_self=True)` to add the node to results, but skip
+      Return `SkipBranch(and_self=False)` to add the node to results, but skip
       descendants.
     - :data:`~nutree.common.StopTraversal`:
       Stop iteration and return current results.
@@ -83,7 +83,7 @@ argument and should return control value:
       descendant is true.
     - :data:`~nutree.common.SkipBranch`:
       Skip node and its descendants, but continue iteration with next sibling. |br|
-      Return `SkipBranch(add_self=True)` to keep the node, but skip descendants.
+      Return `SkipBranch(and_self=False)` to keep the node, but skip descendants.
     - :data:`~nutree.common.SelectBranch`:
       Unconditionally accept node and all descendants (do not call `predicate()`).
       In other words: copy the whole branch.

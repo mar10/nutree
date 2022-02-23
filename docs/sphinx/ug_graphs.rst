@@ -63,9 +63,9 @@ This DOT graph may be rendered in different formats like so::
 
 Note that in the previous image, the `clone` tree node "a11" is represented 
 as a single graph node.
-Separate nodes can be created by passing the ``single_inst=False`` argument::
+Separate nodes can be created by passing the ``unique_nodes=False`` argument::
 
-    tree.to_dotfile("graph.png", format="png", single_inst=False)
+    tree.to_dotfile("graph.png", format="png", unique_nodes=False)
 
 .. image:: tree_graph_single_inst.png
 

@@ -15,7 +15,7 @@ from .common import (
     CONNECTORS,
     DEFAULT_CONNECTOR_STYLE,
     DEFAULT_REPR,
-    AmbigousMatchError,
+    AmbiguousMatchError,
     IterMethod,
     PredicateCallbackType,
     SelectBranch,
@@ -85,7 +85,7 @@ class Node:
         evaluated.
         Otherwise ``self.data == other`` is compared.
 
-        Use ``node is other`` syntax instead to check if two nodes are truely
+        Use ``node is other`` syntax instead to check if two nodes are truly
         identical.
         """
         if isinstance(other, Node):
@@ -223,7 +223,7 @@ class Node:
         has_clones = len(cur_nodes) > 1
 
         if has_clones and with_clones is None:
-            raise AmbigousMatchError(
+            raise AmbiguousMatchError(
                 "set_data() for clones requires `with_clones` decision"
             )
 
@@ -448,7 +448,7 @@ class Node:
         child: Union["Node", "Tree", Any],
         *,
         before: Union["Node", bool, int, None] = None,
-        deep: bool = False,
+        deep: bool = None,
         data_id=None,
         node_id=None,
     ) -> "Node":
@@ -460,11 +460,11 @@ class Node:
         If `deep` is true, the children are copied recursively.
 
         If `child` is a :class:`~nutree.tree.Tree`, all of its topnodes are
-        added recursively.
+        added recursively (unless `deep` is false).
 
         If `child` is neither a :class:`~nutree.node.Node` nor a
         :class:`~nutree.tree.Tree`, `child` itself will become the
-        `data` object of a new node thas is added.
+        `data` object of a new node that is added.
 
         The source node may come from the same or from a foreign tree. |br|
         Note that adding the same data below one parent is not allowed.
@@ -485,8 +485,8 @@ class Node:
                 Optional position.
             deep (bool):
                 Copy descendants if any.
-                This argument defaults to false and is only used when `child`
-                is a :class:`~nutree.node Node`.
+                This argument defaults to false  when `child` is a :class:`~nutree.node.Node`.
+                It defaults to true  when `child` is a :class:`~nutree.tree.Tree`.
             data_id (str|int|None):
                 Allow to override the new node's `data_id`.
                 This argument is only allowed for single nodes, but not for
@@ -500,8 +500,8 @@ class Node:
             the new :class:`~nutree.node.Node` instance
         """
         if isinstance(child, self._tree.__class__):
-            if data_id or node_id:
-                raise ValueError
+            if deep is None:
+                deep = True
             topnodes = child._root.children
             if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
@@ -511,6 +511,10 @@ class Node:
 
         source_node = None
         if isinstance(child, Node):
+            if deep is None:
+                deep = False
+            if deep and data_id is not None or node_id is not None:
+                raise ValueError("Cannot set ID for deep copies.")
             source_node = child
             if source_node._tree is self._tree:
                 if source_node._parent is self._parent:
@@ -550,46 +554,76 @@ class Node:
     #: Alias for :meth:`add_child`
     add = add_child
 
-    def append_child(self, child: Union["Node", object], *, data_id=None, node_id=None):
+    def append_child(
+        self,
+        child: Union["Node", "Tree", Any],
+        *,
+        deep=None,
+        data_id=None,
+        node_id=None,
+    ):
         """Append a new subnode.
 
         This is a shortcut for :meth:`add_child` with ``before=None``.
         """
-        return self.add_child(child, data_id=data_id, node_id=node_id, before=None)
+        return self.add_child(
+            child, before=None, deep=deep, data_id=data_id, node_id=node_id
+        )
 
-    def prepend_child(self, child, *, data_id=None, node_id=None):
+    def prepend_child(
+        self,
+        child: Union["Node", "Tree", Any],
+        *,
+        deep=None,
+        data_id=None,
+        node_id=None,
+    ):
         """Prepend a new subnode.
 
         This is a shortcut for :meth:`add_child` with ``before=True``.
         """
         return self.add_child(
-            child, data_id=data_id, node_id=node_id, before=self.first_child
+            child, before=self.first_child, deep=deep, data_id=data_id, node_id=node_id
         )
 
-    def prepend_sibling(self, child, *, data_id=None, node_id=None) -> "Node":
+    def prepend_sibling(
+        self,
+        child: Union["Node", "Tree", Any],
+        *,
+        deep=None,
+        data_id=None,
+        node_id=None,
+    ) -> "Node":
         """Add a new node before `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
         return self._parent.add_child(
-            child, data_id=data_id, node_id=node_id, before=self
+            child, before=self, deep=deep, data_id=data_id, node_id=node_id
         )
 
-    def append_sibling(self, child, *, data_id=None, node_id=None) -> "Node":
+    def append_sibling(
+        self,
+        child: Union["Node", "Tree", Any],
+        *,
+        deep=None,
+        data_id=None,
+        node_id=None,
+    ) -> "Node":
         """Add a new node after `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
         next_node = self.next_sibling
         return self._parent.add_child(
-            child, data_id=data_id, node_id=node_id, before=next_node
+            child, before=next_node, deep=deep, data_id=data_id, node_id=node_id
         )
 
     def move(
         self,
         new_parent: Union["Node", "Tree"],
         *,
-        before: Union["Node", bool, None] = None,
+        before: Union["Node", bool, int, None] = None,
     ):
         """Move this node before or after `otherNode` ."""
         if new_parent is None:
@@ -1176,24 +1210,21 @@ class Node:
         self,
         *,
         add_self=False,
-        single_inst=True,
+        unique_nodes=True,
         graph_attrs=None,
         node_attrs=None,
         edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ) -> Generator[str, None, None]:
-        """Generate DOT formatted output.
+        """Generate a DOT formatted graph representation.
 
-        Args:
-            mapper (method):
-            add_self (bool):
-            single_inst (bool):
+        See :ref:`Graphs` for details.
         """
         res = node_to_dot(
             self,
             add_self=add_self,
-            single_inst=single_inst,
+            unique_nodes=unique_nodes,
             graph_attrs=graph_attrs,
             node_attrs=node_attrs,
             edge_attrs=edge_attrs,

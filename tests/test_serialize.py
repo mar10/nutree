@@ -163,7 +163,7 @@ class TestDot:
         #         # "/Users/martin/Downloads/tree.png",
         #         format="png",
         #         add_root=False,
-        #         # single_inst=False,
+        #         # unique_nodes=False,
         #     )
         #     assert False
 
@@ -218,7 +218,7 @@ class TestDot:
         #     "/Users/martin/Downloads/tree_diff.png",
         #     format="png",
         #     # add_root=False,
-        #     # single_inst=False,
+        #     # unique_nodes=False,
         #     graph_attrs={"label": "Diff T0/T1"},
         #     node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
         #     edge_attrs={},

@@ -13,7 +13,7 @@ from typing import IO, Any, Dict, Generator, List, Union
 from nutree.diff import diff_tree
 
 from .common import (
-    AmbigousMatchError,
+    AmbiguousMatchError,
     IterMethod,
     PredicateCallbackType,
     TraversalCallbackType,
@@ -73,7 +73,10 @@ class Tree:
 
         `data` may be a plain string, data object, data_id, or node_id.
 
-        :class:`~nutree.common.AmbigousMatchError` is raised if multiple matches
+        Note: This is a flexible and concise way to access tree node. However,
+        :meth:`find_all` or :meth:`find_first` may be faster.
+
+        :class:`~nutree.common.AmbiguousMatchError` is raised if multiple matches
         are found.
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
         """
@@ -95,7 +98,7 @@ class Tree:
         if not res:
             raise KeyError(f"{data!r}")
         elif len(res) > 1:
-            raise AmbigousMatchError(
+            raise AmbiguousMatchError(
                 f"{data!r} has {len(res)} occurrences. "
                 "Use tree.find_all() or tree.find_first() to resolve this."
             )
@@ -159,7 +162,7 @@ class Tree:
         return len(self)
 
     @property
-    def count_data(self):
+    def count_unique(self):
         """Return the total number of `unique` nodes.
 
         Multiple references to the same data object ('clones') are only counted
@@ -171,16 +174,19 @@ class Tree:
 
     @property
     def first_child(self):
-        """Return the first top-level node."""
+        """Return the first toplevel node."""
         return self._root.first_child
 
     @property
     def last_child(self):
-        """Return the last top-level node."""
+        """Return the last toplevel node."""
         return self._root.last_child
 
     def get_random_node(self) -> Node:
-        """Return a random node."""
+        """Return a random node.
+
+        Note that there is also `IterMethod.RANDOM_ORDER`.
+        """
         nbid = self._node_by_id
         return nbid[random.choice(list(nbid.keys()))]
 
@@ -235,14 +241,24 @@ class Tree:
         print(self.format(repr=repr, style=style, title=title, join=join))
 
     def add_child(
-        self, child: Any, *, data_id=None, node_id=None, before=None
+        self,
+        child: Union["Node", "Tree", Any],
+        *,
+        before: Union["Node", bool, int, None] = None,
+        deep: bool = None,
+        data_id=None,
+        node_id=None,
     ) -> "Node":
         """Add a toplevel node.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """
         return self._root.add_child(
-            child, data_id=data_id, node_id=node_id, before=before
+            child,
+            before=before,
+            deep=deep,
+            data_id=data_id,
+            node_id=node_id,
         )
 
     #: Alias for :meth:`add_child`
@@ -251,7 +267,7 @@ class Tree:
     def copy(
         self, *, name: str = None, predicate: PredicateCallbackType = None
     ) -> "Tree":
-        """Return a copy of the tree.
+        """Return a copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
         The nodes reference the original data objects.
@@ -266,7 +282,7 @@ class Tree:
         return new_tree
 
     def filter(self, predicate: PredicateCallbackType) -> None:
-        """In-place removal of matching nodes."""
+        """In-place removal of unmatching nodes."""
         self._root.filter(predicate=predicate)
 
     def filtered(self, predicate: PredicateCallbackType) -> "Tree":
@@ -274,7 +290,7 @@ class Tree:
         return self.copy(predicate=predicate)
 
     def clear(self) -> None:
-        """Remove all nodes from the tree."""
+        """Remove all nodes from this tree."""
         self._root.remove_children()
 
     def find_all(
@@ -329,7 +345,7 @@ class Tree:
     find = find_first
 
     def sort(self, *, key=None, reverse=False, deep=True):
-        """Sort child nodes recursively.
+        """Sort toplevel nodes (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.
@@ -409,16 +425,20 @@ class Tree:
         self,
         *,
         add_root=True,
-        single_inst=True,
+        unique_nodes=True,
         graph_attrs=None,
         node_attrs=None,
         edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ) -> Generator[str, None, None]:
+        """Generate a DOT formatted graph representation.
+
+        See Node's :meth:`~nutree.node.Node.to_dot` method for details.
+        """
         yield from self._root.to_dot(
             add_self=add_root,
-            single_inst=single_inst,
+            unique_nodes=unique_nodes,
             graph_attrs=graph_attrs,
             node_attrs=node_attrs,
             edge_attrs=edge_attrs,
@@ -432,19 +452,24 @@ class Tree:
         *,
         format=None,
         add_root=True,
-        single_inst=True,
+        unique_nodes=True,
         graph_attrs=None,
         node_attrs=None,
         edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
     ):
+        """Serialize a DOT formatted graph representation.
+
+        Optionally convert to a Graphviz display formats.
+        See :ref:`Graphs` for details.
+        """
         res = tree_to_dotfile(
             self,
             target,
             format=format,
             add_root=add_root,
-            single_inst=single_inst,
+            unique_nodes=unique_nodes,
             graph_attrs=graph_attrs,
             node_attrs=node_attrs,
             edge_attrs=edge_attrs,

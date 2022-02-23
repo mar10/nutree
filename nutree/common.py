@@ -21,7 +21,7 @@ class UniqueConstraintError(TreeError):
     """Thrown when trying to add the same node_id to the same parent"""
 
 
-class AmbigousMatchError(TreeError):
+class AmbiguousMatchError(TreeError):
     """Thrown when a single-value lookup found multiple matches."""
 
 

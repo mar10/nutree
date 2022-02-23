@@ -19,7 +19,7 @@ NOTE:
 __version__ = "0.1.1-a1"
 
 from .common import (
-    AmbigousMatchError,
+    AmbiguousMatchError,
     IterMethod,
     SelectBranch,
     SkipBranch,
@@ -35,7 +35,7 @@ from .tree import Tree
 __all__ = [
     Tree,
     Node,
-    AmbigousMatchError,
+    AmbiguousMatchError,
     diff_node_formatter,
     DiffClassification,
     IterMethod,
