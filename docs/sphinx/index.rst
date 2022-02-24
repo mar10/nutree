@@ -86,17 +86,14 @@ Nutree Facts
   * Search by name pattern, id, or object reference
   * Unobtrusive handling of arbitrary objects
   * Compare two trees and calculate patches
-  * Nodes can be plain strings or objects
   * Save as DOT file and graphwiz diagram
+  * Nodes can be plain strings or objects
   * Different traversal methods
   * (De)Serialize to JSON
+  * Fully type annotated
   * Pretty print
   * Navigation
   * Filtering
-
-..
-  * Export to different formats (NYI)
-  * Set-like operations (NYI)
 
 
 `Read more <installation.html>`_ ...

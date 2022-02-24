@@ -199,7 +199,8 @@ class Tree:
     ):
         """Call `callback(node, memo)` for all nodes.
 
-        See Node's :meth:`~nutree.node.Node.visit` method for details.
+        See Node's :meth:`~nutree.node.Node.visit` method and
+        :ref:`iteration callbacks` for details.
         """
         return self._root.visit(callback, add_self=False, method=method, memo=memo)
 
@@ -272,7 +273,7 @@ class Tree:
         New :class:`Tree` and :class:`Node` instances are created.
         The nodes reference the original data objects.
 
-        See also :ref:`callbacks`.
+        See also :ref:`iteration callbacks`.
         """
         if name is None:
             name = f"Copy of {self}"
@@ -298,7 +299,8 @@ class Tree:
     ) -> List["Node"]:
         """Return a list of matching nodes (list may be empty).
 
-        See also Node's :meth:`~nutree.node.Node.find_all` method.
+        See also Node's :meth:`~nutree.node.Node.find_all` method and
+        :ref:`iteration callbacks`.
         """
         if data is not None:
             assert data_id is None
@@ -323,7 +325,8 @@ class Tree:
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
         is not neccessarily the first of a specific iteration method.
-        See also Node's :meth:`~nutree.node.Node.find_first` method.
+        See also Node's :meth:`~nutree.node.Node.find_first` method and
+        :ref:`iteration callbacks`.
         """
         if data is not None:
             assert data_id is None
@@ -367,7 +370,7 @@ class Tree:
 
         See also :meth:`~nutree.tree.Tree.to_dict` and
         Node's :meth:`~nutree.node.Node.find_first` methods, and
-        :ref:`callbacks`.
+        :ref:`iteration callbacks`.
         """
         new_tree = Tree()
         new_tree._root.from_dict(obj, mapper=mapper)

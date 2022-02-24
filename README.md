@@ -16,21 +16,18 @@ yet powerful, API.
 
 **Nutree Facts**
 
-Handle multiple references of single objects ('clones')<br>
-Search by name pattern, id, or object reference<br>
-Unobtrusive handling of arbitrary objects<br>
-Nodes can be plain strings or objects<br>
-Different traversal methods<br>
-(De)Serialize to JSON<br>
-Pretty print<br>
-Navigation<br>
-Filtering<br>
-
-<!-- 
-Compare two trees and calculate patches (NYI)<br>
-Export to different formats (NYI)<br>
-Set-like operations (NYI)<br>
--->
+Handle multiple references of single objects ('clones') <br>
+Search by name pattern, id, or object reference <br>
+Unobtrusive handling of arbitrary objects <br>
+Compare two trees and calculate patches <br>
+Save as DOT file and graphwiz diagram <br>
+Nodes can be plain strings or objects <br>
+Different traversal methods <br>
+(De)Serialize to JSON <br>
+Fully type annotated <br>
+Pretty print <br>
+Navigation <br>
+Filtering <br>
 
 **Example**
 

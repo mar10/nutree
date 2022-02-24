@@ -200,7 +200,7 @@ class Node:
         raise ValueError("Can only rename plain string nodes")
 
     def set_data(self, data, *, data_id=None, with_clones: bool = None) -> None:
-        """Change node's `data` and/or `data_id` and update bookeeping."""
+        """Change node's `data` and/or `data_id` and update bookkeeping."""
         if not data and not data_id:
             raise ValueError("Missing data or data_id")
 
@@ -417,28 +417,25 @@ class Node:
             other_parent_set = {
                 n._node_id for n in other.get_parent_list(add_self=True)
             }
-            for parent in self.get_parent_list(add_self=True, top_down=False):
+            for parent in self.get_parent_list(add_self=True, bottom_up=True):
                 if parent._node_id in other_parent_set:
                     return parent
         return None
 
-    def get_parent_list(self, *, add_self=False, top_down=True) -> List["Node"]:
+    def get_parent_list(self, *, add_self=False, bottom_up=False) -> List["Node"]:
         """Return ordered list of all parent nodes."""
         res = []
         parent = self if add_self else self._parent
         while parent is not None and parent._parent is not None:
             res.append(parent)
             parent = parent._parent
-        if top_down:
+        if not bottom_up:
             res.reverse()
         return res
 
     def get_path(self, *, add_self=True, separator="/", repr="{node.name}") -> str:
         """Return a breadcrumb string, e.g. '/A/a1/a12'."""
-        res = (
-            repr.format(node=p)
-            for p in self.get_parent_list(add_self=add_self, top_down=True)
-        )
+        res = (repr.format(node=p) for p in self.get_parent_list(add_self=add_self))
         return separator + separator.join(res)
 
     # --------------------------------------------------------------------------
@@ -673,7 +670,7 @@ class Node:
     def copy(self, *, add_self=True, predicate=None) -> "Tree":
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
-        See also :meth:`_add_from`.
+        See also :meth:`_add_from` and :ref:`iteration callbacks`.
         """
         new_tree = self._tree.__class__()
         if add_self:
@@ -686,7 +683,7 @@ class Node:
     def _add_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
         """Append copies of all source descendants to self.
 
-        See also :ref:`callbacks`.
+        See also :ref:`iteration callbacks`.
         """
         if predicate:
             return self._add_filtered(other, predicate)
@@ -701,7 +698,7 @@ class Node:
     def _add_filtered(self, other: "Node", predicate: PredicateCallbackType) -> None:
         """Append a filtered copy of `other` and its descendants as children.
 
-        See also :ref:`callbacks`.
+        See also :ref:`iteration callbacks`.
         """
         # Stack of parent node objects 2-tuples (is_existing, node), used to
         # create optional parents on demand.
@@ -760,14 +757,14 @@ class Node:
     def filtered(self, predicate: PredicateCallbackType) -> "Tree":
         """Return a filtered copy of this node and descendants as tree.
 
-        See also :ref:`callbacks`.
+        See also :ref:`iteration callbacks`.
         """
         return self.copy(add_self=True, predicate=predicate)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of mismatching nodes.
 
-        See also :ref:`callbacks`.
+        See also :ref:`iteration callbacks`.
         """
 
         def _visit(parent: Node) -> bool:
@@ -879,7 +876,8 @@ class Node:
         The callback may return ``False`` or :class:`StopIteration` to immediately
         interrupt traversal.
         Raising `StopTraversal(value)` has the same effect but also allows to
-        specify a return value for the visit method.
+        specify a return value for the visit method. |br|
+        See also :ref:`iteration callbacks`.
 
         Args:
             callback (function(node, memo)):
@@ -999,7 +997,10 @@ class Node:
     def find_all(
         self, data=None, *, match=None, data_id=None, add_self=False, max_results=None
     ):
-        """Return a list of matching nodes (list may be empty)."""
+        """Return a list of matching nodes (list may be empty).
+
+        See also :ref:`iteration callbacks`.
+        """
         if data:
             assert data_id is None
             data_id = self._tree._calc_data_id(data)
@@ -1013,7 +1014,10 @@ class Node:
         ]
 
     def find_first(self, data=None, *, match=None, data_id=None):
-        """Return the first matching node or `None`."""
+        """Return the first matching node or `None`.
+
+        See also :ref:`iteration callbacks`.
+        """
         res = self.find_all(data, match=match, data_id=data_id, max_results=1)
         return res[0] if res else None
 

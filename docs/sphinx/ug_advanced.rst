@@ -16,8 +16,8 @@ Advanced
         tree.on("change", on_change)
 
 
-Callbacks
----------
+Iteration Callbacks
+-------------------
 
 In the following sections we cover :ref:`Search`, :ref:`Traversal`, 
 :ref:`mutation`, etc. in detail. |br|
