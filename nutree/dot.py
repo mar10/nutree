@@ -7,9 +7,12 @@ Functions and declarations to implement `Graphviz <https://graphviz.org/doc/info
 from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Generator, Union
 
+from .common import MapperCallbackType, call_mapper
+
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
     from .tree import Tree
+
 try:
     import pydot
 except ImportError:
@@ -46,7 +49,7 @@ def node_to_dot(
         if mapper:
             if attr_def is None:
                 attr_def = {}
-            mapper(node, attr_def)
+            call_mapper(mapper, node, attr_def)
         if not attr_def:
             return ""
         attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())
@@ -112,8 +115,8 @@ def tree_to_dotfile(
     graph_attrs=None,
     node_attrs=None,
     edge_attrs=None,
-    node_mapper=None,
-    edge_mapper=None,
+    node_mapper: MapperCallbackType = None,
+    edge_mapper: MapperCallbackType = None,
 ):
     if isinstance(target, str):
         target = Path(target)

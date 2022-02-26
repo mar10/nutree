@@ -15,8 +15,10 @@ from nutree.diff import diff_tree
 from .common import (
     AmbiguousMatchError,
     IterMethod,
+    MapperCallbackType,
     PredicateCallbackType,
     TraversalCallbackType,
+    call_mapper,
 )
 from .dot import tree_to_dotfile
 from .node import Node
@@ -363,7 +365,7 @@ class Tree:
         """
         self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
-    def to_dict(self, *, mapper=None) -> List[Dict]:
+    def to_dict(self, *, mapper: MapperCallbackType = None) -> List[Dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         childnodes and return list of results."""
         res = []
@@ -384,11 +386,13 @@ class Tree:
         new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
 
-    def to_list_iter(self, *, mapper=None) -> Generator[Dict, None, None]:
+    def to_list_iter(
+        self, *, mapper: MapperCallbackType = None
+    ) -> Generator[Dict, None, None]:
         """Yield a parent-referencing list of child nodes."""
         return self._root.to_list_iter(mapper=mapper)
 
-    def save(self, fp: IO[str], *, mapper=None) -> None:
+    def save(self, fp: IO[str], *, mapper: MapperCallbackType = None) -> None:
         """Store tree in a compact JSON file stream.
 
         See also :meth:`to_list_iter` and :meth:`load` methods.
@@ -414,7 +418,8 @@ class Tree:
                 first_clone = node_idx_map[data]
                 n = parent.add(first_clone)
             elif mapper:
-                data = mapper(parent, data)
+                data = call_mapper(mapper, parent, data)
+                # data = mapper(parent, data)
                 n = parent.add(data)
             else:
                 raise RuntimeError("Need mapper")  # pragma: no cover

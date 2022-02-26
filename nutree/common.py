@@ -75,7 +75,8 @@ class StopTraversal(IterationControl):
 
 
 PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
-MatchCallbackType = Callable[["Node"], bool]
+MapperCallbackType = Callable[["Node", dict], Union[None, dict]]
+# MatchCallbackType = Callable[["Node"], bool]
 TraversalCallbackType = Callable[
     ["Node", Any], Union[None, bool, "StopTraversal", "SkipBranch"]
 ]
@@ -106,10 +107,26 @@ DEFAULT_CONNECTOR_STYLE = "round43"
 DEFAULT_REPR = "{node.data!r}"
 
 
-def call_predicate(fn, node):
-    """Call the function and handle result and exceptions.
+def call_mapper(fn, node: "Node", data: dict) -> Any:
+    """Call the function and normalize result and exceptions.
 
-    This method calls `fn(node)` and converts all raised
+    Handles `MapperCallbackType`:
+    Call `fn(node, data)` if defined and return the result.
+    If `fn` is undefined or returns `None`, return `data`.
+    """
+    if fn is None:
+        return data
+    res = fn(node, data)
+    if res is None:
+        return data
+    return res
+
+
+def call_predicate(fn, node):
+    """Call the function and normalize result and exceptions.
+
+    Handles `PredicateCallbackType`:
+    Call `fn(node)` and converts all raised
     IterationControl responses to a canonical result.
     """
     if fn is None:
@@ -117,7 +134,7 @@ def call_predicate(fn, node):
     try:
         res = fn(node)
     except IterationControl as e:
-        return e
+        return e  # SkipBranch, SelectBranch, StopTraversal
     except StopIteration as e:  # Also accept this builtin exception
         return StopTraversal(e.value)
     return res
@@ -128,6 +145,8 @@ def call_traversal_cb(fn, node, memo):
 
     This method calls `fn(node, memo)` and converts all returned or raised
     IterationControl responses to a canonical result:
+
+    Handles `TraversalCallbackType`
 
     - Return `False` if the method returns SkipBranch or an instance of
       SkipBranch.

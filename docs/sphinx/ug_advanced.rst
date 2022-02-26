@@ -88,12 +88,14 @@ argument and should return control value:
       Unconditionally accept node and all descendants (do not call `predicate()`).
       In other words: copy the whole branch.
 
+:meth:`~nutree.tree.Tree.save`
 :meth:`~nutree.tree.Tree.to_dict`,
+:meth:`~nutree.tree.Tree.to_dot`,
+:meth:`~nutree.tree.Tree.to_dotfile`,
 :meth:`~nutree.tree.Tree.to_list_iter`
 
-    The `mapper` callback can return these values:
-
-    - TODO
+    The `mapper(node, data)` callback can modify the dict argument `data`
+    in-place (and return `None`) or return a new dict istance.
 
 
 Locking

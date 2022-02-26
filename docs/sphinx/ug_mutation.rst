@@ -27,7 +27,7 @@ Some in-place modifications are available::
     # Append a copy of branch 'b1' to 'a1'
     tree["a1"].add(tree["b1"])
 
-Filtering and set-like operations usually return the result as a new tree
+Filtering, copy, and diff operations usually return the result as a new tree
 instance::
 
     def pred(node):

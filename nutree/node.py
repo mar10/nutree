@@ -17,12 +17,14 @@ from .common import (
     DEFAULT_REPR,
     AmbiguousMatchError,
     IterMethod,
+    MapperCallbackType,
     PredicateCallbackType,
     SelectBranch,
     SkipBranch,
     StopTraversal,
     TraversalCallbackType,
     UniqueConstraintError,
+    call_mapper,
     call_predicate,
     call_traversal_cb,
 )
@@ -652,11 +654,11 @@ class Node:
 
     def remove(self, *, keep_children=False, with_clones=False) -> None:
         """Remove this node.
-        
+
         If `keep_children` is true, all children will be moved one level up,
         so they become siblings, before this node is removed.
 
-        If `with_clones` is true, all nodes that reference the same data 
+        If `with_clones` is true, all nodes that reference the same data
         instance are removed as well.
         """
         if with_clones:
@@ -827,7 +829,8 @@ class Node:
         for item in obj:
             if mapper:
                 # mapper may add item['data_id']
-                data = mapper(parent=self, item=item)
+                # data = mapper(parent=self, item=item)
+                data = call_mapper(mapper, self, item)
             else:
                 data = item["data"]
 
@@ -1154,7 +1157,7 @@ class Node:
         iter_lines = self.format_iter(repr=repr, style=style, add_self=add_self)
         return join.join(iter_lines)
 
-    def to_dict(self, *, mapper=None) -> Dict:
+    def to_dict(self, *, mapper: MapperCallbackType = None) -> Dict:
         """Return a nested dict of this node and its children."""
         res = {
             "data": str(self.data),
@@ -1164,15 +1167,18 @@ class Node:
         data_id = self._tree._calc_data_id(self._data)
         if data_id != self._data_id:
             res["data_id"] = data_id
-        if mapper:
-            res = mapper(self, res)
+        res = call_mapper(mapper, self, res)
+        # if mapper:
+        #     res = mapper(self, res)
         if self._children:
             res["children"] = cl = []
             for n in self._children:
                 cl.append(n.to_dict(mapper=mapper))
         return res
 
-    def to_list_iter(self, *, mapper=None) -> Generator[Dict, None, None]:
+    def to_list_iter(
+        self, *, mapper: MapperCallbackType = None
+    ) -> Generator[Dict, None, None]:
         """Yield children as parent-referencing list.
 
         ```py
@@ -1222,8 +1228,9 @@ class Node:
                     # "id": data_id,
                 }
             # Let caller serialize custom data objects
-            if mapper:
-                data = mapper(node, data)
+            data = call_mapper(mapper, node, data)
+            # if mapper:
+            #     data = mapper(node, data)
 
             yield (parent_idx, data)
         return
@@ -1233,11 +1240,11 @@ class Node:
         *,
         add_self=False,
         unique_nodes=True,
-        graph_attrs=None,
-        node_attrs=None,
-        edge_attrs=None,
-        node_mapper=None,
-        edge_mapper=None,
+        graph_attrs: dict = None,
+        node_attrs: dict = None,
+        edge_attrs: dict = None,
+        node_mapper: MapperCallbackType = None,
+        edge_mapper: MapperCallbackType = None,
     ) -> Generator[str, None, None]:
         """Generate a DOT formatted graph representation.
 
