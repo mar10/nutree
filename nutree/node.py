@@ -319,12 +319,12 @@ class Node:
         """Return a list of all nodes that reference the same data if any."""
         clones = self._tree._nodes_by_data_id[self._data_id]
         if add_self:
-            return clones
+            return clones.copy()
         return [n for n in clones if n is not self]
 
     @property
     def depth(self) -> int:
-        """Return the number of parents (return 1 for toplevel nodes)."""
+        """Return the distance to the root node (1 for toplevel nodes)."""
         return self.calc_depth()
 
     def count_descendants(self, *, leaves_only=False) -> int:
@@ -337,7 +337,7 @@ class Node:
         return i
 
     def calc_depth(self) -> int:
-        """Return depth of node, i.e. number of parents (1 for toplevel nodes)."""
+        """Return the distance to the root node (1 for toplevel nodes)."""
         depth = 0
         pe = self._parent
         while pe is not None:
@@ -650,13 +650,31 @@ class Node:
             target_siblings.append(self)
         return
 
-    def remove(self) -> None:
-        """Remove this node."""
-        self.remove_children()
+    def remove(self, *, keep_children=False, with_clones=False) -> None:
+        """Remove this node.
+        
+        If `keep_children` is true, all children will be moved one level up,
+        so they become siblings, before this node is removed.
+
+        If `with_clones` is true, all nodes that reference the same data 
+        instance are removed as well.
+        """
+        if with_clones:
+            for c in self.get_clones():  # Excluding self
+                c.remove(keep_children=keep_children, with_clones=False)
+            assert not self.is_clone()
+
+        if keep_children:
+            for c in self.children.copy():
+                c.move(self._parent, before=self)
+        else:
+            self.remove_children()
+
         pc = self._parent._children
         pc.remove(self)
         if not pc:  # store None instead of `[]`
             pc = self._parent._children = None
+
         self._tree._unregister(self)
 
     def remove_children(self):

@@ -143,7 +143,14 @@ class Tree:
         del self._node_by_id[node._node_id]
 
         clones = self._nodes_by_data_id[node._data_id]
-        clones.remove(node)
+        # NOTE: `list.remove()` checks for equality ('=='), not identity!
+        # This would remove the first clone, but not neccessarily `node`
+        # clones.remove(node)
+        for i, n in enumerate(clones):
+            if n is node:
+                clones.pop(i)
+                break
+
         if not clones:
             del self._nodes_by_data_id[node._data_id]
 
@@ -154,6 +161,7 @@ class Tree:
             node._data_id = None
             node._node_id = None
             node._children = None
+            node._meta = None
         return
 
     @property

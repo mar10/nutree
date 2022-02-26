@@ -691,7 +691,7 @@ class TestMutate:
             """,
         )
 
-    def test_delete(self):
+    def test_remove(self):
         """
         Tree<'fixture'>
         +- A
@@ -707,7 +707,9 @@ class TestMutate:
 
         print(tree.format(repr="{node.data}", style="round43"))
 
-        tree["a11"].remove()
+        tree["a2"].remove()
+
+        tree["a1"].remove(keep_children=True)
 
         del tree["b1"]
 
@@ -716,9 +718,8 @@ class TestMutate:
             """
             Tree<'fixture'>
             +- A
-            |  +- a1
-            |  |  `- a12
-            |  `- a2
+            |  +- a11
+            |  `- a12
             `- B
             """,
         )
@@ -734,6 +735,26 @@ class TestMutate:
             """,
         )
         print(tree.format(repr="{node.data}"))
+        assert tree._self_check()
+
+        # --- with_clones
+        tree = fixture.create_tree(clones=True)
+
+        tree.find_first("a11").remove(with_clones=True)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            ├── A
+            │   ├── a1
+            │   │   ╰── a12
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
         assert tree._self_check()
 
     def test_move(self):
