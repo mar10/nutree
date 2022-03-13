@@ -54,7 +54,7 @@ Set `title` to false to remove the root from the display. ::
 
 :meth:`~nutree.node.Node.format` is also implemented for nodes::
 
-    tree["Records"].format())
+    tree["Records"].format()
 
 ::
 
@@ -64,7 +64,7 @@ Set `title` to false to remove the root from the display. ::
 
 The 'list' style does not generate connector prefixes::
 
-    tree.format(repr="{node.path}", style="list"))
+    tree.format(repr="{node.path}", style="list")
 
 ::
 
