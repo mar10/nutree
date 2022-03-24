@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-black = "~=22.0"
+black = "~=22.1"
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-isort = "*"
