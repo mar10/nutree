@@ -3,6 +3,7 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
+import os
 import re
 from pathlib import Path
 
@@ -888,6 +889,7 @@ class TestCopy:
 
 
 class TestFS:
+    @pytest.mark.skipif(os.name == "nt", reason="windows has different eol size")
     def test_fs(self):
         path = Path(__file__).parent / "fixtures"
         tree = load_tree_from_fs(path)
