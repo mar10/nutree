@@ -890,8 +890,10 @@ class TestCopy:
 
 class TestFS:
     @pytest.mark.skipif(os.name == "nt", reason="windows has different eol size")
-    def test_fs(self):
+    def test_fs_linux(self):
         path = Path(__file__).parent / "fixtures"
+
+        # We check for unix line endings/file sizes (as used on travis)
         tree = load_tree_from_fs(path)
         assert fixture.check_content(
             tree,
@@ -902,3 +904,16 @@ class TestFS:
                 ╰── 'file_1_1.txt', 15 bytes
             """,
         )
+
+        tree = load_tree_from_fs(path, sort=False)
+        assert "[folder_1]" in fixture.canonical_repr(tree)
+
+    @pytest.mark.skipif(os.name != "nt", reason="windows has different eol size")
+    def test_fs_windows(self):
+        path = Path(__file__).parent / "fixtures"
+        # Cheap test only,
+        tree = load_tree_from_fs(path)
+        assert "[folder_1]" in fixture.canonical_repr(tree)
+
+        tree = load_tree_from_fs(path, sort=False)
+        assert "[folder_1]" in fixture.canonical_repr(tree)

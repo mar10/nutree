@@ -4,6 +4,7 @@
 """
 Methods and classes to support file system related functionality.
 """
+from operator import attrgetter, itemgetter
 from pathlib import Path
 
 from nutree.tree import Node, Tree
@@ -40,19 +41,42 @@ class FileSystemEntry:
         return FileSystemEntry(v["n"], False, v["s"])
 
 
-def load_tree_from_fs(path: str) -> Tree:
-    """Scan a filesystem folder and store as tree."""
+def load_tree_from_fs(path: str, *, sort: bool = True) -> Tree:
+    """Scan a filesystem folder and store as tree.
+
+    Args:
+        sort: Pass true to sort alphabetical and files before directories.
+        Especially useful when comparing unit test fixtures.
+    """
     path = Path(path)
     tree = Tree(path)
 
     def visit(node: Node, pth: Path):
+        if sort:
+            dirs = []
+            files = []
+            for c in pth.iterdir():
+                if c.is_dir():
+                    o = FileSystemEntry(f"{c.name}", True, 0, 0)
+                    dirs.append((c, o))
+                elif c.is_file():
+                    stat = c.stat()
+                    o = FileSystemEntry(c.name, False, stat.st_size, stat.st_mtime)
+                    files.append(o)
+            # Files first, sorted by name
+            for o in sorted(files, key=attrgetter("name")):
+                node.add(o)
+            # Followed by dirs, sorted by path
+            for c, o in sorted(dirs, key=itemgetter(0)):
+                pn = node.add(o)
+                visit(pn, c)
+            return
+
         for c in pth.iterdir():
             if c.is_dir():
                 o = FileSystemEntry(f"{c.name}", True, 0, 0)
                 pn = node.add(o)
-                if "." not in c.name:
-                    # Skip system folders
-                    visit(pn, c)
+                visit(pn, c)
             elif c.is_file():
                 stat = c.stat()
                 o = FileSystemEntry(c.name, False, stat.st_size, stat.st_mtime)
