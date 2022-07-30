@@ -6,7 +6,7 @@ Release Info
    :maxdepth: 2
 
 ..
-   .. mdinclude:: ../../CHANGES.md
+   .. mdinclude:: ../../CHANGELOG.md
 
-.. literalinclude:: ../../CHANGES.md
+.. literalinclude:: ../../CHANGELOG.md
     :language: md
