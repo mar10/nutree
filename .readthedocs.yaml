@@ -19,15 +19,11 @@ formats: []
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: 3.8
+  version: 3.9
   install:
-      # - requirements: docs/requirements.txt
       - method: pip
         path: .
-      #   extra_requirements:
-      #       - docs
-      # - method: setuptools
-      #   path: another/package
+      # - requirements: docs/requirements.txt
 
   # true may break the build?
   # system_packages: true

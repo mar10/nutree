@@ -294,14 +294,14 @@ class Tree:
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of unmatching nodes.
-        
+
         See also :ref:`iteration callbacks`.
         """
         self._root.filter(predicate=predicate)
 
     def filtered(self, predicate: PredicateCallbackType) -> "Tree":
         """Return a filtered copy of this tree.
-        
+
         See also :ref:`iteration callbacks`.
         """
         return self.copy(predicate=predicate)
