@@ -4,6 +4,7 @@
 """
 """
 import json
+import os
 import tempfile
 
 from nutree import Node, Tree
@@ -154,8 +155,14 @@ class TestDot:
 
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
-        with tempfile.NamedTemporaryFile("w", suffix=".gv") as path:
-            tree.to_dotfile(path.name)
+        # Avoid "Permission denied error" on Windows:
+        # with tempfile.NamedTemporaryFile("w", suffix=".gv") as path:
+        try:
+            temp_file = tempfile.NamedTemporaryFile("w", suffix=".gv", delete=False)
+            tree.to_dotfile(temp_file.name)
+        finally:
+            temp_file.close()
+            os.unlink(temp_file.name)
 
         # with tempfile.NamedTemporaryFile("w", suffix=".png") as path:
         #     tree.to_dotfile(
