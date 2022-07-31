@@ -3,6 +3,9 @@ language: python
 os: linux
 jobs:
   include:
+    - python: "3.10"
+      env: TOXENV=check,py310
+      dist: bionic
     - python: "3.9"
       env: TOXENV=py39
     - python: "3.8"
@@ -20,9 +23,6 @@ jobs:
     #     - pip install --upgrade virtualenv
     # - python: "3.5"  # EOL 2020-09-13
     #   env: TOXENV=py35
-    - python: "3.10"
-      env: TOXENV=py310
-      dist: bionic
     - python: "3.11-dev"
       env: TOXENV=py311
       dist: bionic
