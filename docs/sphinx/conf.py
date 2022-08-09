@@ -18,8 +18,9 @@
 # Disable Black formatting
 # fmt: off
 
-import sys
 import os
+import sys
+
 # import shlex
 
 # from recommonmark.parser import CommonMarkParser
@@ -112,6 +113,7 @@ author = u'Martin Wendt'
 # The full version, including alpha/beta/rc tags.
 #release = '1.0'
 import pkg_resources
+
 try:
     release = pkg_resources.get_distribution('nutree').version
     # print( "release", release)

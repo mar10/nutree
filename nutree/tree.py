@@ -48,7 +48,7 @@ class Tree:
         self._calc_data_id_hook = calc_data_id
 
     def __repr__(self):
-        return f"Tree<{self.name!r}>"
+        return f"{self.__class__.__name__}<{self.name!r}>"
 
     def __contains__(self, data):
         """Implement ``data in tree`` syntax to check for node existence."""
@@ -560,6 +560,7 @@ class _SystemRootNode(Node):
 
         self._tree: Tree = tree
         self._parent = None
-        self._node_id = self._data_id = self._data = "__root__"
+        self._node_id = self._data_id = "__root__"
+        self._data = tree.name
         self._children = []
         self._meta = None

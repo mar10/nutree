@@ -91,6 +91,7 @@ Nutree Facts
   * Different traversal methods
   * (De)Serialize to JSON
   * Fully type annotated
+  * `Graphs in mind <ug_graphs.html>`_
   * Pretty print
   * Navigation
   * Filtering

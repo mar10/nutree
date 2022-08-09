@@ -22,6 +22,15 @@ nutree.node module
     :show-inheritance:
     :inherited-members:
 
+nutree.typed_tree module
+------------------------
+
+.. automodule:: nutree.typed_tree
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
+
 nutree.common module
 --------------------
 

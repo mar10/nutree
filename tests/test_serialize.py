@@ -4,7 +4,6 @@
 """
 """
 import json
-import os
 import tempfile
 
 from nutree import Node, Tree
@@ -157,12 +156,8 @@ class TestDot:
 
         # Avoid "Permission denied error" on Windows:
         # with tempfile.NamedTemporaryFile("w", suffix=".gv") as path:
-        try:
-            temp_file = tempfile.NamedTemporaryFile("w", suffix=".gv", delete=False)
+        with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name)
-        finally:
-            temp_file.close()
-            os.unlink(temp_file.name)
 
         # with tempfile.NamedTemporaryFile("w", suffix=".png") as path:
         #     tree.to_dotfile(

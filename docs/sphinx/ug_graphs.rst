@@ -4,12 +4,140 @@ Graphs
 
 .. py:currentmodule:: nutree
 
+.. note::
+    :class:`~nutree.tree.Tree` (and :class:`~nutree.typed_tree.TypedTree` even 
+    more so) have features that make mapping to a graph easy. 
+    However it still is a `tree` at heart. |br|
+    If you are looking for a data model with full graph support, links between 
+    arbitrary nodes, advanced navigation methods, or SPARQL queries,have a look
+    at specialzed libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_ .
+
+In graph theory, :class:`~nutree.tree.Tree` is a 
+`Rooted Tree <https://en.wikipedia.org/wiki/Tree_(graph_theory)#Rooted_tree>`_
+which is a subform of a
+`Directed Graph <https://en.wikipedia.org/wiki/Directed_graph>`_
+(aka `digraph`). |br|
+Accordingly every tree can be visualized in a graph diagram:
+
+- Every tree node becomes a graph node |br|
+  `Exception`: tree nodes with identical data (aka 'clones') map to one single 
+  graph node.
+- Parent- and child nodes are connected by an arrow (aka 'edge') pointing from 
+  parent to child, meaning 'is child of'.
+
+While every tree is a digraph, not every digraph can be directly represented 
+as tree, because `arbitrary` directed graphs 
+
+1. may contain closed circles (i.e. the graph is not 'acyclic')
+2. may have loops (arrows that directly connect nodes to themselves), which
+   is a special case of 1.)
+3. may have multiple arrows with same source and target nodes
+4. may not have an obvious root node (i.e. the graph is not 'rooted')
+5. may have nodes that are the target of more than one arrow
+6. may have other edge semantics than 'is child of'
+
+As a consequence
+
+1. Graphs with circles would result in trees of infinite depth. We stop adding 
+   a child node if it already appears as its own ancestor.
+2. See 1.): we do not allow to add a tree node as child of itself.
+3. We do not allow to add the same tree node a second time under one parent.
+4. We pick the first tree node, or search for a good candidate using heuristics.
+5. A graph node that is target of multiple arrows is added to the tree multiple
+   times. Each of thoses tree nodes ('clones') reference the identical data 
+   object.
+6. The :class:`~nutree.typed_tree.TypedTree` class handles this.
+   See below for details.
+
+
+Typed Tree
+----------
+
+The :class:`~nutree.typed_tree.TypedTree` class is a variant derived from
+:class:`~nutree.tree.Tree` that introduces the concept of `typed nodes`. |br|
+It adds a new ``node.kind`` attribute and modifies some methods to access 
+children by that type. |br|
+In a nutshell: `TypedTree nodes can have multiple types of children.`
+
+Main differences to plain `Tree`:
+
+    - Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
+      ``node.kind`` attribute.
+    - The kind is part of the display name by default:
+      ``repr="{node.kind} → {node.data}"``, e.g. 'person → Alice'.
+    - Node methods like :meth:`~nutree.typed_tree.TypedNode.children()` get
+      an additional mandatory argument ``kind`` to filter by type.s
+      Pass ``kind=ANY_TYPE`` to retrieve all children.
+    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` 
+      assume get '... of the same type'. An additional argument ``any_type=True`` 
+      can be passed to ignore the types.
+    - Node properties like :meth:`~nutree.typed_tree.TypedNode.first_sibling`
+      implicitly assume '... of the same type'.
+    - When converting to a graph, `node.kind` becomes the label of the arrow
+      pointing from the parent to this node.
+
+Note:
+
+    - Methods like :meth:`~nutree.typed_tree.TypedNode.iter` still access all 
+      nodes, ignoring the types.
+
+When adding nodes, we now pass this type, e.g.::
+
+    tree = TypedTree("Pencil")
+
+    func = tree.add("Write on paper", kind="function")
+    fail = func.add("Wood shaft breaks", kind="failure")
+    fail.add("Unable to write", kind="effect")
+    fail.add("Injury from splinter", kind="effect")
+    fail.add("Wood too soft", kind="cause")
+
+    fail = func.add("Lead breaks", kind="failure")
+    fail.add("Cannot erase (dissatisfaction)", kind="effect")
+    fail.add("Lead material too brittle", kind="cause")
+
+    func = tree.add("Erase text", kind="function")
+    ...
+    tree.print()
+
+::
+
+    TypedTree<Pencil>
+    +- function → Write on paper
+    |  +- failure → Wood shaft breaks
+    |  |  +- effect → Unable to write
+    |  |  +- effect → Injury from splinter
+    |  |  `- cause → Wood too soft
+    |  `- failure → Lead breaks
+    |     +- effect → Cannot erase (dissatisfaction)
+    |     `- cause → Lead material too brittle
+    `- function → Erase text
+
+The effect becomes evident when we map a tree to a graph representation. It is
+now possible to define labelled edges::
+
+    tree.to_dotfile(
+        "/path/tree.png",
+        format="png",
+        graph_attrs={"rankdir": "LR"},
+    )
+
+.. image:: tree_graph_pencil.png
+
+Keep in mind that a tree node is unique within a tree, but may reference identical
+data objects, so these `clones` could exist at different locations of tree:
+for example 'friends → Alice', and 'friends → Alice'.
+
+.. note::
+    :class:`~nutree.typed_tree.TypedTree`'s node type only affects 
+    parent → child relations. Arbitrary links are not supported.
+    If you are looking for a data model with full graph support have a look
+    at specialzed libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_.
+
+
 .. rubric:: Writing Digraphs
 
-
-A tree is a `directed graph <https://en.wikipedia.org/wiki/Directed_graph>`_
-(aka `digraph`). |br|
-Accordingly every tree can be visualized in a graph diagram.
+DOT Format
+----------
 
 Nutree implements conversion to `DOT format <https://en.wikipedia.org/wiki/DOT_(graph_description_language)>`_.
 Given this tree ::
@@ -128,24 +256,3 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
         Writing of plain DOT formats is natively implemented by `nutree`. |br|
         Reading of DOT formats requires the 
         `pydot <https://github.com/pydot/pydot>`_ library to be installed. |br|
-
-    Every tree is a digraph, however not every digraph can be directly represented 
-    as tree, because arbitrary directed graphs 
-
-    1. may contain closed circles (i.e. the graph is not 'acyclic')
-    2. may have loops (arrows that directly connect nodes to themselves), which
-        is a special case of 1.)
-    3. may have multiple arrows with same source and target nodes
-    4. may not have an obvious root node (i.e. the graph is not 'rooted')
-    5. may be the target of more than one arrow
-    6. may have other edge semantics as 'child of'
-
-    As a consequence, 
-
-    1. Circles would result in trees of infinite depth. We stop adding a
-        child node if it already appears as its own parent.
-    2. See 1.): we do not add a node as child of itself.
-    3. We do not allow to add the same node a second time under one parent.
-    4. We pick the first node, or search for a good candidate using heuristics.
-    5. This node appears multiple times as child of different parents.
-    6. TODO:
