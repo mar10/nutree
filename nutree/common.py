@@ -102,10 +102,6 @@ CONNECTORS = {
 #: Default connector prefixes ``format(style=...)`` argument.
 DEFAULT_CONNECTOR_STYLE = "round43"
 
-#: Default value for ``repr`` argument.
-# DEFAULT_REPR = "{node.data}"
-DEFAULT_REPR = "{node.data!r}"
-
 
 def call_mapper(fn, node: "Node", data: dict) -> Any:
     """Call the function and normalize result and exceptions.

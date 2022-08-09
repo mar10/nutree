@@ -2,7 +2,7 @@
 # (c) 2021-2022 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Functions and declarations to implement `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
+Functions and declarations to support `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
 """
 from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Generator, Union

@@ -142,6 +142,8 @@ class TestTypedTree:
             `- function → Erase text
            """,
         )
+        # tree.print()
+        # raise
 
         # with fixture.WritableTempFile("w", suffix=".png") as temp_file:
 

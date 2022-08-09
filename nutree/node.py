@@ -14,7 +14,6 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 from .common import (
     CONNECTORS,
     DEFAULT_CONNECTOR_STYLE,
-    DEFAULT_REPR,
     AmbiguousMatchError,
     IterMethod,
     MapperCallbackType,
@@ -52,6 +51,9 @@ class Node:
         "_parent",
         "_tree",
     )
+    #: Default value for ``repr`` argument.
+    # DEFAULT_REPR = "{node.data}"
+    DEFAULT_REPR = "{node.data!r}"
 
     def __init__(
         self, data, *, parent: "Node", data_id=None, node_id=None, meta: Dict = None
@@ -1102,7 +1104,7 @@ class Node:
                 )
 
         if repr is None:
-            repr = DEFAULT_REPR
+            repr = self.DEFAULT_REPR
 
         # Find out if we need to strip some of the leftmost prefixes.
         # If this was called for a normal node, we strip all parent levels

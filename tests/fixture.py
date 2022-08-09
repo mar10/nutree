@@ -136,9 +136,10 @@ def flatten_nodes(tree):
 def canonical_repr(obj: Union[str, Tree, Node], *, repr=None, style="ascii32") -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
-            repr = "{node.kind} → {node.data}"
+            repr = TypedNode.DEFAULT_REPR  # "{node.kind} → {node.data}"
         else:
             repr = "{node.data}"
+            # repr = Node.DEFAULT_REPR
     if isinstance(obj, (Node, Tree)):
         res = obj.format(repr=repr, style=style)
     else:

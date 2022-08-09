@@ -35,6 +35,8 @@ class TypedNode(Node):
 
     __slots__ = ("_kind",)
 
+    DEFAULT_REPR = "{node.kind} → {node.data}"
+
     def __init__(
         self,
         kind: str,

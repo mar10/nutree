@@ -101,16 +101,17 @@ When adding nodes, we now pass this type, e.g.::
 
 ::
 
-    TypedTree<Pencil>
-    +- function → Write on paper
-    |  +- failure → Wood shaft breaks
-    |  |  +- effect → Unable to write
-    |  |  +- effect → Injury from splinter
-    |  |  `- cause → Wood too soft
-    |  `- failure → Lead breaks
-    |     +- effect → Cannot erase (dissatisfaction)
-    |     `- cause → Lead material too brittle
-    `- function → Erase text
+    TypedTree<'Pencil'>
+    ├── function → Write on paper
+    │   ├── failure → Wood shaft breaks
+    │   │   ├── effect → Unable to write
+    │   │   ├── effect → Injury from splinter
+    │   │   ╰── cause → Wood too soft
+    │   ╰── failure → Lead breaks
+    │       ├── effect → Cannot erase (dissatisfaction)
+    │       ╰── cause → Lead material too brittle
+    ╰── function → Erase text
+
 
 The effect becomes evident when we map a tree to a graph representation. It is
 now possible to define labelled edges::
