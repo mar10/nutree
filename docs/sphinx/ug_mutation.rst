@@ -32,7 +32,7 @@ instance::
 
     def pred(node):
         # Return true to include `node` and its children
-        return "q" in node.data.age >= 18
+        return node.data.age >= 18
 
     tree_2 = tree.copy(predicate=pred)
 
