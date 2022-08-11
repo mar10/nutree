@@ -86,12 +86,13 @@ Nutree Facts
   * Search by name pattern, id, or object reference
   * Unobtrusive handling of arbitrary objects
   * Compare two trees and calculate patches
-  * Save as DOT file and graphwiz diagram
+  * `Save as DOT file and graphwiz diagram <ug_graphs.html>`_
   * Nodes can be plain strings or objects
   * Different traversal methods
   * (De)Serialize to JSON
   * Fully type annotated
-  * `Graphs in mind <ug_graphs.html>`_
+  * `Convert to RDF graph <ug_graphs.html>`_
+  * `Typed child nodes <ug_graphs.html>`_
   * Pretty print
   * Navigation
   * Filtering

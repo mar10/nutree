@@ -25,6 +25,8 @@ Nodes can be plain strings or objects <br>
 Different traversal methods <br>
 (De)Serialize to JSON <br>
 Fully type annotated <br>
+Convert to RDF graph <br>
+Typed child nodes <br>
 Pretty print <br>
 Navigation <br>
 Filtering <br>

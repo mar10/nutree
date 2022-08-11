@@ -158,3 +158,73 @@ class TestTypedTree:
         #         # unique_nodes=False,
         #     )
         #     assert False
+
+    def test_rdf(self):
+        tree = TypedTree("Pencil")
+
+        func = tree.add("Write on paper", kind="function")
+        fail = func.add("Wood shaft breaks", kind="failure")
+        fail.add("Unable to write", kind="effect")
+        fail.add("Injury from splinter", kind="effect")
+        fail.add("Wood too soft", kind="cause")
+
+        fail = func.add("Lead breaks", kind="failure")
+        fail.add("Cannot erase (dissatisfaction)", kind="effect")
+        fail.add("Lead material too brittle", kind="cause")
+
+        func = tree.add("Erase text", kind="function")
+
+        assert fixture.check_content(
+            tree,
+            """
+            TypedTree<*>
+            +- function → Write on paper
+            |  +- failure → Wood shaft breaks
+            |  |  +- effect → Unable to write
+            |  |  +- effect → Injury from splinter
+            |  |  `- cause → Wood too soft
+            |  `- failure → Lead breaks
+            |     +- effect → Cannot erase (dissatisfaction)
+            |     `- cause → Lead material too brittle
+            `- function → Erase text
+           """,
+        )
+
+        tree.print()
+        print()
+
+        g = tree.to_rdf_graph()
+
+        print(g.serialize())
+        print()
+
+        # Basic triple matching: All cause types
+        # Note that Literal will be `None` if rdflib is not available
+        from nutree.rdf import NUTREE_NS, Literal
+
+        cause_kind = Literal("cause")
+        for s, _p, o in g.triples((None, NUTREE_NS.kind, cause_kind)):
+            name = g.value(s, NUTREE_NS.name)
+            print(f"{name} is a {o}")
+        print()
+
+        # SPARQL query:
+
+        query = """
+        PREFIX nutree: <http://wwwendt.de/namespace/nutree/rdf/0.1/>
+
+        SELECT ?data_id ?kind ?name
+        WHERE {
+            BIND("cause" as ?kind)
+
+            ?data_id nutree:kind ?kind ;
+                nutree:name ?name .
+        }
+        """
+
+        qres = g.query(query)
+        for row in qres:
+            print(f"{row.data_id} {row.name} is a {row.kind}")
+        raise
+        # tree.print()
+        # raise

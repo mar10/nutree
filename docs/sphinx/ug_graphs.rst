@@ -6,7 +6,7 @@ Graphs
 
 .. note::
     :class:`~nutree.tree.Tree` (and :class:`~nutree.typed_tree.TypedTree` even 
-    more so) have features that make mapping to a graph easy. 
+    more so) has features that make mapping to a graph easy. 
     However it still is a `tree` at heart. |br|
     If you are looking for a data model with full graph support, links between 
     arbitrary nodes, advanced navigation methods, or SPARQL queries,have a look
@@ -48,91 +48,6 @@ As a consequence
    object.
 6. The :class:`~nutree.typed_tree.TypedTree` class handles this.
    See below for details.
-
-
-Typed Tree
-----------
-
-The :class:`~nutree.typed_tree.TypedTree` class is a variant derived from
-:class:`~nutree.tree.Tree` that introduces the concept of `typed nodes`. |br|
-It adds a new ``node.kind`` attribute and modifies some methods to access 
-children by that type. |br|
-In a nutshell: `TypedTree nodes can have multiple types of children.`
-
-Main differences to plain `Tree`:
-
-    - Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
-      ``node.kind`` attribute.
-    - The kind is part of the display name by default:
-      ``repr="{node.kind} → {node.data}"``, e.g. 'person → Alice'.
-    - Node methods like :meth:`~nutree.typed_tree.TypedNode.children()` get
-      an additional mandatory argument ``kind`` to filter by type.s
-      Pass ``kind=ANY_TYPE`` to retrieve all children.
-    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` 
-      assume get '... of the same type'. An additional argument ``any_type=True`` 
-      can be passed to ignore the types.
-    - Node properties like :meth:`~nutree.typed_tree.TypedNode.first_sibling`
-      implicitly assume '... of the same type'.
-    - When converting to a graph, `node.kind` becomes the label of the arrow
-      pointing from the parent to this node.
-
-Note:
-
-    - Methods like :meth:`~nutree.typed_tree.TypedNode.iter` still access all 
-      nodes, ignoring the types.
-
-When adding nodes, we now pass this type, e.g.::
-
-    tree = TypedTree("Pencil")
-
-    func = tree.add("Write on paper", kind="function")
-    fail = func.add("Wood shaft breaks", kind="failure")
-    fail.add("Unable to write", kind="effect")
-    fail.add("Injury from splinter", kind="effect")
-    fail.add("Wood too soft", kind="cause")
-
-    fail = func.add("Lead breaks", kind="failure")
-    fail.add("Cannot erase (dissatisfaction)", kind="effect")
-    fail.add("Lead material too brittle", kind="cause")
-
-    func = tree.add("Erase text", kind="function")
-    ...
-    tree.print()
-
-::
-
-    TypedTree<'Pencil'>
-    ├── function → Write on paper
-    │   ├── failure → Wood shaft breaks
-    │   │   ├── effect → Unable to write
-    │   │   ├── effect → Injury from splinter
-    │   │   ╰── cause → Wood too soft
-    │   ╰── failure → Lead breaks
-    │       ├── effect → Cannot erase (dissatisfaction)
-    │       ╰── cause → Lead material too brittle
-    ╰── function → Erase text
-
-
-The effect becomes evident when we map a tree to a graph representation. It is
-now possible to define labelled edges::
-
-    tree.to_dotfile(
-        "/path/tree.png",
-        format="png",
-        graph_attrs={"rankdir": "LR"},
-    )
-
-.. image:: tree_graph_pencil.png
-
-Keep in mind that a tree node is unique within a tree, but may reference identical
-data objects, so these `clones` could exist at different locations of tree:
-for example 'friends → Alice', and 'friends → Alice'.
-
-.. note::
-    :class:`~nutree.typed_tree.TypedTree`'s node type only affects 
-    parent → child relations. Arbitrary links are not supported.
-    If you are looking for a data model with full graph support have a look
-    at specialzed libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_.
 
 
 .. rubric:: Writing Digraphs
@@ -248,12 +163,171 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
     and `Graphwiz <https://www.graphviz.org>`_.
 
 
-..
-    .. rubric:: Reading Digraphs
+Typed Tree
+----------
 
-    .. note:: Reading of DOT files is not yet implemented.
+The :class:`~nutree.typed_tree.TypedTree` class is a variant derived from
+:class:`~nutree.tree.Tree` that introduces the concept of `typed nodes`. |br|
+It adds a new ``node.kind`` attribute and modifies some methods to access 
+children by that type. |br|
+In a nutshell: `TypedTree nodes can have multiple types of children.`
 
-    .. note::
-        Writing of plain DOT formats is natively implemented by `nutree`. |br|
-        Reading of DOT formats requires the 
-        `pydot <https://github.com/pydot/pydot>`_ library to be installed. |br|
+Main differences to plain `Tree`:
+
+    - Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
+      ``node.kind`` attribute.
+    - The kind is part of the display name by default:
+      ``repr="{node.kind} → {node.data}"``, e.g. 'person → Alice'.
+    - Node methods like :meth:`~nutree.typed_tree.TypedNode.children()` get
+      an additional mandatory argument ``kind`` to filter by type.s
+      Pass ``kind=ANY_TYPE`` to retrieve all children.
+    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` 
+      assume get '... of the same type'. An additional argument ``any_type=True`` 
+      can be passed to ignore the types.
+    - Node properties like :meth:`~nutree.typed_tree.TypedNode.first_sibling`
+      implicitly assume '... of the same type'.
+    - When converting to a graph, `node.kind` becomes the label of the arrow
+      pointing from the parent to this node.
+
+Note:
+
+    - Methods like :meth:`~nutree.typed_tree.TypedNode.iter` still access all 
+      nodes, ignoring the types.
+
+When adding nodes, we now pass this type, e.g.::
+
+    tree = TypedTree("Pencil")
+
+    func = tree.add("Write on paper", kind="function")
+    fail = func.add("Wood shaft breaks", kind="failure")
+    fail.add("Unable to write", kind="effect")
+    fail.add("Injury from splinter", kind="effect")
+    fail.add("Wood too soft", kind="cause")
+
+    fail = func.add("Lead breaks", kind="failure")
+    fail.add("Cannot erase (dissatisfaction)", kind="effect")
+    fail.add("Lead material too brittle", kind="cause")
+
+    func = tree.add("Erase text", kind="function")
+    ...
+    tree.print()
+
+::
+
+    TypedTree<'Pencil'>
+    ├── function → Write on paper
+    │   ├── failure → Wood shaft breaks
+    │   │   ├── effect → Unable to write
+    │   │   ├── effect → Injury from splinter
+    │   │   ╰── cause → Wood too soft
+    │   ╰── failure → Lead breaks
+    │       ├── effect → Cannot erase (dissatisfaction)
+    │       ╰── cause → Lead material too brittle
+    ╰── function → Erase text
+
+The effect becomes evident when we map a tree to a graph representation. It is
+now possible to define labelled edges::
+
+    tree.to_dotfile(
+        "/path/tree.png",
+        format="png",
+        graph_attrs={"rankdir": "LR"},
+    )
+
+.. image:: tree_graph_pencil.png
+
+Keep in mind that a tree node is unique within a tree, but may reference identical
+data objects, so these `clones` could exist at different locations of tree. 
+The resulting graph node only exists once.|br|
+:class:`~nutree.typed_tree.TypedTree`'s node type only affects 
+parent → child relations. Arbitrary links are not supported. |br|
+If you are looking for a data model with full graph support have a look
+at specialzed libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_.
+
+
+RDF Format
+----------
+
+Nutree implements conversion to 
+`RDF format <https://en.wikipedia.org/wiki/Resource_Description_Framework>`_.
+Given this tree ::
+
+    TypedTree<'Pencil'>
+    ├── function → Write on paper
+    │   ├── failure → Wood shaft breaks
+    │   │   ├── effect → Unable to write
+    │   │   ├── effect → Injury from splinter
+    │   │   ╰── cause → Wood too soft
+    │   ╰── failure → Lead breaks
+    │       ├── effect → Cannot erase (dissatisfaction)
+    │       ╰── cause → Lead material too brittle
+    ╰── function → Erase text
+
+We can convert this directly to an 
+`rdflib.Graph <https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.graph.Graph>`_ 
+object::
+
+    g = tree.to_rdf_graph()
+
+Use basic triple matching to find all child nodes of type 'cause'::
+
+    # Note that Literal will be `None` if rdflib is not available
+    from nutree.rdf import NUTREE_NS, Literal
+
+    cause_kind = Literal("cause")
+    for s, p, o in g.triples((None, NUTREE_NS.kind, cause_kind)):
+        name = g.value(s, NUTREE_NS.name)
+        print(f"{name} is a {o}")
+
+::
+
+    cause → Wood too soft is a cause
+    cause → Lead material too brittle is a cause
+
+Execute a SPARQL query::
+
+    query = """
+    PREFIX nutree: <http://wwwendt.de/namespace/nutree/rdf/0.1/>
+
+    SELECT ?data_id ?kind ?name
+    WHERE {
+        BIND("cause" as ?kind)
+
+        ?data_id nutree:kind ?kind ;
+            nutree:name ?name .
+    }
+    """
+
+    qres = g.query(query)
+    for row in qres:
+        print(f"{row.data_id} {row.name} is a {row.kind}")
+
+::
+
+    -3500725853037991748 cause → Wood too soft is a cause
+    6206907417295657490 cause → Lead material too brittle is a cause
+
+This would be the 'turtle' formatted serialization::
+
+    g.serialize()
+
+::
+
+    @prefix nutree: <http://wwwendt.de/namespace/nutree/rdf/0.1/> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+    nutree:system_root nutree:has_child -581237564389228563,
+            3747004819838182955 ;
+        nutree:name "Pencil" .
+    -6218004216446435326 nutree:index 1 ;
+        nutree:kind "effect" ;
+        nutree:name "effect → Injury from splinter" .
+    -5784235343724403607 nutree:has_child -3424160385673670481,
+            -784350720582677638 ;
+        nutree:index 1 ;
+        nutree:kind "failure" ;
+        nutree:name "failure → Lead breaks" .
+    ...
+
+.. note::
+    Converting to RDF requires an installation of `rdflib <https://rdflib.readthedocs.io/>`_ 

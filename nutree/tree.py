@@ -22,6 +22,7 @@ from .common import (
 )
 from .dot import tree_to_dotfile
 from .node import Node
+from .rdf import tree_to_rdf
 
 _DELETED_TAG = "<deleted>"
 
@@ -503,6 +504,10 @@ class Tree:
     # def from_dot(self, dot):
     #     pass
 
+    def to_rdf_graph(self):
+        """Return"""
+        return tree_to_rdf(self)
+
     def diff(self, other: "Tree", *, ordered=False, reduce=False) -> "Tree":
         """Compare this tree against `other` and return a merged, annotated copy.
 
@@ -553,6 +558,9 @@ class Tree:
         return True
 
 
+# ------------------------------------------------------------------------------
+# - _SystemRootNode
+# ------------------------------------------------------------------------------
 class _SystemRootNode(Node):
     """Invisible system root node."""
 
