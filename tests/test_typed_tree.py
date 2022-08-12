@@ -225,6 +225,15 @@ class TestTypedTree:
         qres = g.query(query)
         for row in qres:
             print(f"{row.data_id} {row.name} is a {row.kind}")
-        raise
+        # raise
         # tree.print()
+        # raise
+
+        node = tree["Wood shaft breaks"]
+
+        g = node.to_rdf_graph()
+        print(g.serialize())
+
+        g = node.to_rdf_graph(add_self=False)
+        print(g.serialize())
         # raise

@@ -131,13 +131,14 @@ def node_to_rdf(
             parent_graph_node=None,
             tree_node=tree_node,
             index=-1,
+            node_mapper=node_mapper,
         )
     else:
         root_graph_node = None
 
     _add_child_nodes(
         graph,
-        parent_graph_node=root_graph_node,
+        graph_node=root_graph_node,
         tree_node=tree_node,
         node_mapper=node_mapper,
     )

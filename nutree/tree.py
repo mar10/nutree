@@ -505,7 +505,10 @@ class Tree:
     #     pass
 
     def to_rdf_graph(self):
-        """Return"""
+        """Return an instance of ``rdflib.Graph``.
+
+        See :ref:`Graphs` for details.
+        """
         return tree_to_rdf(self)
 
     def diff(self, other: "Tree", *, ordered=False, reduce=False) -> "Tree":
@@ -522,6 +525,8 @@ class Tree:
         change. |br|
         If `reduce` is true, unchanged nodes are removed, leaving a compact tree
         with only the modifications.
+
+        See :ref:`Diff and Merge` for details.
         """
         t = diff_tree(self, other, ordered=ordered, reduce=reduce)
         return t

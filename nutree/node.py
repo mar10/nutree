@@ -28,6 +28,7 @@ from .common import (
     call_traversal_cb,
 )
 from .dot import node_to_dot
+from .rdf import node_to_rdf
 
 
 # ------------------------------------------------------------------------------
@@ -1271,3 +1272,10 @@ class Node:
             edge_mapper=edge_mapper,
         )
         return res
+
+    def to_rdf_graph(self, add_self: bool = True):
+        """Return an instance of ``rdflib.Graph``.
+
+        See :ref:`Graphs` for details.
+        """
+        return node_to_rdf(self, add_self=add_self)

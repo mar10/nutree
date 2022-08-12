@@ -85,7 +85,7 @@ Nutree Facts
   * Handle multiple references of single objects ('clones')
   * Search by name pattern, id, or object reference
   * Unobtrusive handling of arbitrary objects
-  * Compare two trees and calculate patches
+  * `Compare two trees and calculate patches <ug_diff.html>`_
   * `Save as DOT file and graphwiz diagram <ug_graphs.html>`_
   * Nodes can be plain strings or objects
   * Different traversal methods

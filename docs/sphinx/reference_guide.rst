@@ -9,15 +9,11 @@ Reference Guide
    genindex
 
 
-..
-   Class Overview
-   ==============
+Class Overview
+==============
 
-   Activities & Macros
-   -------------------
-
-   .. inheritance-diagram:: stressor.plugins.base stressor.plugins.common stressor.plugins.http_activities stressor.plugins.script_activities
-      :parts: 2
-      :private-bases:
-      :caption: Standard Stressor Activities and Macros
+.. inheritance-diagram:: nutree.tree nutree.node nutree.typed_tree nutree.common
+   :parts: 2
+   :private-bases:
+   :caption: nutree classes
 
