@@ -224,35 +224,8 @@ When adding nodes, we now pass this type, e.g.::
     │       ╰── cause → Lead material too brittle
     ╰── function → Erase text
 
-Navigation methods are type-aware now::
-
-    cause1 = tree["cause1"]
-    cause2 = tree["cause2"]
-    eff1 = tree["eff1"]
-    eff2 = tree["eff2"]
-
-    assert len(list(tree.iter_by_type("cause"))) == 2
-
-    assert cause2.first_sibling() is cause1
-    assert cause2.first_sibling(any_kind=True) is cause1
-
-    assert cause2.last_sibling() is cause2
-    assert cause2.last_sibling(any_kind=True) is eff2
-
-    assert cause2.prev_sibling() is cause1
-    assert cause2.prev_sibling(any_kind=True) is cause1
-
-    assert cause1.next_sibling() is cause2
-    assert cause1.next_sibling(any_kind=True) is cause2
-    assert cause2.next_sibling() is None
-    assert cause2.next_sibling(any_kind=True) is eff1
-
-    assert eff1.get_index() == 0
-    assert eff2.get_index() == 1
-    assert eff1.get_index(any_kind=True) == 2
-
-The effect becomes evident when we map a tree to a graph representation. It is
-now possible to define labelled edges::
+The benefit becomes evident when we map a tree to a graph representation. 
+It is now possible to generate labelled edges::
 
     tree.to_dotfile(
         "/path/tree.png",
@@ -261,6 +234,21 @@ now possible to define labelled edges::
     )
 
 .. image:: tree_graph_pencil.png
+
+Navigation methods are type-aware now::
+
+    eff1 = tree["Unable to write"]
+    eff2 = tree["Injury from splinter"]
+    cause1 = tree["Wood too soft"]
+
+    assert eff1.first_sibling() is eff1
+    assert eff1.last_sibling() is eff2
+    assert eff1.last_sibling(any_kind=True) is cause1
+
+    assert cause1.get_index() == 0
+    assert cause1.get_index(any_kind=True) == 2
+
+    assert len(list(tree.iter_by_type("effect"))) == 3
 
 Keep in mind that a tree node is unique within a tree, but may reference identical
 data objects, so these `clones` could exist at different locations of tree. 

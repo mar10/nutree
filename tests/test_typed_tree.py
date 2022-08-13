@@ -255,6 +255,19 @@ class TestTypedTree:
            """,
         )
 
+        eff1 = tree["Unable to write"]
+        eff2 = tree["Injury from splinter"]
+        cause1 = tree["Wood too soft"]
+
+        assert eff1.first_sibling() is eff1
+        assert eff1.last_sibling() is eff2
+        assert eff1.last_sibling(any_kind=True) is cause1
+
+        assert cause1.get_index() == 0
+        assert cause1.get_index(any_kind=True) == 2
+
+        assert len(list(tree.iter_by_type("effect"))) == 3
+
         # tree.print()
         # print()
 
