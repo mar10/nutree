@@ -4,12 +4,13 @@
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 from nutree.common import IterationControl
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    # from .node import Node
+    from .node import Node
+
     # from .tree import Tree
     from .typed_tree import TypedNode, TypedTree
 
@@ -26,22 +27,28 @@ except ImportError:
     RDF = XSD = DefinedNamespace = Namespace = None
     # raise
 
+RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], Union[None, bool]]
 
-class NUTREE_NS(DefinedNamespace):
-    """
-    nutree vocabulary
-    """
+if Namespace:
 
-    _fail = True
+    class NUTREE_NS(DefinedNamespace):
+        """
+        nutree vocabulary
+        """
 
-    # diff_meta:
-    index: URIRef  #
-    has_child: URIRef  #
-    kind: URIRef  #
-    name: URIRef  #
-    system_root: URIRef  #
+        _fail = True
 
-    _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
+        # diff_meta:
+        index: URIRef  #
+        has_child: URIRef  #
+        kind: URIRef  #
+        name: URIRef  #
+        system_root: URIRef  #
+
+        _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
+
+else:  # rdflib unavailable
+    NUTREE_NS = None
 
 
 def _make_graph() -> Graph:
@@ -59,8 +66,8 @@ def _add_child_node(
     parent_graph_node: Optional[IdentifiedNode],
     tree_node: "TypedNode",
     index: int,
-    node_mapper: callable,
-) -> IdentifiedNode:
+    node_mapper: RDFMapperCallbackType,
+) -> Union[IdentifiedNode, IterationControl, bool]:
     """"""
     graph_node = Literal(tree_node.data_id)
 
@@ -69,7 +76,7 @@ def _add_child_node(
         try:
             res = node_mapper(graph, graph_node, tree_node)
             if isinstance(res, (IterationControl, StopIteration)):
-                raise res  # SkipBranch, SelectBranch, StopTraversal
+                return res
         except (IterationControl, StopIteration) as e:
             return e  # SkipBranch, SelectBranch, StopTraversal, StopIteration
     else:
@@ -99,7 +106,7 @@ def _add_child_nodes(
     graph: Graph,
     graph_node: IdentifiedNode,
     tree_node: "TypedNode",
-    node_mapper: callable = None,
+    node_mapper: RDFMapperCallbackType = None,
 ) -> None:
     """"""
     for index, child_tree_node in enumerate(tree_node._children or ()):
@@ -120,7 +127,7 @@ def node_to_rdf(
     tree_node: "TypedNode",
     *,
     add_self: bool = True,
-    node_mapper: callable = None,
+    node_mapper: RDFMapperCallbackType = None,
 ) -> Graph:
     """Generate DOT formatted output line-by-line."""
     graph = _make_graph()
@@ -149,7 +156,7 @@ def node_to_rdf(
 def tree_to_rdf(
     tree: "TypedTree",
     *,
-    node_mapper: callable = None,
+    node_mapper: RDFMapperCallbackType = None,
 ) -> Graph:
     graph = _make_graph()
 

@@ -13,19 +13,19 @@ Navigate
     assert tree.count == 5
 
     records_node = tree["Records"]
-    assert tree.first_child is records_node
+    assert tree.first_child() is records_node
 
     assert len(records_node.children) == 2
-    assert records_node.depth == 1
+    assert records_node.depth() == 1
 
-    n = records_node.first_child
+    n = records_node.first_child()
     assert records_node.find("Let It Be") is n
 
     assert n.name == "Let It Be"
-    assert n.depth == 2
+    assert n.depth() == 2
     assert n.parent is records_node
-    assert n.prev_sibling is None
-    assert n.next_sibling.name == "Get Yer Ya-Ya's Out!"
+    assert n.prev_sibling() is None
+    assert n.next_sibling().name == "Get Yer Ya-Ya's Out!"
     assert not n.children
 
 

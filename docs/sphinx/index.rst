@@ -62,7 +62,7 @@ iteration, ... ::
    assert isinstance(records_node, Node)
    assert records_node.name == "Records"
 
-   print(records_node.first_child)
+   print(records_node.first_child())
 
 ::
 

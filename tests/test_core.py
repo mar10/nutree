@@ -54,7 +54,7 @@ class TestBasics:
 
     def test_meta(aelf):
         tree = fixture.create_tree()
-        node = tree.first_child
+        node = tree.first_child()
 
         assert node._meta is None
 
@@ -129,43 +129,43 @@ class TestNavigate:
 
         assert records.is_top()
         assert records.is_first_sibling()
-        assert records.next_sibling.is_last_sibling()
-        assert records.last_child.is_leaf()
+        assert records.next_sibling().is_last_sibling()
+        assert records.last_child().is_leaf()
 
         assert records.count_descendants() == 2
         assert records.count_descendants(leaves_only=True) == 2
 
-        assert tree.first_child is records
-        assert tree.last_child.name == "Books"
+        assert tree.first_child() is records
+        assert tree.last_child().name == "Books"
 
         assert records.parent is None
-        assert records.first_child.parent is records
-        assert records.first_child.name == "Let It Be"
-        assert records.first_child.next_sibling.name == "Get Yer Ya-Ya's Out!"
-        assert records.last_child.name == "Get Yer Ya-Ya's Out!"
-        assert records.last_child.prev_sibling.name == "Let It Be"
-        assert records.last_child.next_sibling is None
-        assert records.first_sibling is records
-        assert records.prev_sibling is None
+        assert records.first_child().parent is records
+        assert records.first_child().name == "Let It Be"
+        assert records.first_child().next_sibling().name == "Get Yer Ya-Ya's Out!"
+        assert records.last_child().name == "Get Yer Ya-Ya's Out!"
+        assert records.last_child().prev_sibling().name == "Let It Be"
+        assert records.last_child().next_sibling() is None
+        assert records.first_sibling() is records
+        assert records.prev_sibling() is None
 
-        assert records.next_sibling.name == "Books"
-        assert records.last_sibling.name == "Books"
+        assert records.next_sibling().name == "Books"
+        assert records.last_sibling().name == "Books"
 
         assert len(records.get_siblings()) == 1
         assert len(records.get_siblings(add_self=True)) == 2
         assert len(records.get_siblings(add_self=False)) == 1
 
-        # assert tree.last_child is tree["The Little Prince"]
+        # assert tree.last_child() is tree["The Little Prince"]
 
         assert len(records.children) == 2
-        assert records.depth == 1
+        assert records.depth() == 1
         with pytest.raises(NotImplementedError):
             assert tree == tree  # __eq__ not implemented
 
-        let_it_be = records.first_child
+        let_it_be = records.first_child()
         assert records.find("Let It Be") is let_it_be
         assert let_it_be.name == "Let It Be"
-        assert let_it_be.depth == 2
+        assert let_it_be.depth() == 2
         assert let_it_be.parent is records
 
         assert let_it_be.has_children() is False

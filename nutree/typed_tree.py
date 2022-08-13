@@ -17,7 +17,7 @@ from .node import Node
 from .tree import Tree
 
 
-class ANY_TYPE:
+class ANY_KIND:
     """Special argument value for some methods that access child nodes."""
 
 
@@ -35,7 +35,12 @@ class TypedNode(Node):
 
     __slots__ = ("_kind",)
 
-    DEFAULT_REPR = "{node.kind} → {node.data}"
+    #: Default value for ``repr`` argument when formatting data for print/display.
+    DEFAULT_RENDER_REPR = "{node.kind} → {node.data}"
+
+    # #: Default value for ``repr`` argument when formatting data for export,
+    # #: like DOT, RDF, ...
+    # DEFAULT_NAME_REPR = "{node.data!r}"
 
     def __init__(
         self,
@@ -50,32 +55,44 @@ class TypedNode(Node):
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
-        assert isinstance(kind, str) and kind != ANY_TYPE
+        assert isinstance(kind, str) and kind != ANY_KIND
         self._kind = kind
         # del self._children
         # self._child_map: Dict[Node] = None
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
+    # def __repr__(self) -> str:
+    #     return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
 
-    @property
-    def name(self) -> str:
-        """String representation of the embedded `data` object with kind."""
-        return f"{self._kind} → {self.data}"
-        # Inspired by clarc notation: http://www.jclark.com/xml/xmlns.htm
-        # return f"{{{self._kind}}}:{self.data}"
-        # return f"{self.data}"
+    # @property
+    # def name(self) -> str:
+    #     """String representation of the embedded `data` object with kind."""
+    #     # return f"{self._kind} → {self.data}"
+    #     # Inspired by clarc notation: http://www.jclark.com/xml/xmlns.htm
+    #     # return f"{{{self._kind}}}:{self.data}"
+    #     return f"{self.data}"
 
     @property
     def kind(self) -> str:
         return self._kind
 
-    def children(self, kind: Union[str, ANY_TYPE]) -> List["TypedNode"]:
+    @property
+    def parent(self) -> "TypedNode":
+        """Return parent node or None for toplevel nodes."""
+        p = self._parent
+        return p if p._parent else None
+
+    @property
+    def children(self) -> List["TypedNode"]:
+        """Return list of direct child nodes (list may be empty)."""
+        c = self._children
+        return [] if c is None else c
+
+    def get_children(self, kind: Union[str, ANY_KIND]) -> List["TypedNode"]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
             return []
-        elif kind is ANY_TYPE:
+        elif kind is ANY_KIND:
             return all_children
         return list(filter(lambda n: n._kind == kind, all_children))
 
@@ -85,12 +102,12 @@ class TypedNode(Node):
     #     """Change node's `data` and/or `data_id` and update bookkeeping."""
     #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
-    def first_child(self, kind: Union[str, ANY_TYPE]) -> Union["TypedNode", None]:
+    def first_child(self, kind: Union[str, ANY_KIND]) -> Union["TypedNode", None]:
         """First direct childnode or None if no children exist."""
         all_children = self._children
         if not all_children:
             return None
-        elif kind is ANY_TYPE:
+        elif kind is ANY_KIND:
             return all_children[0]
 
         for n in all_children:
@@ -98,12 +115,12 @@ class TypedNode(Node):
                 return n
         return None
 
-    def last_child(self, kind: Union[str, ANY_TYPE]) -> Union["TypedNode", None]:
+    def last_child(self, kind: Union[str, ANY_KIND]) -> Union["TypedNode", None]:
         """Last direct childnode or None if no children exist."""
         all_children = self._children
         if not all_children:
             return None
-        elif kind is ANY_TYPE:
+        elif kind is ANY_KIND:
             return all_children[-1]
 
         for i in range(len(all_children) - 1, -1, -1):
@@ -112,35 +129,63 @@ class TypedNode(Node):
                 return n
         return None
 
-    @property
-    def first_sibling(self) -> "TypedNode":
-        """Return first sibling **of the same kind** (may be self)."""
-        raise NotImplementedError
+    def has_children(self, kind: Union[str, ANY_KIND]) -> bool:
+        """Return true if this node has one or more children."""
+        if kind is ANY_KIND:
+            return bool(self._children)
+        return len(self.get_children(kind)) > 1
 
-    @property
-    def last_sibling(self) -> "TypedNode":
-        """Return last sibling **of the same kind** (may be self)."""
-        raise NotImplementedError
-
-    @property
-    def prev_sibling(self) -> Union["TypedNode", None]:
-        """Return predecessor **of the same kind** or None, if node is first sibling."""
-        raise NotImplementedError
-
-    @property
-    def next_sibling(self) -> Union["TypedNode", None]:
-        """Return successor **of the same kind** or None, if node is last sibling."""
-        raise NotImplementedError
-
-    def get_siblings(self, *, add_self=False, any_type=False) -> List["TypedNode"]:
+    def get_siblings(self, *, add_self=False, any_kind=False) -> List["TypedNode"]:
         """Return a list of all sibling entries of self (excluding self) if any."""
+        if any_kind:
+            return super().get_siblings(add_self=add_self)
         children = self._parent._children
-        if any_type:
-            if add_self:
-                return children
-            return [n for n in children if n is not self]
         rel = self.kind
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
+
+    def first_sibling(self, *, any_kind=False) -> "TypedNode":
+        """Return first sibling `of the same kind` (may be self)."""
+        pc = self._parent._children
+        if any_kind:
+            return pc[0]
+        for n in pc:
+            if n._kind == self._kind:
+                return n
+        raise AssertionError("Internal error")
+
+    def last_sibling(self, *, any_kind=False) -> "TypedNode":
+        """Return last sibling `of the same kind` (may be self)."""
+        pc = self._parent._children
+        if any_kind:
+            return pc[-1]
+        for n in reversed(pc):
+            if n._kind == self._kind:
+                return n
+        raise AssertionError("Internal error")
+
+    def prev_sibling(self, *, any_kind=False) -> Union["TypedNode", None]:
+        """Return predecessor `of the same kind` or None if node is first sibling."""
+        pc = self._parent._children
+        own_idx = pc.index(self)
+        if own_idx > 0:
+            for idx in range(own_idx - 1, -1, -1):
+                n = pc[idx]
+                if any_kind or n._kind == self._kind:
+                    return n
+        return None
+
+    def next_sibling(self, *, any_kind=False) -> Union["TypedNode", None]:
+        """Return successor `of the same kind` or None if node is last sibling."""
+        pc = self._parent._children
+        pc_len = len(pc)
+        own_idx = pc.index(self)
+
+        if own_idx < pc_len - 2:
+            for idx in range(own_idx + 1, pc_len):
+                n = pc[idx]
+                if any_kind or n._kind == self._kind:
+                    return n
+        return None
 
     # def get_clones(self, *, add_self=False) -> List["TypedNode"]:
     #     """Return a list of all nodes that reference the same data if any."""
@@ -149,30 +194,26 @@ class TypedNode(Node):
     #         return clones.copy()
     #     return [n for n in clones if n is not self]
 
-    def get_index(self, *, any_type=False) -> int:
+    def get_index(self, *, any_kind=False) -> int:
         """Return index in sibling list."""
-        assert any_type
-        return self._parent._children.index(self)
+        if any_kind:
+            kc = self._parent._children
+        else:
+            kc = self.parent.get_children(self.kind)
+        return kc.index(self)
 
-    # --------------------------------------------------------------------------
-
-    def is_first_sibling(self, *, any_type=False) -> bool:
+    def is_first_sibling(self, *, any_kind=False) -> bool:
         """Return true if this node is the first sibling, i.e. the first child of its parent."""
-        assert any_type
-        return self is self._parent._children[0]
+        if any_kind:
+            return self is self._parent._children[0]
+        return self is self.first_sibling(any_kind=False)
 
-    def is_last_sibling(self, *, any_type=False) -> bool:
+    def is_last_sibling(self, *, any_kind=False) -> bool:
         """Return true if this node is the last sibling, i.e. the last child
         **of this kind** of its parent."""
-        assert any_type
-        return self is self._parent._children[-1]
-
-    def has_children(self, kind: Union[str, ANY_TYPE]) -> bool:
-        """Return true if this node has one or more children."""
-        assert kind is ANY_TYPE
-        return bool(self._children)
-
-    # --------------------------------------------------------------------------
+        if any_kind:
+            return self is self._parent._children[-1]
+        return self is self.last_sibling(any_kind=False)
 
     def add_child(
         self,
@@ -296,7 +337,7 @@ class TypedNode(Node):
         return self.add_child(
             child,
             kind=kind,
-            before=self.first_child,
+            before=self.first_child(),
             deep=deep,
             data_id=data_id,
             node_id=node_id,
@@ -344,20 +385,20 @@ class TypedNode(Node):
         """Move this node before or after `otherNode` ."""
         raise NotImplementedError
 
-    def remove(self, *, keep_children=False, with_clones=False) -> None:
-        """Remove this node.
+    # def remove(self, *, keep_children=False, with_clones=False) -> None:
+    #     """Remove this node.
 
-        If `keep_children` is true, all children will be moved one level up,
-        so they become siblings, before this node is removed.
+    #     If `keep_children` is true, all children will be moved one level up,
+    #     so they become siblings, before this node is removed.
 
-        If `with_clones` is true, all nodes that reference the same data
-        instance are removed as well.
-        """
-        raise NotImplementedError
+    #     If `with_clones` is true, all nodes that reference the same data
+    #     instance are removed as well.
+    #     """
+    #     raise NotImplementedError
 
-    def remove_children(self, kind: Union[str, ANY_TYPE]):
-        """Remove all children of this node, making it a leaf node."""
-        raise NotImplementedError
+    # def remove_children(self, kind: Union[str, ANY_KIND]):
+    #     """Remove all children of this node, making it a leaf node."""
+    #     raise NotImplementedError
 
     def copy(self, *, add_self=True, predicate=None) -> "TypedTree":
         """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
@@ -431,14 +472,14 @@ class TypedNode(Node):
     #             )
 
     #     if repr is None:
-    #         repr = DEFAULT_REPR
+    #         repr = DEFAULT_NAME_REPR
 
     #     # Find out if we need to strip some of the leftmost prefixes.
     #     # If this was called for a normal node, we strip all parent levels
     #     # (and also the own prefix when `add_self` is false).
     #     # If this was called for the system root node, we do the same, but we
     #     # never render self, because the the title is rendered by the caller.
-    #     lstrip = self.depth
+    #     lstrip = self.depth()
     #     if not add_self:
     #         lstrip += 1
     #     if not self._parent:
@@ -550,11 +591,7 @@ class TypedNode(Node):
         See :ref:`Graphs` for details.
         """
 
-        def _node_mapper(node, data):
-            data["label"] = f"{node.data}"
-            if node_mapper:
-                return node_mapper(node, data)
-
+        # TypedNodes can provide labelled edges:
         def _edge_mapper(node, data):
             data["label"] = node.kind
             if edge_mapper:
@@ -566,7 +603,7 @@ class TypedNode(Node):
             graph_attrs=graph_attrs,
             node_attrs=node_attrs,
             edge_attrs=edge_attrs,
-            node_mapper=_node_mapper,
+            node_mapper=node_mapper,
             edge_mapper=_edge_mapper,
         )
         return res
@@ -617,10 +654,15 @@ class TypedTree(Tree):
     #: Alias for :meth:`add_child`
     add = add_child  # Must re-bind here
 
-    def iter_by_type(self, kind: Union[str, ANY_TYPE]):
-        if kind == ANY_TYPE:
-            return self.iter()
-        raise NotImplementedError
+    def iter_by_type(
+        self, kind: Union[str, ANY_KIND]
+    ) -> Generator[TypedNode, None, None]:
+        if kind == ANY_KIND:
+            return self.iterator()
+        for n in self.iterator():
+            if n._kind == kind:
+                yield n
+        return
 
 
 # ------------------------------------------------------------------------------
@@ -638,7 +680,3 @@ class _SystemRootTypedNode(TypedNode):
         self._children = []
         self._meta = None
         self._kind = None
-
-    # @property
-    # def name(self) -> str:
-    #     return self.tree.name

@@ -32,8 +32,8 @@ class TestSerialize:
 
         assert fixture.trees_equal(tree, tree_2)
 
-        assert tree.first_child is not tree_2.first_child
-        assert tree.first_child == tree_2.first_child
+        assert tree.first_child() is not tree_2.first_child()
+        assert tree.first_child() == tree_2.first_child()
         assert tree.count == tree_2.count
 
         assert tree._self_check()
@@ -60,8 +60,8 @@ class TestSerialize:
         # print(tree_2.format(repr="{node}"))
 
         assert tree.count == tree_2.count
-        assert tree.first_child is not tree_2.first_child
-        assert tree.first_child == tree_2.first_child
+        assert tree.first_child() is not tree_2.first_child()
+        assert tree.first_child() == tree_2.first_child()
 
         a11 = tree_2.find("a11")
         assert a11.is_clone(), "Restored clone"
@@ -131,11 +131,11 @@ class TestSerialize:
         assert fixture.trees_equal(tree, tree_2)
 
         assert tree.count == tree_2.count
-        assert tree.first_child is not tree_2.first_child
+        assert tree.first_child() is not tree_2.first_child()
 
         # TODO: also make a test-case, where the mapper returns a data_id,
-        #       so that `tree.first_child == tree_2.first_child`
-        # assert tree.first_child == tree_2.first_child
+        #       so that `tree.first_child() == tree_2.first_child()`
+        # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
         assert alice_2.data.guid == "{123-456}"

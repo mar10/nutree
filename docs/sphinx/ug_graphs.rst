@@ -177,15 +177,14 @@ Main differences to plain `Tree`:
     - Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
       ``node.kind`` attribute.
     - The kind is part of the display name by default:
-      ``repr="{node.kind} → {node.data}"``, e.g. 'person → Alice'.
+      ``repr="{node.kind} → {node.data}"``, e.g. 'friend → Alice'.
     - Node methods like :meth:`~nutree.typed_tree.TypedNode.children()` get
       an additional mandatory argument ``kind`` to filter by type.s
-      Pass ``kind=ANY_TYPE`` to retrieve all children.
-    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` 
-      assume get '... of the same type'. An additional argument ``any_type=True`` 
+      Pass ``kind=ANY_KIND`` to retrieve all children.
+    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` and
+      :meth:`~nutree.typed_tree.TypedNode.first_sibling()`
+      assume get '... of the same type'. An additional argument ``any_kind=True`` 
       can be passed to ignore the types.
-    - Node properties like :meth:`~nutree.typed_tree.TypedNode.first_sibling`
-      implicitly assume '... of the same type'.
     - When converting to a graph, `node.kind` becomes the label of the arrow
       pointing from the parent to this node.
 
@@ -281,8 +280,9 @@ Use basic triple matching to find all child nodes of type 'cause'::
 
 ::
 
-    cause → Wood too soft is a cause
-    cause → Lead material too brittle is a cause
+    Wood too soft is a cause
+    Lead material too brittle is a cause
+
 
 Execute a SPARQL query::
 
@@ -304,8 +304,8 @@ Execute a SPARQL query::
 
 ::
 
-    -3500725853037991748 cause → Wood too soft is a cause
-    6206907417295657490 cause → Lead material too brittle is a cause
+    -858093319983296182 Wood too soft is a cause
+    -3061307893397568517 Lead material too brittle is a cause
 
 This would be the 'turtle' formatted serialization::
 
@@ -316,17 +316,26 @@ This would be the 'turtle' formatted serialization::
     @prefix nutree: <http://wwwendt.de/namespace/nutree/rdf/0.1/> .
     @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-    nutree:system_root nutree:has_child -581237564389228563,
-            3747004819838182955 ;
+    nutree:system_root nutree:has_child -6893421218868685274,
+            3432943543584592100 ;
         nutree:name "Pencil" .
-    -6218004216446435326 nutree:index 1 ;
-        nutree:kind "effect" ;
-        nutree:name "effect → Injury from splinter" .
-    -5784235343724403607 nutree:has_child -3424160385673670481,
-            -784350720582677638 ;
+
+    -6935157396369479208 nutree:has_child -3061307893397568517,
+            -2033919816722635981 ;
         nutree:index 1 ;
         nutree:kind "failure" ;
-        nutree:name "failure → Lead breaks" .
+        nutree:name "Lead breaks" .
+
+    -6893421218868685274 nutree:has_child -6935157396369479208,
+            4885824412641056401 ;
+        nutree:index 0 ;
+        nutree:kind "function" ;
+        nutree:name "Write on paper" .
+
+    -3680688296053900211 nutree:index 1 ;
+        nutree:kind "effect" ;
+        nutree:name "Injury from splinter" .
+
     ...
 
 .. note::

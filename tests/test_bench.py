@@ -64,7 +64,7 @@ class TestBenchmarks:
 
         results = ["Benchmark results"]
         tree = fixture.create_tree()
-        node = tree.first_child
+        node = tree.first_child()
 
         results.append(
             fixture.run_timings(
@@ -94,7 +94,7 @@ class TestBenchmarks:
 
         results = ["Benchmark results"]
         tree = fixture.create_tree()
-        node = tree.first_child
+        node = tree.first_child()
 
         results.append(
             fixture.run_timings(
@@ -182,7 +182,7 @@ class TestMemory:
             f"Tree 10x9: {node_count:,} nodes, {tree_size:,} bytes, node-size: {node_size:.1f} bytes"
         )
 
-        print(asized(tree.first_child, detail=1).format())
+        print(asized(tree.first_child(), detail=1).format())
 
         tree = fixture.generate_tree([100, 100, 99])
         assert len(tree) == 1000100

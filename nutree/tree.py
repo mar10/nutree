@@ -76,7 +76,7 @@ class Tree:
 
         `data` may be a plain string, data object, data_id, or node_id.
 
-        Note: This is a flexible and concise way to access tree node. However,
+        Note: This is a flexible and concise way to access tree nodes. However,
         :meth:`find_all` or :meth:`find_first` may be faster.
 
         :class:`~nutree.common.AmbiguousMatchError` is raised if multiple matches
@@ -113,7 +113,7 @@ class Tree:
 
     def __len__(self):
         """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
-        return len(self._node_by_id)
+        return self.count
 
     def _calc_data_id(self, data) -> int:
         """Called internally to calculate `data_id` for a `data` object.
@@ -170,7 +170,7 @@ class Tree:
     @property
     def count(self):
         """Return the total number of nodes."""
-        return len(self)
+        return len(self._node_by_id)
 
     @property
     def count_unique(self):
@@ -183,15 +183,13 @@ class Tree:
         """
         return len(self._nodes_by_data_id)
 
-    @property
     def first_child(self):
         """Return the first toplevel node."""
-        return self._root.first_child
+        return self._root.first_child()
 
-    @property
     def last_child(self):
         """Return the last toplevel node."""
-        return self._root.last_child
+        return self._root.last_child()
 
     def get_random_node(self) -> Node:
         """Return a random node.

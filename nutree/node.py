@@ -28,7 +28,7 @@ from .common import (
     call_traversal_cb,
 )
 from .dot import node_to_dot
-from .rdf import node_to_rdf
+from .rdf import RDFMapperCallbackType, node_to_rdf
 
 
 # ------------------------------------------------------------------------------
@@ -52,9 +52,13 @@ class Node:
         "_parent",
         "_tree",
     )
-    #: Default value for ``repr`` argument.
-    # DEFAULT_REPR = "{node.data}"
-    DEFAULT_REPR = "{node.data!r}"
+    #: Default value for ``repr`` argument when formatting data for print/display.
+    DEFAULT_RENDER_REPR = "{node.data!r}"
+
+    # #: Default value for ``repr`` argument when formatting data for export,
+    # #: like DOT, RDF, ...
+    # DEFAULT_NAME_REPR = "{node.data!r}"
+    # # DEFAULT_NAME_REPR = "{node.data}"
 
     def __init__(
         self, data, *, parent: "Node", data_id=None, node_id=None, meta: Dict = None
@@ -278,22 +282,28 @@ class Node:
 
         return
 
-    @property
+    def get_children(self) -> List["Node"]:
+        """Return list of direct child nodes (list may be empty)."""
+        return self.children
+
     def first_child(self) -> Union["Node", None]:
         """First direct childnode or None if no children exist."""
         return self._children[0] if self._children else None
 
-    @property
     def last_child(self) -> Union["Node", None]:
         """Last direct childnode or None if no children exist."""
         return self._children[-1] if self._children else None
 
-    @property
+    def get_siblings(self, *, add_self=False) -> List["Node"]:
+        """Return a list of all sibling entries of self (excluding self) if any."""
+        if add_self:
+            return self._parent._children
+        return [n for n in self._parent._children if n is not self]
+
     def first_sibling(self) -> "Node":
         """Return first sibling (may be self)."""
         return self._parent._children[0]
 
-    @property
     def prev_sibling(self) -> Union["Node", None]:
         """Predecessor or None, if node is first sibling."""
         if self.is_first_sibling():
@@ -301,7 +311,6 @@ class Node:
         idx = self._parent._children.index(self)
         return self._parent._children[idx - 1]
 
-    @property
     def next_sibling(self) -> Union["Node", None]:
         """Return successor or None, if node is last sibling."""
         if self.is_last_sibling():
@@ -309,16 +318,9 @@ class Node:
         idx = self._parent._children.index(self)
         return self._parent._children[idx + 1]
 
-    @property
     def last_sibling(self) -> "Node":
         """Return last node, that share own parent (may be `self`)."""
         return self._parent._children[-1]
-
-    def get_siblings(self, *, add_self=False) -> List["Node"]:
-        """Return a list of all sibling entries of self (excluding self) if any."""
-        if add_self:
-            return self._parent._children
-        return [n for n in self._parent._children if n is not self]
 
     def get_clones(self, *, add_self=False) -> List["Node"]:
         """Return a list of all nodes that reference the same data if any."""
@@ -327,7 +329,6 @@ class Node:
             return clones.copy()
         return [n for n in clones if n is not self]
 
-    @property
     def depth(self) -> int:
         """Return the distance to the root node (1 for toplevel nodes)."""
         return self.calc_depth()
@@ -589,7 +590,11 @@ class Node:
         This is a shortcut for :meth:`add_child` with ``before=True``.
         """
         return self.add_child(
-            child, before=self.first_child, deep=deep, data_id=data_id, node_id=node_id
+            child,
+            before=self.first_child(),
+            deep=deep,
+            data_id=data_id,
+            node_id=node_id,
         )
 
     def prepend_sibling(
@@ -620,7 +625,7 @@ class Node:
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
-        next_node = self.next_sibling
+        next_node = self.next_sibling()
         return self._parent.add_child(
             child, before=next_node, deep=deep, data_id=data_id, node_id=node_id
         )
@@ -715,10 +720,11 @@ class Node:
         if predicate:
             return self._add_filtered(other, predicate)
 
-        assert not self.has_children()
+        assert not self._children
         for child in other.children:
             new_child = self.add_child(child.data, data_id=child._data_id)
-            if child.has_children():
+            if child.children:
+                # if child.has_children():
                 new_child._add_from(child, predicate=None)
         return
 
@@ -1105,14 +1111,14 @@ class Node:
                 )
 
         if repr is None:
-            repr = self.DEFAULT_REPR
+            repr = self.DEFAULT_RENDER_REPR
 
         # Find out if we need to strip some of the leftmost prefixes.
         # If this was called for a normal node, we strip all parent levels
         # (and also the own prefix when `add_self` is false).
         # If this was called for the system root node, we do the same, but we
         # never render self, because the the title is rendered by the caller.
-        lstrip = self.depth
+        lstrip = self.depth()
         if not add_self:
             lstrip += 1
         if not self._parent:
@@ -1273,9 +1279,11 @@ class Node:
         )
         return res
 
-    def to_rdf_graph(self, add_self: bool = True):
+    def to_rdf_graph(
+        self, *, add_self: bool = True, node_mapper: RDFMapperCallbackType = None
+    ):
         """Return an instance of ``rdflib.Graph``.
 
         See :ref:`Graphs` for details.
         """
-        return node_to_rdf(self, add_self=add_self)
+        return node_to_rdf(self, add_self=add_self, node_mapper=node_mapper)

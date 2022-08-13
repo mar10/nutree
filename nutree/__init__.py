@@ -31,6 +31,7 @@ from .diff import DiffClassification, diff_node_formatter
 from .fs import load_tree_from_fs
 from .node import Node
 from .tree import Tree
+from .typed_tree import TypedNode, TypedTree
 
 __all__ = [
     Tree,
@@ -44,5 +45,7 @@ __all__ = [
     SkipBranch,
     StopTraversal,
     TreeError,
+    TypedNode,
+    TypedTree,
     UniqueConstraintError,
 ]
