@@ -224,6 +224,33 @@ When adding nodes, we now pass this type, e.g.::
     │       ╰── cause → Lead material too brittle
     ╰── function → Erase text
 
+Navigation methods are type-aware now::
+
+    cause1 = tree["cause1"]
+    cause2 = tree["cause2"]
+    eff1 = tree["eff1"]
+    eff2 = tree["eff2"]
+
+    assert len(list(tree.iter_by_type("cause"))) == 2
+
+    assert cause2.first_sibling() is cause1
+    assert cause2.first_sibling(any_kind=True) is cause1
+
+    assert cause2.last_sibling() is cause2
+    assert cause2.last_sibling(any_kind=True) is eff2
+
+    assert cause2.prev_sibling() is cause1
+    assert cause2.prev_sibling(any_kind=True) is cause1
+
+    assert cause1.next_sibling() is cause2
+    assert cause1.next_sibling(any_kind=True) is cause2
+    assert cause2.next_sibling() is None
+    assert cause2.next_sibling(any_kind=True) is eff1
+
+    assert eff1.get_index() == 0
+    assert eff2.get_index() == 1
+    assert eff1.get_index(any_kind=True) == 2
+
 The effect becomes evident when we map a tree to a graph representation. It is
 now possible to define labelled edges::
 
@@ -237,7 +264,7 @@ now possible to define labelled edges::
 
 Keep in mind that a tree node is unique within a tree, but may reference identical
 data objects, so these `clones` could exist at different locations of tree. 
-The resulting graph node only exists once.|br|
+The resulting graph node only exists once. |br|
 :class:`~nutree.typed_tree.TypedTree`'s node type only affects 
 parent → child relations. Arbitrary links are not supported. |br|
 If you are looking for a data model with full graph support have a look
