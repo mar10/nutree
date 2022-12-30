@@ -168,6 +168,11 @@ class Tree:
         return
 
     @property
+    def children(self) -> List["Node"]:
+        """Return list of direct child nodes, i.e. toplevel nodes (list may be empty)."""
+        return self._root.children
+
+    @property
     def count(self):
         """Return the total number of nodes."""
         return len(self._node_by_id)

@@ -904,8 +904,7 @@ class Node:
 
         The callback may return :class:`SkipBranch` (or an instance
         thereof) to omit childnodes but continue traversal otherwise.
-        Raising `SkipBranch` has the same effect. |br|
-        Note that skipping of children is only available ...
+        Raising `SkipBranch` has the same effect.
 
         The callback may return ``False`` or :class:`StopIteration` to immediately
         interrupt traversal.
@@ -1117,7 +1116,7 @@ class Node:
         # If this was called for a normal node, we strip all parent levels
         # (and also the own prefix when `add_self` is false).
         # If this was called for the system root node, we do the same, but we
-        # never render self, because the the title is rendered by the caller.
+        # never render self, because the title is rendered by the caller.
         lstrip = self.depth()
         if not add_self:
             lstrip += 1
@@ -1210,7 +1209,7 @@ class Node:
         for id_gen, node in enumerate(self, 1):
             # Compact mode: use integer sequence as keys
             # Store idx with original id for later parent-ref. We only have to
-            # do this of nodes that have children though:
+            # do this for nodes that have children though:
             node_id = node._node_id
             if node._children:
                 parent_id_map[node_id] = id_gen
