@@ -52,11 +52,11 @@ def node_to_dot(
             call_mapper(mapper, node, attr_def)
         if not attr_def:
             return ""
-        attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())
+        attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())  # noqa: B028
         return " [" + attr_str + "]"
 
     yield "# Generator: https://github.com/mar10/nutree/"
-    yield f'digraph "{name}" {{'
+    yield f'digraph "{name}" {{'  # noqa: B028
 
     if graph_attrs or node_attrs or edge_attrs:
         yield ""

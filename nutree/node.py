@@ -928,7 +928,7 @@ class Node:
         try:
             handler = getattr(self.__class__, f"_visit_{method.value}")
         except AttributeError:
-            raise NotImplementedError(f"Unsupported traversal method '{method}'.")
+            raise NotImplementedError(f"Unsupported traversal method {method!r}.")
 
         if memo is None:
             memo = {}
@@ -992,7 +992,7 @@ class Node:
         try:
             handler = getattr(self, f"_iter_{method.value}")
         except AttributeError:
-            raise NotImplementedError(f"Unsupported traversal method '{method}'.")
+            raise NotImplementedError(f"Unsupported traversal method {method!r}.")
 
         if add_self and method != IterMethod.POST_ORDER:
             yield self
@@ -1106,7 +1106,7 @@ class Node:
                 style = CONNECTORS[style or DEFAULT_CONNECTOR_STYLE]
             except KeyError:
                 raise ValueError(
-                    f"Invalid style '{style}'. Expected: {'|'.join(CONNECTORS.keys())}"
+                    f"Invalid style {style!r}. Expected: {'|'.join(CONNECTORS.keys())}"
                 )
 
         if repr is None:
