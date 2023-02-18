@@ -4,14 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-black = "~=22.12"
+black = { version = "~=22.12", extras = ["jupyter"] }
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-isort = "*"
 flake8-quotes = "*"
 isort = "*"
 pylint = "*"
-pytest = "!=3.2.0" # wait for https://github.com/pytest-dev/pytest-html/pull/583
+# TODO: remove this line:
+# pytest-html = "!=3.2.0" # wait for https://github.com/pytest-dev/pytest-html/pull/583
+pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"
 rdflib = "*"
