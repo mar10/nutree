@@ -122,9 +122,9 @@ class Tree:
         (de)serialization. It defaults to ``hash(data)`` but may be overloaded
         when the data objects have meaningful keys that should be used instead.
 
-        Note: By default, the __hash__() values of str and bytes objects are 
-        'salted' with an unpredictable random value. Although they remain constant 
-        within an individual Python process, they are not predictable between 
+        Note: By default, the __hash__() values of str and bytes objects are
+        'salted' with an unpredictable random value. Although they remain constant
+        within an individual Python process, they are not predictable between
         repeated invocations of Python.
         """
         if self._calc_data_id_hook:
