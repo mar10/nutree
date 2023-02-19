@@ -636,7 +636,17 @@ class Node:
         *,
         before: Union["Node", bool, int, None] = None,
     ):
-        """Move this node before or after `otherNode` ."""
+        """@deprecated"""
+        raise NotImplementedError("Use move_to() instead")
+        # return self.move_to(new_parent, before=before)
+
+    def move_to(
+        self,
+        new_parent: Union["Node", "Tree"],
+        *,
+        before: Union["Node", bool, int, None] = None,
+    ):
+        """Move this node before or after `otherNode`."""
         if new_parent is None:
             new_parent = self._tree._root
         # elif isinstance(new_parent, Tree):
@@ -680,7 +690,7 @@ class Node:
 
         if keep_children:
             for c in self.children.copy():
-                c.move(self._parent, before=self)
+                c.move_to(self._parent, before=self)
         else:
             self.remove_children()
 
@@ -711,6 +721,13 @@ class Node:
             root = new_tree._root
         root._add_from(self, predicate=predicate)
         return new_tree
+
+    def copy_to(self, *, add_self=True, predicate=None) -> "Node":
+        """Return a new :class:`~nutree.tree.Tree` instance from this branch.
+
+        See also :meth:`_add_from` and :ref:`iteration callbacks`.
+        """
+        raise NotImplementedError
 
     def _add_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
         """Append copies of all source descendants to self.

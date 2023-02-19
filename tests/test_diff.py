@@ -18,7 +18,7 @@ class TestDiff:
         tree_1["a2"].add("a21")
         tree_1["a11"].remove()
         tree_1.add_child("C")
-        tree_1["b1"].move(tree_1["C"])
+        tree_1["b1"].move_to(tree_1["C"])
         tree_1.print()
 
         tree_2 = tree_0.diff(tree_1)

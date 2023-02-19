@@ -775,7 +775,7 @@ class TestMutate:
         b1 = tree["b1"]
 
         print(tree.format(repr="{node.data}"))
-        a11.move(b1)
+        a11.move_to(b1)
 
         assert fixture.check_content(
             tree,

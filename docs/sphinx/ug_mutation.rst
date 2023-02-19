@@ -13,7 +13,7 @@ Some in-place modifications are available::
     node.add(data, ...)
     node.prepend_child(data, ...)
     ...
-    node.move(new_parent, before)
+    node.move_to(new_parent, before)
     node.sort_children()
 
     # Delete nodes

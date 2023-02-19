@@ -376,7 +376,7 @@ class TypedNode(Node):
             child, before=next_node, deep=deep, data_id=data_id, node_id=node_id
         )
 
-    def move(
+    def move_to(
         self,
         new_parent: Union["TypedNode", "TypedTree"],
         *,

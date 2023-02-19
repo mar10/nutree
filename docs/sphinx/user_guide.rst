@@ -15,7 +15,7 @@ Main `Node` attributes are initialized on construction:
 
 parent (`Node`, readonly)
   The direct ancestor (``node.parent`` is `None` for toplevel nodes).
-  Use :meth:`~nutree.node.Node.move` to modify.
+  Use :meth:`~nutree.node.Node.move_to` to modify.
 
 children (`List[Node]`, readonly)
   List of direct subnodes, may be empty.
@@ -24,7 +24,7 @@ children (`List[Node]`, readonly)
   :meth:`~nutree.node.Node.prepend_child`,
   :meth:`~nutree.node.Node.remove`,
   :meth:`~nutree.node.Node.remove_children`,
-  :meth:`~nutree.node.Node.move`, etc.
+  :meth:`~nutree.node.Node.move_to`, etc.
 
 data (`object|str`, readonly)
   The user data payload. 
