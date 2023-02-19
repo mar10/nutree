@@ -4,13 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-black = "~=22.12"
+black = { version = "~=22.12", extras = ["jupyter"] }
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-isort = "*"
 flake8-quotes = "*"
 isort = "*"
 pylint = "*"
+# TODO: remove this line:
+# pytest-html = "!=3.2.0" # wait for https://github.com/pytest-dev/pytest-html/pull/583
 pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"
@@ -29,7 +31,7 @@ ipykernel = "*"
 [packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
 
 [pipenv]
 # allow_prereleases = true

@@ -118,14 +118,15 @@ class Tree:
     def _calc_data_id(self, data) -> int:
         """Called internally to calculate `data_id` for a `data` object.
 
-        This value is used to llokup nodes by data, identify clones, and for
-        (de)serlialization. It defaults to ``hash(data)`` but may be overloaded
+        This value is used to lookup nodes by data, identify clones, and for
+        (de)serialization. It defaults to ``hash(data)`` but may be overloaded
         when the data objects have meaningful keys that should be used instead.
+
+        Note: By default, the __hash__() values of str and bytes objects are
+        'salted' with an unpredictable random value. Although they remain constant
+        within an individual Python process, they are not predictable between
+        repeated invocations of Python.
         """
-        # Note By default, the __hash__() values of str and bytes objects are “salted”
-        # with an unpredictable random value. Although they remain constant within an
-        # individual Python process, they are not predictable between repeated invocations
-        # of Python.
         if self._calc_data_id_hook:
             return self._calc_data_id_hook(self, data)
         return hash(data)
