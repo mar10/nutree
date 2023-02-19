@@ -13,6 +13,9 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Node
 
 
+ItemIdType = Union[str, int]
+
+
 class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
 

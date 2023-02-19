@@ -249,7 +249,8 @@ class TypedNode(Node):
             return
 
         source_node = None
-        if isinstance(child, TypedNode):
+        factory = self._tree._node_factory
+        if isinstance(child, Node):  # TypedNode):
             if deep is None:
                 deep = False
             if deep and data_id is not None or node_id is not None:
@@ -265,7 +266,7 @@ class TypedNode(Node):
                 # raise NotImplementedError("Cross-tree adding")
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
-            node = TypedNode(
+            node = factory(
                 kind,
                 source_node.data,
                 parent=self,
@@ -273,7 +274,7 @@ class TypedNode(Node):
                 node_id=node_id,
             )
         else:
-            node = TypedNode(kind, child, parent=self, data_id=data_id, node_id=node_id)
+            node = factory(kind, child, parent=self, data_id=data_id, node_id=node_id)
 
         children = self._children
         if children is None:
@@ -285,7 +286,10 @@ class TypedNode(Node):
             children.insert(before, node)
         elif before:
             if before._parent is not self:
-                raise ValueError("`before=node` argument must be a child of this node")
+                raise ValueError(
+                    f"`before=node` ({before._parent}) "
+                    f"must be a child of target node ({self})"
+                )
             idx = children.index(before)  # raises ValueError
             children.insert(idx, node)
         else:

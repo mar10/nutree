@@ -6,7 +6,7 @@ Declare the :class:`~nutree.node.Node` class.
 """
 import re
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
@@ -15,6 +15,7 @@ from .common import (
     CONNECTORS,
     DEFAULT_CONNECTOR_STYLE,
     AmbiguousMatchError,
+    ItemIdType,
     IterMethod,
     MapperCallbackType,
     PredicateCallbackType,
@@ -61,7 +62,13 @@ class Node:
     # # DEFAULT_NAME_REPR = "{node.data}"
 
     def __init__(
-        self, data, *, parent: "Node", data_id=None, node_id=None, meta: Dict = None
+        self,
+        data,
+        *,
+        parent: "Node",
+        data_id: Optional[ItemIdType] = None,
+        node_id: Optional[int] = None,
+        meta: Dict = None,
     ):
         self._data = data
         self._parent: Node = parent
@@ -71,9 +78,9 @@ class Node:
         self._children: List[Node] = None
 
         if data_id is None:
-            self._data_id = tree._calc_data_id(data)
+            self._data_id: ItemIdType = tree._calc_data_id(data)
         else:
-            self._data_id = data_id
+            self._data_id: ItemIdType = data_id
 
         if node_id is None:
             self._node_id: int = id(self)
@@ -148,12 +155,12 @@ class Node:
         return self._data
 
     @property
-    def data_id(self):
+    def data_id(self) -> ItemIdType:
         """Return the wrapped data instance's id (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
         return self._data_id
 
     @property
-    def node_id(self):
+    def node_id(self) -> int:
         """Return the node's unique key."""
         return self._node_id
 
@@ -517,6 +524,7 @@ class Node:
             return
 
         source_node = None
+        factory = self._tree._node_factory
         if isinstance(child, Node):
             if deep is None:
                 deep = False
@@ -533,9 +541,11 @@ class Node:
                 # raise NotImplementedError("Cross-tree adding")
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
-            node = Node(source_node.data, parent=self, data_id=data_id, node_id=node_id)
+            node = factory(
+                source_node.data, parent=self, data_id=data_id, node_id=node_id
+            )
         else:
-            node = Node(child, parent=self, data_id=data_id, node_id=node_id)
+            node = factory(child, parent=self, data_id=data_id, node_id=node_id)
 
         children = self._children
         if children is None:
