@@ -547,7 +547,10 @@ class Node:
             children.insert(before, node)
         elif before:
             if before._parent is not self:
-                raise ValueError("`before=node` argument must be a child of this node")
+                raise ValueError(
+                    f"`before=node` ({before._parent}) "
+                    f"must be a child of target node ({self})"
+                )
             idx = children.index(before)  # raises ValueError
             children.insert(idx, node)
         else:
@@ -630,16 +633,6 @@ class Node:
             child, before=next_node, deep=deep, data_id=data_id, node_id=node_id
         )
 
-    def move(
-        self,
-        new_parent: Union["Node", "Tree"],
-        *,
-        before: Union["Node", bool, int, None] = None,
-    ):
-        """@deprecated"""
-        raise NotImplementedError("Use move_to() instead")
-        # return self.move_to(new_parent, before=before)
-
     def move_to(
         self,
         new_parent: Union["Node", "Tree"],
@@ -701,7 +694,7 @@ class Node:
 
         self._tree._unregister(self)
 
-    def remove_children(self):
+    def remove_children(self) -> None:
         """Remove all children of this node, making it a leaf node."""
         _unregister = self._tree._unregister
         for n in self._iter_post():
@@ -709,7 +702,7 @@ class Node:
         self._children = None
         return
 
-    def copy(self, *, add_self=True, predicate=None) -> "Tree":
+    def copy(self, *, add_self=True, predicate: PredicateCallbackType = None) -> "Tree":
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
         See also :meth:`_add_from` and :ref:`iteration callbacks`.
@@ -722,14 +715,29 @@ class Node:
         root._add_from(self, predicate=predicate)
         return new_tree
 
-    def copy_to(self, *, add_self=True, predicate=None) -> "Node":
+    def copy_to(
+        self,
+        target: Union["Node", "Tree"],
+        *,
+        add_self=True,
+        before: Union["Node", bool, int, None] = None,
+        deep: bool = False,
+    ) -> None:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
         See also :meth:`_add_from` and :ref:`iteration callbacks`.
         """
-        raise NotImplementedError
+        if add_self:
+            target.add_child(self, before=before, deep=deep)
+        else:
+            assert before is None
+            for child in self.children:
+                target.add_child(child, before=None, deep=deep)
+        return
 
-    def _add_from(self, other: "Node", *, predicate: PredicateCallbackType = None):
+    def _add_from(
+        self, other: "Node", *, predicate: PredicateCallbackType = None
+    ) -> None:
         """Append copies of all source descendants to self.
 
         See also :ref:`iteration callbacks`.

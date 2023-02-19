@@ -16,6 +16,14 @@ from nutree.fs import load_tree_from_fs
 from . import fixture
 
 
+def _make_tree_2():
+    t = Tree()
+    n = t.add("x")
+    n.add("y1")
+    n.add("y2")
+    return t
+
+
 class TestBasics:
     def test_add_child(self):
         tree = Tree("fixture")
@@ -795,8 +803,7 @@ class TestMutate:
 
 
 class TestCopy:
-    def test_copy(self):
-        """ """
+    def test_node_copy(self):
         tree_1 = fixture.create_tree()
 
         tree_2 = tree_1.copy()
@@ -815,7 +822,7 @@ class TestCopy:
         assert tree_1._self_check()
         assert tree_2._self_check()
 
-    def test_as_tree(self):
+    def test_tree_copy(self):
         tree = fixture.create_tree()
 
         subtree = tree["a1"].copy()
@@ -842,6 +849,88 @@ class TestCopy:
             """,
         )
         assert subtree._self_check()
+
+    def test_node_copy_to(self):
+
+        tree_1 = fixture.create_tree()
+
+        tree_2 = _make_tree_2()
+        tree_1["a1"].copy_to(tree_2)  # deep defaults to False
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- x
+            |  +- y1
+            |  `- y2
+            `- a1
+            """,
+        )
+        assert tree_2._self_check()
+
+        tree_2 = _make_tree_2()
+        tree_1["a1"].copy_to(tree_2, before=tree_2["x"])  # deep defaults to False
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- a1
+            `- x
+               +- y1
+               `- y2
+            """,
+        )
+
+        tree_2 = _make_tree_2()
+        tree_1["a1"].copy_to(tree_2, deep=True)
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- x
+            |  +- y1
+            |  `- y2
+            `- a1
+               +- a11
+               `- a12
+            """,
+        )
+
+    def test_tree_copy_to(self):
+        tree_1 = fixture.create_tree()
+
+        tree_2 = _make_tree_2()
+        tree_1.copy_to(tree_2)  # deep defaults to True
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- x
+            |  +- y1
+            |  `- y2
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               `- b1
+                  `- b11
+            """,
+        )
+        tree_2 = _make_tree_2()
+        tree_1.copy_to(tree_2, deep=False)
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- x
+            |  +- y1
+            |  `- y2
+            +- A
+            `- B
+            """,
+        )
 
     def test_filter(self):
         tree = fixture.create_tree()

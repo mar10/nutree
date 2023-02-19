@@ -173,7 +173,9 @@ def call_traversal_cb(fn, node, memo):
     except StopIteration as e:
         # raise RuntimeError("Should raise StopTraversal instead")
         warnings.warn(
-            "Should raise StopTraversal instead of StopIteration", RuntimeWarning
+            "Should raise StopTraversal instead of StopIteration",
+            RuntimeWarning,
+            stacklevel=3,
         )
         raise StopTraversal(e.value)
     return None

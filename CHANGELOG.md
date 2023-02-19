@@ -1,7 +1,10 @@
 # Changelog
 
 ## 0.4.0 (unreleased)
-- Rename `node.move()` -> `node.move_to()`
+
+- BREAKING: Rename `node.move()` -> `node.move_to()`
+- New `node.copy_to()`
+
 
 ## 0.3.0 (2022-08-01)
 

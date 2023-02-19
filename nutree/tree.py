@@ -286,9 +286,13 @@ class Tree:
         """Return a copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
-        The nodes reference the original data objects.
+        The new nodes reference the original data objects.
 
-        See also :ref:`iteration callbacks`.
+        `predicate` may be passed to filter the result, which is equivalent to
+        calling :meth:`~nutree.tree.Tree.filtered`
+
+        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration callbacks`
+        method for details.
         """
         if name is None:
             name = f"Copy of {self}"
@@ -296,6 +300,14 @@ class Tree:
         with self:
             new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
+
+    def copy_to(self, target: Union[Node, "Tree"], *, deep=True) -> Node:
+        """Copy this tree's nodes to another target.
+
+        See Node's :meth:`~nutree.node.Node.copy_to` method for details.
+        """
+        with self:
+            return self._root.copy_to(target, add_self=False, before=None, deep=deep)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of unmatching nodes.
