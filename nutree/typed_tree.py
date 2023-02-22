@@ -469,7 +469,7 @@ class TypedNode(Node):
     # def _render_lines(self, *, repr=None, style=None, add_self=True):
     #     if type(style) not in (list, tuple):
     #         try:
-    #             style = CONNECTORS[style or DEFAULT_CONNECTOR_STYLE]
+    #             style = CONNECTORS[style or self.tree.default_connector_style]
     #         except KeyError:
     #             raise ValueError(
     #                 f"Invalid style '{style}'. Expected: {'|'.join(CONNECTORS.keys())}"

@@ -86,24 +86,31 @@ TraversalCallbackType = Callable[
 
 #: Node connector prefixes, for use with ``format(style=...)`` argument.
 CONNECTORS = {
+    "space1": (" ", " ", " ", " "),
     "space2": ("  ", "  ", "  ", "  "),
+    "space3": ("   ", "   ", "   ", "   "),
     "space4": ("    ", " |  ", "    ", "    "),
+    "ascii11": (" ", "|", "`", "-"),
+    "ascii21": ("  ", "| ", "` ", "- "),
     "ascii22": ("  ", "| ", "`-", "+-"),
     "ascii32": ("   ", "|  ", "`- ", "+- "),
     "ascii42": ("    ", " |  ", " `- ", " +- "),
     "ascii43": ("    ", "|   ", "`-- ", "+-- "),
+    "lines11": (" ", "│", "└", "├"),
+    "lines21": ("  ", "│ ", "└ ", "├ "),
+    "lines22": ("  ", "│ ", "└─", "├─"),
     "lines32": ("   ", "│  ", "└─ ", "├─ "),
     "lines42": ("    ", " │  ", " └─ ", " ├─ "),
-    "lines43": ("    ", " │  ", " └──", " ├──"),
+    "lines43": ("    ", "│   ", "└── ", "├── "),
+    "lines43r": ("    ", " │  ", " └──", " ├──"),
+    "round11": (" ", "│", "╰", "├"),
     "round21": ("  ", "│ ", "╰ ", "├ "),
     "round22": ("  ", "│ ", "╰─", "├─"),
     "round32": ("   ", "│  ", "╰─ ", "├─ "),
     "round42": ("    ", " │  ", " ╰─ ", " ├─ "),
     "round43": ("    ", "│   ", "╰── ", "├── "),
+    "round43r": ("    ", " │  ", " ╰──", " ├──"),
 }
-
-#: Default connector prefixes ``format(style=...)`` argument.
-DEFAULT_CONNECTOR_STYLE = "round43"
 
 
 def call_mapper(fn, node: "Node", data: dict) -> Any:

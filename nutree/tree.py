@@ -38,6 +38,9 @@ class Tree:
     Trees expose methods to iterate, search, copy, filter, serialize, etc.
     """
 
+    #: Default connector prefixes ``format(style=...)`` argument.
+    default_connector_style = "round43"
+
     def __init__(self, name: str = None, *, factory=None, calc_data_id=None):
         self._lock = threading.RLock()
         self.name = str(id(self) if name is None else name)

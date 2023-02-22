@@ -60,6 +60,10 @@ class TestBasics:
             """,
         )
 
+        # for style in CONNECTORS.keys():
+        #     print(tree.format(repr="{node.data}", style=style))
+        # raise
+
     def test_meta(aelf):
         tree = fixture.create_tree()
         node = tree.first_child()

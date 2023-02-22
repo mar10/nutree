@@ -13,7 +13,6 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 
 from .common import (
     CONNECTORS,
-    DEFAULT_CONNECTOR_STYLE,
     AmbiguousMatchError,
     ItemIdType,
     IterMethod,
@@ -1138,7 +1137,7 @@ class Node:
     def _render_lines(self, *, repr=None, style=None, add_self=True):
         if type(style) not in (list, tuple):
             try:
-                style = CONNECTORS[style or DEFAULT_CONNECTOR_STYLE]
+                style = CONNECTORS[style or self.tree.default_connector_style]
             except KeyError:
                 raise ValueError(
                     f"Invalid style {style!r}. Expected: {'|'.join(CONNECTORS.keys())}"
