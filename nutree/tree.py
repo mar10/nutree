@@ -305,13 +305,13 @@ class Tree:
             new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
 
-    def copy_to(self, target: Union[Node, "Tree"], *, deep=True) -> Node:
+    def copy_to(self, target: Union[Node, "Tree"], *, deep=True) -> None:
         """Copy this tree's nodes to another target.
 
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
         """
         with self:
-            return self._root.copy_to(target, add_self=False, before=None, deep=deep)
+            self._root.copy_to(target, add_self=False, before=None, deep=deep)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of unmatching nodes.

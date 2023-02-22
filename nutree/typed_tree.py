@@ -386,7 +386,7 @@ class TypedNode(Node):
         *,
         before: Union["TypedNode", bool, int, None] = None,
     ):
-        """Move this node before or after `otherNode` ."""
+        """Move this node before or after `new_parent`."""
         raise NotImplementedError
 
     # def remove(self, *, keep_children=False, with_clones=False) -> None:

@@ -648,7 +648,11 @@ class Node:
         *,
         before: Union["Node", bool, int, None] = None,
     ):
-        """Move this node before or after `otherNode`."""
+        """Move this node to another parent.
+
+        By default, the node is appended to existing children.
+        See :meth:`add_child` for a description of `before`.
+        """
         if new_parent is None:
             new_parent = self._tree._root
         # elif isinstance(new_parent, Tree):
@@ -714,7 +718,7 @@ class Node:
     def copy(self, *, add_self=True, predicate: PredicateCallbackType = None) -> "Tree":
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
-        See also :meth:`_add_from` and :ref:`iteration callbacks`.
+        See also :ref:`iteration callbacks`.
         """
         new_tree = self._tree.__class__()
         if add_self:
@@ -731,18 +735,27 @@ class Node:
         add_self=True,
         before: Union["Node", bool, int, None] = None,
         deep: bool = False,
-    ) -> None:
-        """Return a new :class:`~nutree.tree.Tree` instance from this branch.
+    ) -> "Node":
+        """Copy this node to another parent and return the new node.
 
-        See also :meth:`_add_from` and :ref:`iteration callbacks`.
+        If `add_self` is set, a copy of this node becomes a child of `target`.
+        Otherwise copies of all children of this node are created below `target`.
+
+        By default new nodes are appended to existing children. The `before`
+        argument defines an alternative positioning.
+        It is only available when `add_self` is true.
+        See :meth:`add_child` for a description of `before`.
+
+        If `deep` is set, all descendants are copied recursively.
         """
         if add_self:
-            target.add_child(self, before=before, deep=deep)
-        else:
-            assert before is None
-            for child in self.children:
-                target.add_child(child, before=None, deep=deep)
-        return
+            return target.add_child(self, before=before, deep=deep)
+        assert before is None
+        res = None
+        for child in self.children:
+            n = target.add_child(child, before=None, deep=deep)
+            res = res or n  # Return the first new node
+        return res
 
     def _add_from(
         self, other: "Node", *, predicate: PredicateCallbackType = None
