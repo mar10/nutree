@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) 2021-2022 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 Methods and classes to support file system related functionality.
