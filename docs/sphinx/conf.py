@@ -47,10 +47,10 @@ sys.path.insert(0, os.path.abspath("_themes"))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark',
+    'myst_parser',
+    # 'recommonmark',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx.ext.autosectionlabel',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.ifconfig',
@@ -59,8 +59,7 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.napoleon',
 #    'sphinxcontrib.fulltoc',
-
-    'sphinx.ext.coverage',
+    'sphinxcontrib.mermaid',
 ]
 
 # A string of reStructuredText that will be included at the end of every source file that is read.
