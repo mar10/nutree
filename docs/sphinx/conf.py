@@ -95,6 +95,27 @@ source_suffix = {
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
+# MyST Markdown Support
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "colon_fence",
+    "smartquotes",
+    "replacements",
+    "linkify",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
+myst_number_code_blocks = ["typescript"]
+myst_heading_anchors = 2
+myst_footnote_transition = True
+myst_dmath_double_inline = True
+
 # The master toctree document.
 master_doc = 'index'
 
