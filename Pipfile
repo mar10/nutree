@@ -5,10 +5,6 @@ name = "pypi"
 
 [dev-packages]
 black = { version = "~=22.12", extras = ["jupyter"] }
-# flake8 = "*"
-# flake8-bugbear = "*"
-# flake8-isort = "*"
-# flake8-quotes = "*"
 isort = "*"
 pylint = "*"
 # TODO: remove this line:

@@ -34,14 +34,10 @@ src = ["nutree", "tests"]
 select = [
   "E",   # pycodestyle
   "F",   # pyflakes
+  "G",   # flake8-logging-format
   "UP",  # pyupgrade
   # "D",   # pydocstyle
 ]
 
 # [tool.ruff.pydocstyle]
 # convention = "google"
-
-
-# [tool.flake8]
-# Flake8 currently does not support pyproject.toml.
-# See [flake8] section in setup.cfg instead.

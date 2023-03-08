@@ -37,7 +37,8 @@ jobs:
       dist: bionic
 
 install:
-  - pip install tox-travis flake8 coveralls coverage isort
+  - pip install tox-travis coveralls coverage
+  # - pip install tox-travis flake8 coveralls coverage isort
 script:
   - tox
 after_success:
