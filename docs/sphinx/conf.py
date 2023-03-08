@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # nutree documentation build configuration file, created by
 # sphinx-quickstart on Sun May 24 20:50:55 2015.
 #

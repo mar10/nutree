@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
@@ -150,12 +149,14 @@ class Node:
 
     @property
     def data(self) -> Any:
-        """Return the wrapped data instance (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
+        """Return the wrapped data instance (use :meth:`~nutree.tree.Tree.set_data()`
+        to modify)."""
         return self._data
 
     @property
     def data_id(self) -> ItemIdType:
-        """Return the wrapped data instance's id (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
+        """Return the wrapped data instance's id
+        (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
         return self._data_id
 
     @property
@@ -380,7 +381,8 @@ class Node:
     # --------------------------------------------------------------------------
 
     def is_system_root(self) -> bool:
-        """Return true if this node is the invisible system root :class:`~nutree.tree._SystemRootNode`."""
+        """Return true if this node is the invisible system root
+        :class:`~nutree.tree._SystemRootNode`."""
         return self._parent is None
 
     def is_top(self) -> bool:
@@ -396,11 +398,13 @@ class Node:
         return bool(len(self._tree._nodes_by_data_id.get(self._data_id)) > 1)
 
     def is_first_sibling(self) -> bool:
-        """Return true if this node is the first sibling, i.e. the first child of its parent."""
+        """Return true if this node is the first sibling, i.e. the first child
+        of its parent."""
         return self is self._parent._children[0]
 
     def is_last_sibling(self) -> bool:
-        """Return true if this node is the last sibling, i.e. the last child of its parent."""
+        """Return true if this node is the last sibling, i.e. the last child
+        of its parent."""
         return self is self._parent._children[-1]
 
     def has_children(self) -> bool:
@@ -498,7 +502,8 @@ class Node:
                 Optional position.
             deep (bool):
                 Copy descendants if any.
-                This argument defaults to false  when `child` is a :class:`~nutree.node.Node`.
+                This argument defaults to false  when `child` is a
+                :class:`~nutree.node.Node`.
                 It defaults to true  when `child` is a :class:`~nutree.tree.Tree`.
             data_id (str|int|None):
                 Allow to override the new node's `data_id`.
@@ -1057,12 +1062,12 @@ class Node:
             cb_match = match
         elif type(match) is str:
             pattern = re.compile(pattern=match)
-            cb_match = lambda node: pattern.fullmatch(node.name)
+            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
         elif isinstance(match, (list, tuple)):
             pattern = re.compile(pattern=match[0], flags=match[1])
-            cb_match = lambda node: pattern.fullmatch(node.name)
+            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
         else:
-            cb_match = lambda node: node._data is match
+            cb_match = lambda node: node._data is match  # noqa: E731
 
         count = 0
         for node in self.iterator(add_self=add_self):

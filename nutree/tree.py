@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
@@ -116,7 +115,8 @@ class Tree:
     #     self._root += other
 
     def __len__(self):
-        """Make ``len(tree)`` return the number of nodes (also makes empty trees falsy)."""
+        """Make ``len(tree)`` return the number of nodes
+        (also makes empty trees falsy)."""
         return self.count
 
     def _calc_data_id(self, data) -> ItemIdType:
@@ -174,7 +174,8 @@ class Tree:
 
     @property
     def children(self) -> List["Node"]:
-        """Return list of direct child nodes, i.e. toplevel nodes (list may be empty)."""
+        """Return list of direct child nodes, i.e. toplevel nodes
+        (list may be empty)."""
         return self._root.children
 
     @property

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
@@ -179,7 +178,8 @@ class TestMemory:
         node_size = tree_size / node_count
 
         results.append(
-            f"Tree 10x9: {node_count:,} nodes, {tree_size:,} bytes, node-size: {node_size:.1f} bytes"
+            f"Tree 10x9: {node_count:,} nodes, {tree_size:,} bytes, "
+            f"node-size: {node_size:.1f} bytes"
         )
 
         print(asized(tree.first_child(), detail=1).format())
@@ -192,7 +192,8 @@ class TestMemory:
         node_size = tree_size / node_count
 
         results.append(
-            f"Tree 100x100x99: {node_count:,} nodes, {tree_size:,} bytes, node-size: {node_size:.1f} bytes"
+            f"Tree 100x100x99: {node_count:,} nodes, {tree_size:,} bytes, "
+            f"node-size: {node_size:.1f} bytes"
         )
         with capsys.disabled():
             print("\n  - ".join(results))

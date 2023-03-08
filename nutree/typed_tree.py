@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
@@ -203,7 +202,8 @@ class TypedNode(Node):
         return kc.index(self)
 
     def is_first_sibling(self, *, any_kind=False) -> bool:
-        """Return true if this node is the first sibling, i.e. the first child of its parent."""
+        """Return true if this node is the first sibling, i.e. the first child
+        of its parent."""
         if any_kind:
             return self is self._parent._children[0]
         return self is self.first_sibling(any_kind=False)
@@ -472,7 +472,8 @@ class TypedNode(Node):
     #             style = CONNECTORS[style or self.tree.default_connector_style]
     #         except KeyError:
     #             raise ValueError(
-    #                 f"Invalid style '{style}'. Expected: {'|'.join(CONNECTORS.keys())}"
+    #                 f"Invalid style '{style}'. "
+    #                 f"Expected: {'|'.join(CONNECTORS.keys())}"
     #             )
 
     #     if repr is None:

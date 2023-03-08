@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """

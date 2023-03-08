@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
@@ -62,7 +61,8 @@ class SkipBranch(IterationControl):
 
 
 class SelectBranch(IterationControl):
-    """Raised or returned by traversal callbacks unconditionally accept all descendants."""
+    """Raised or returned by traversal callbacks unconditionally accept all
+    descendants."""
 
 
 class StopTraversal(IterationControl):
