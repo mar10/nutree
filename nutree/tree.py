@@ -447,7 +447,6 @@ class Tree:
                 n = parent.add(first_clone)
             elif mapper:
                 data = call_mapper(mapper, parent, data)
-                # data = mapper(parent, data)
                 n = parent.add(data)
             else:
                 raise RuntimeError("Need mapper")  # pragma: no cover

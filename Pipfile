@@ -24,6 +24,7 @@ wheel = "*"
 yabs = "*"
 nutree = {path = ".",editable = true}
 ipykernel = "*"
+notebook = "*"
 
 [packages]
 
