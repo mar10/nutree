@@ -28,6 +28,8 @@ nutree
 
    $ pip install nutree
 
+**Note:** Run ``pip install[dot]`` instead, in order to install graph support.
+
 ::
 
    from nutree import Tree, Node

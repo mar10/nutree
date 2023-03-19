@@ -10,7 +10,7 @@ Graphs
     However it still is a `tree` at heart. |br|
     If you are looking for a data model with full graph support, links between 
     arbitrary nodes, advanced navigation methods, or SPARQL queries,have a look
-    at specialized libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_ .
+    at specialized libraries, such as `rdflib <https://github.com/RDFLib/rdflib>`_ .
 
 In graph theory, :class:`~nutree.tree.Tree` is a 
 `Rooted Tree <https://en.wikipedia.org/wiki/Tree_(graph_theory)#Rooted_tree>`_
