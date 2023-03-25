@@ -5,7 +5,8 @@ Installation is straightforward::
 
   $ pip install nutree
 
-**Note:** Run ``pip install[dot]`` instead, in order to install graph support.
+**Note:** Run ``pip install nutree[graph]`` instead, in order to install 
+additional graph support.
 
 Installing `nutree` and its dependencies into a 'sandbox' will help to keep
 your system Python clean, but requires to activate the virtual environment::

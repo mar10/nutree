@@ -15,7 +15,7 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 
 # Export some common rdflib attributes, so they can be accessed as
 # `from nutree.rdf import Literal` without having to `import rdflib`
-# (which may be not available):
+# (which may not be available):
 try:
     import rdflib
     from rdflib import Graph, IdentifiedNode, Literal, URIRef

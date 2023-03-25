@@ -160,7 +160,9 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
     Writing of plain DOT formats is natively implemented by `nutree`. |br|
     Rendering of output formats like `png`, `svg`, etc. requires an installation
     of `pydot <https://github.com/pydot/pydot>`_ 
-    and `Graphwiz <https://www.graphviz.org>`_.
+    and `Graphwiz <https://www.graphviz.org>`_. |br|
+    Either install them separately or install nutree with extras: 
+    ``pip install nutree[graph]``.
 
 
 Typed Tree
@@ -354,4 +356,6 @@ This would be the 'turtle' formatted serialization::
     ...
 
 .. note::
-    Converting to RDF requires an installation of `rdflib <https://rdflib.readthedocs.io/>`_ 
+    Converting to RDF requires an installation of `rdflib <https://rdflib.readthedocs.io/>`_ |br|
+    Either install it separately or install nutree with extras: 
+    ``pip install nutree[graph]``.
