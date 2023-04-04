@@ -266,10 +266,10 @@ class TypedNode(Node):
                 # raise NotImplementedError("Cross-tree adding")
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
-            
+
             # If creating an inherited node, use the parent class as constructor instead of default factory
             child_class = child.__class__
-            
+
             node = child_class(
                 kind,
                 source_node.data,
