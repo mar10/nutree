@@ -269,6 +269,7 @@ class Tree:
         deep: bool = None,
         data_id=None,
         node_id=None,
+        factory: "Node" = None,
     ) -> "Node":
         """Add a toplevel node.
 
@@ -280,6 +281,7 @@ class Tree:
             deep=deep,
             data_id=data_id,
             node_id=node_id,
+            factory=factory,
         )
 
     #: Alias for :meth:`add_child`

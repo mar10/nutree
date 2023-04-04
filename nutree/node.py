@@ -468,6 +468,7 @@ class Node:
         deep: bool = None,
         data_id=None,
         node_id=None,
+        factory: "Node" = None,
     ) -> "Node":
         """Append or insert a new subnode or branch as child.
 
@@ -528,7 +529,7 @@ class Node:
             return
 
         source_node = None
-        factory = self._tree._node_factory
+        factory = factory or self._tree._node_factory
         if isinstance(child, Node):
             if deep is None:
                 deep = False

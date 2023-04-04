@@ -224,6 +224,7 @@ class TypedNode(Node):
         deep: bool = None,
         data_id=None,
         node_id=None,
+        factory: "Node" = None,
     ) -> "TypedNode":
         """See ..."""
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
@@ -249,7 +250,7 @@ class TypedNode(Node):
             return
 
         source_node = None
-        factory = self._tree._node_factory
+        factory = factory or self._tree._node_factory
         if isinstance(child, Node):  # TypedNode):
             if deep is None:
                 deep = False
