@@ -63,6 +63,18 @@ class TestBasics:
         #     print(tree.format(repr="{node.data}", style=style))
         # raise
 
+    def test_custom_class_add_child(self):
+        tree = Tree("fixture")
+
+        class CustomNode(Node):
+            ...
+
+        books = tree.add_child("Books", factory=CustomNode)
+        assert isinstance(books, CustomNode)
+
+        books.add_child("Harry Potter", factory=CustomNode)
+        assert isinstance(books, CustomNode)
+
     def test_meta(aelf):
         tree = fixture.create_tree()
         node = tree.first_child()
