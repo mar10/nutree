@@ -5,7 +5,7 @@ Declare the :class:`~nutree.node.Node` class.
 """
 import re
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Type, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
@@ -468,7 +468,7 @@ class Node:
         deep: bool = None,
         data_id=None,
         node_id=None,
-        factory: "Node" = None,
+        factory: Type["Node"] = None,
     ) -> "Node":
         """Append or insert a new subnode or branch as child.
 
@@ -548,13 +548,15 @@ class Node:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             # If creating an inherited node, use the parent class as constructor
-            child_class = child.__class__
+            node_class = factory or child.__class__
 
-            node = child_class(
+            node = node_class(
                 source_node.data, parent=self, data_id=data_id, node_id=node_id
             )
         else:
-            node = factory(child, parent=self, data_id=data_id, node_id=node_id)
+            node = (factory or self._tree._node_factory)(
+                child, parent=self, data_id=data_id, node_id=node_id
+            )
 
         children = self._children
         if children is None:
@@ -684,7 +686,8 @@ class Node:
             target_siblings.insert(0, self)
         elif before:
             assert before._parent is new_parent
-            idx = target_siblings.index(before)  # raise ValueError if not found
+            # raise ValueError if not found
+            idx = target_siblings.index(before)
             target_siblings.insert(idx, self)
         else:
             target_siblings.append(self)
@@ -1067,12 +1070,20 @@ class Node:
             cb_match = match
         elif type(match) is str:
             pattern = re.compile(pattern=match)
-            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
+
+            def cb_match(node):
+                return pattern.fullmatch(node.name)  # noqa: E731
+
         elif isinstance(match, (list, tuple)):
             pattern = re.compile(pattern=match[0], flags=match[1])
-            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
+
+            def cb_match(node):
+                return pattern.fullmatch(node.name)  # noqa: E731
+
         else:
-            cb_match = lambda node: node._data is match  # noqa: E731
+
+            def cb_match(node):
+                return node._data is match  # noqa: E731
 
         count = 0
         for node in self.iterator(add_self=add_self):

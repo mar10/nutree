@@ -72,8 +72,27 @@ class TestBasics:
         books = tree.add_child("Books", factory=CustomNode)
         assert isinstance(books, CustomNode)
 
-        books.add_child("Harry Potter", factory=CustomNode)
+        node = books.add_child("Harry Potter", factory=CustomNode)
+        assert isinstance(node, CustomNode)
+
+    def test_custom_class_factory_override_add_child(self):
+        tree = Tree("fixture")
+
+        class CustomNode(Node):
+            ...
+
+        class SpoofNode(Node):
+            ...
+
+        books = tree.add_child(
+            SpoofNode("Books", parent=tree._root), factory=CustomNode
+        )
         assert isinstance(books, CustomNode)
+
+        node = books.add_child(
+            SpoofNode("Harry Potter", parent=books), factory=CustomNode
+        )
+        assert isinstance(node, CustomNode)
 
     def test_meta(aelf):
         tree = fixture.create_tree()

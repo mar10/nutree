@@ -3,7 +3,7 @@
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
 """
-from typing import Any, Dict, Generator, List, Union
+from typing import Any, Dict, Generator, List, Type, Union
 
 from nutree.common import (
     IterMethod,
@@ -224,7 +224,7 @@ class TypedNode(Node):
         deep: bool = None,
         data_id=None,
         node_id=None,
-        factory: "Node" = None,
+        factory: Type["Node"] = None,
     ) -> "TypedNode":
         """See ..."""
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
@@ -250,7 +250,6 @@ class TypedNode(Node):
             return
 
         source_node = None
-        factory = factory or self._tree._node_factory
         if isinstance(child, Node):  # TypedNode):
             if deep is None:
                 deep = False
@@ -269,9 +268,9 @@ class TypedNode(Node):
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             # If creating an inherited node, use the parent class as constructor
-            child_class = child.__class__
+            node_class = factory or child.__class__
 
-            node = child_class(
+            node = node_class(
                 kind,
                 source_node.data,
                 parent=self,
@@ -279,7 +278,9 @@ class TypedNode(Node):
                 node_id=node_id,
             )
         else:
-            node = factory(kind, child, parent=self, data_id=data_id, node_id=node_id)
+            node = (factory or self._tree._node_factory)(
+                kind, child, parent=self, data_id=data_id, node_id=node_id
+            )
 
         children = self._children
         if children is None:
