@@ -4,6 +4,8 @@
 Functions and declarations to support 
 `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
 """
+from __future__ import annotations
+
 from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Generator, Union
 
@@ -20,7 +22,7 @@ except ImportError:
 
 
 def node_to_dot(
-    node: "Node",
+    node: Node,
     *,
     add_self=False,
     unique_nodes=True,
@@ -42,7 +44,7 @@ def node_to_dot(
     name = node.tree.name
     used_keys = set()
 
-    def _key(n: "Node"):
+    def _key(n: Node):
         return n._data_id if unique_nodes else n._node_id
 
     def _attr_str(attr_def: dict, mapper=None, node=None):
@@ -106,7 +108,7 @@ def node_to_dot(
 
 
 def tree_to_dotfile(
-    tree: "Tree",
+    tree: Tree,
     target: Union[IO[str], str, PurePath],
     *,
     format=None,

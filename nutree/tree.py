@@ -3,6 +3,8 @@
 """
 Declare the :class:`~nutree.tree.Tree` class.
 """
+from __future__ import annotations
+
 import json
 import random
 import threading
@@ -74,7 +76,7 @@ class Tree:
     def __eq__(self, other) -> bool:
         raise NotImplementedError("Use `is` or `tree.compare()` instead.")
 
-    def __getitem__(self, data: object) -> "Node":
+    def __getitem__(self, data: object) -> Node:
         """Implement ``tree[data]`` syntax to lookup a node.
 
         `data` may be a plain string, data object, data_id, or node_id.
@@ -135,7 +137,7 @@ class Tree:
             return self._calc_data_id_hook(self, data)
         return hash(data)
 
-    def _register(self, node: "Node"):
+    def _register(self, node: Node):
         assert node._tree is self
         # node._tree = self
         assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
@@ -173,7 +175,7 @@ class Tree:
         return
 
     @property
-    def children(self) -> List["Node"]:
+    def children(self) -> List[Node]:
         """Return list of direct child nodes, i.e. toplevel nodes
         (list may be empty)."""
         return self._root.children
@@ -263,13 +265,13 @@ class Tree:
 
     def add_child(
         self,
-        child: Union["Node", "Tree", Any],
+        child: Union[Node, Tree, Any],
         *,
-        before: Union["Node", bool, int, None] = None,
+        before: Union[Node, bool, int, None] = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
-    ) -> "Node":
+    ) -> Node:
         """Add a toplevel node.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
@@ -287,7 +289,7 @@ class Tree:
 
     def copy(
         self, *, name: str = None, predicate: PredicateCallbackType = None
-    ) -> "Tree":
+    ) -> Tree:
         """Return a copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
@@ -306,7 +308,7 @@ class Tree:
             new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
 
-    def copy_to(self, target: Union[Node, "Tree"], *, deep=True) -> None:
+    def copy_to(self, target: Union[Node, Tree], *, deep=True) -> None:
         """Copy this tree's nodes to another target.
 
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
@@ -321,7 +323,7 @@ class Tree:
         """
         self._root.filter(predicate=predicate)
 
-    def filtered(self, predicate: PredicateCallbackType) -> "Tree":
+    def filtered(self, predicate: PredicateCallbackType) -> Tree:
         """Return a filtered copy of this tree.
 
         See also :ref:`iteration callbacks`.
@@ -334,7 +336,7 @@ class Tree:
 
     def find_all(
         self, data=None, *, match=None, data_id=None, max_results: int = None
-    ) -> List["Node"]:
+    ) -> List[Node]:
         """Return a list of matching nodes (list may be empty).
 
         See also Node's :meth:`~nutree.node.Node.find_all` method and
@@ -358,7 +360,7 @@ class Tree:
 
     def find_first(
         self, data=None, *, match=None, data_id=None, node_id=None
-    ) -> Union["Node", None]:
+    ) -> Union[Node, None]:
         """Return the one matching node or `None`.
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
@@ -403,7 +405,7 @@ class Tree:
         return res
 
     @classmethod
-    def from_dict(cls, obj: List[Dict], *, mapper=None) -> "Tree":
+    def from_dict(cls, obj: List[Dict], *, mapper=None) -> Tree:
         """Return a new :class:`Tree` instance from a list of dicts.
 
         See also :meth:`~nutree.tree.Tree.to_dict` and
@@ -434,7 +436,7 @@ class Tree:
         return
 
     @classmethod
-    def _from_list(cls, obj: List[Dict], *, mapper=None) -> "Tree":
+    def _from_list(cls, obj: List[Dict], *, mapper=None) -> Tree:
         tree = Tree()
         node_idx_map = {0: tree._root}
         for idx, (parent_idx, data) in enumerate(obj, 1):
@@ -456,7 +458,7 @@ class Tree:
         return tree
 
     @classmethod
-    def load(cls, fp: IO[str], *, mapper=None) -> "Tree":
+    def load(cls, fp: IO[str], *, mapper=None) -> Tree:
         """Create a new :class:`Tree` instance from a JSON file stream.
 
         See also :meth:`save`.
@@ -531,7 +533,7 @@ class Tree:
         """
         return tree_to_rdf(self)
 
-    def diff(self, other: "Tree", *, ordered=False, reduce=False) -> "Tree":
+    def diff(self, other: Tree, *, ordered=False, reduce=False) -> Tree:
         """Compare this tree against `other` and return a merged, annotated copy.
 
         The resulting tree contains a union of all nodes from this and the

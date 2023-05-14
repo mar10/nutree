@@ -3,6 +3,8 @@
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
 """
+from __future__ import annotations
+
 from typing import Any, Dict, Generator, List, Union
 
 from nutree.common import (
@@ -46,7 +48,7 @@ class TypedNode(Node):
         kind: str,
         data,
         *,
-        parent: "TypedNode",
+        parent: TypedNode,
         data_id=None,
         node_id=None,
         meta: Dict = None,
@@ -75,18 +77,18 @@ class TypedNode(Node):
         return self._kind
 
     @property
-    def parent(self) -> "TypedNode":
+    def parent(self) -> TypedNode:
         """Return parent node or None for toplevel nodes."""
         p = self._parent
         return p if p._parent else None
 
     @property
-    def children(self) -> List["TypedNode"]:
+    def children(self) -> List[TypedNode]:
         """Return list of direct child nodes (list may be empty)."""
         c = self._children
         return [] if c is None else c
 
-    def get_children(self, kind: Union[str, ANY_KIND]) -> List["TypedNode"]:
+    def get_children(self, kind: Union[str, ANY_KIND]) -> List[TypedNode]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -101,7 +103,7 @@ class TypedNode(Node):
     #     """Change node's `data` and/or `data_id` and update bookkeeping."""
     #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
-    def first_child(self, kind: Union[str, ANY_KIND]) -> Union["TypedNode", None]:
+    def first_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
         """First direct childnode or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -114,7 +116,7 @@ class TypedNode(Node):
                 return n
         return None
 
-    def last_child(self, kind: Union[str, ANY_KIND]) -> Union["TypedNode", None]:
+    def last_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
         """Last direct childnode or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -134,7 +136,7 @@ class TypedNode(Node):
             return bool(self._children)
         return len(self.get_children(kind)) > 1
 
-    def get_siblings(self, *, add_self=False, any_kind=False) -> List["TypedNode"]:
+    def get_siblings(self, *, add_self=False, any_kind=False) -> List[TypedNode]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
             return super().get_siblings(add_self=add_self)
@@ -142,7 +144,7 @@ class TypedNode(Node):
         rel = self.kind
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
 
-    def first_sibling(self, *, any_kind=False) -> "TypedNode":
+    def first_sibling(self, *, any_kind=False) -> TypedNode:
         """Return first sibling `of the same kind` (may be self)."""
         pc = self._parent._children
         if any_kind:
@@ -152,7 +154,7 @@ class TypedNode(Node):
                 return n
         raise AssertionError("Internal error")
 
-    def last_sibling(self, *, any_kind=False) -> "TypedNode":
+    def last_sibling(self, *, any_kind=False) -> TypedNode:
         """Return last sibling `of the same kind` (may be self)."""
         pc = self._parent._children
         if any_kind:
@@ -162,7 +164,7 @@ class TypedNode(Node):
                 return n
         raise AssertionError("Internal error")
 
-    def prev_sibling(self, *, any_kind=False) -> Union["TypedNode", None]:
+    def prev_sibling(self, *, any_kind=False) -> Union[TypedNode, None]:
         """Return predecessor `of the same kind` or None if node is first sibling."""
         pc = self._parent._children
         own_idx = pc.index(self)
@@ -173,7 +175,7 @@ class TypedNode(Node):
                     return n
         return None
 
-    def next_sibling(self, *, any_kind=False) -> Union["TypedNode", None]:
+    def next_sibling(self, *, any_kind=False) -> Union[TypedNode, None]:
         """Return successor `of the same kind` or None if node is last sibling."""
         pc = self._parent._children
         pc_len = len(pc)
@@ -186,7 +188,7 @@ class TypedNode(Node):
                     return n
         return None
 
-    # def get_clones(self, *, add_self=False) -> List["TypedNode"]:
+    # def get_clones(self, *, add_self=False) -> List[TypedNode]:
     #     """Return a list of all nodes that reference the same data if any."""
     #     clones = self._tree._nodes_by_data_id[self._data_id]
     #     if add_self:
@@ -217,14 +219,14 @@ class TypedNode(Node):
 
     def add_child(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         kind: str = None,
-        before: Union["TypedNode", bool, int, None] = None,
+        before: Union[TypedNode, bool, int, None] = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
-    ) -> "TypedNode":
+    ) -> TypedNode:
         """See ..."""
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
         # TODO: kind is optional if child is a TypedNode
@@ -309,7 +311,7 @@ class TypedNode(Node):
 
     def append_child(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         kind: str = None,
         deep=None,
@@ -331,7 +333,7 @@ class TypedNode(Node):
 
     def prepend_child(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         kind: str = None,
         deep=None,
@@ -353,12 +355,12 @@ class TypedNode(Node):
 
     def prepend_sibling(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         deep=None,
         data_id=None,
         node_id=None,
-    ) -> "TypedNode":
+    ) -> TypedNode:
         """Add a new node **of same kind** before `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
@@ -369,12 +371,12 @@ class TypedNode(Node):
 
     def append_sibling(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         deep=None,
         data_id=None,
         node_id=None,
-    ) -> "TypedNode":
+    ) -> TypedNode:
         """Add a new node **of same kind** after `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
@@ -386,9 +388,9 @@ class TypedNode(Node):
 
     def move_to(
         self,
-        new_parent: Union["TypedNode", "TypedTree"],
+        new_parent: Union[TypedNode, TypedTree],
         *,
-        before: Union["TypedNode", bool, int, None] = None,
+        before: Union[TypedNode, bool, int, None] = None,
     ):
         """Move this node before or after `new_parent`."""
         raise NotImplementedError
@@ -408,14 +410,14 @@ class TypedNode(Node):
     #     """Remove all children of this node, making it a leaf node."""
     #     raise NotImplementedError
 
-    def copy(self, *, add_self=True, predicate=None) -> "TypedTree":
+    def copy(self, *, add_self=True, predicate=None) -> TypedTree:
         """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
 
         See also :meth:`_add_from` and :ref:`iteration callbacks`.
         """
         return super().copy(add_self=add_self, predicate=predicate)
 
-    def filtered(self, predicate: PredicateCallbackType) -> "TypedTree":
+    def filtered(self, predicate: PredicateCallbackType) -> TypedTree:
         """Return a filtered copy of this node and descendants as tree.
 
         See also :ref:`iteration callbacks`.
@@ -424,7 +426,7 @@ class TypedNode(Node):
 
     def iterator(
         self, method=IterMethod.PRE_ORDER, *, add_self=False
-    ) -> Generator["TypedNode", None, None]:
+    ) -> Generator[TypedNode, None, None]:
         """Generator that walks the hierarchy."""
         return super().iterator(method=method, add_self=add_self)
 
@@ -634,19 +636,19 @@ class TypedTree(Tree):
         super().__init__(name, factory=factory, calc_data_id=calc_data_id)
         self._root = _SystemRootTypedNode(self)
 
-    def __getitem__(self, data: object) -> "TypedNode":
+    def __getitem__(self, data: object) -> TypedNode:
         return super().__getitem__(data)
 
     def add_child(
         self,
-        child: Union["TypedNode", "TypedTree", Any],
+        child: Union[TypedNode, TypedTree, Any],
         *,
         kind: str = None,
-        before: Union["TypedNode", bool, int, None] = None,
+        before: Union[TypedNode, bool, int, None] = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
-    ) -> "TypedNode":
+    ) -> TypedNode:
         """Add a toplevel node.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.

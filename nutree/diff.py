@@ -3,6 +3,8 @@
 """
 Implement diff/merge algorithms.
 """
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
@@ -29,7 +31,7 @@ def _find_child(arr, child):
     return (-1, None)
 
 
-def _copy_children(source: "Node", dest: "Node", add_set: set, meta: tuple) -> None:
+def _copy_children(source: Node, dest: Node, add_set: set, meta: tuple) -> None:
     assert source.has_children() and not dest.has_children()
     for n in source.children:
         n_dest = dest.append_child(n)
@@ -79,14 +81,14 @@ def diff_node_formatter(node):
     return s
 
 
-def diff_tree(t0: "Tree", t1: "Tree", *, ordered=False, reduce=False) -> "Tree":
+def diff_tree(t0: Tree, t1: Tree, *, ordered=False, reduce=False) -> Tree:
     from nutree import Tree
 
     t2 = Tree(f"diff({t0.name!r}, {t1.name!r})")
     added_nodes = set()
     removed_nodes = set()
 
-    def compare(p0: "Node", p1: "Node", p2: "Node"):
+    def compare(p0: Node, p1: Node, p2: Node):
         p0_data_ids = set()
         # `p0.children` always returns an (empty) array
         for i0, c0 in enumerate(p0.children):

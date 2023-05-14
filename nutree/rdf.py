@@ -3,6 +3,8 @@
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Callable, Optional, Union
 
 from nutree.common import IterationControl
@@ -63,7 +65,7 @@ def _make_graph() -> Graph:
 def _add_child_node(
     graph: Graph,
     parent_graph_node: Optional[IdentifiedNode],
-    tree_node: "TypedNode",
+    tree_node: TypedNode,
     index: int,
     node_mapper: RDFMapperCallbackType,
 ) -> Union[IdentifiedNode, IterationControl, bool]:
@@ -104,7 +106,7 @@ def _add_child_node(
 def _add_child_nodes(
     graph: Graph,
     graph_node: IdentifiedNode,
-    tree_node: "TypedNode",
+    tree_node: TypedNode,
     node_mapper: RDFMapperCallbackType = None,
 ) -> None:
     """"""
@@ -123,7 +125,7 @@ def _add_child_nodes(
 
 
 def node_to_rdf(
-    tree_node: "TypedNode",
+    tree_node: TypedNode,
     *,
     add_self: bool = True,
     node_mapper: RDFMapperCallbackType = None,
@@ -153,7 +155,7 @@ def node_to_rdf(
 
 
 def tree_to_rdf(
-    tree: "TypedTree",
+    tree: TypedTree,
     *,
     node_mapper: RDFMapperCallbackType = None,
 ) -> Graph:

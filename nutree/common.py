@@ -4,6 +4,8 @@
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
 modules.
 """
+from __future__ import annotations
+
 import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Union
@@ -113,7 +115,7 @@ CONNECTORS = {
 }
 
 
-def call_mapper(fn, node: "Node", data: dict) -> Any:
+def call_mapper(fn, node: Node, data: dict) -> Any:
     """Call the function and normalize result and exceptions.
 
     Handles `MapperCallbackType`:
