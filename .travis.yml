@@ -1,40 +1,23 @@
-# sudo: false
 language: python
 os: linux
+dist: jammy
 jobs:
   include:
     - python: "3.11"
       env: TOXENV=check,py311
-      dist: bionic
     - python: "3.10"
       env: TOXENV=py310
-      dist: bionic
     - python: "3.9"
       env: TOXENV=py39
     - python: "3.8"
       env: TOXENV=py38
     - python: "3.7"
       env: TOXENV=py37
-      dist: xenial
-      before_install:
-        # Fix error: can't find Rust compiler
-        - pip install -U pip
-        # Fix "AttributeError: 'str' object has no attribute 'name'" on Py37
-        - pip install -U importlib_metadata
-    # - python: "3.6"
-    #   env: TOXENV=py36
-    #   before_install:
-    #     # Fix for cryptography on Py36
-    #     - pip install --upgrade virtualenv
-    # - python: "3.5"  # EOL 2020-09-13
-    #   env: TOXENV=py35
     - python: "3.12-dev"
       env: TOXENV=py312
-      dist: bionic
   allow_failures:
     - python: "3.12-dev"
       env: TOXENV=py312
-      dist: bionic
 
 install:
   - pip install tox-travis coveralls coverage
