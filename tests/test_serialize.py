@@ -146,6 +146,13 @@ class TestSerialize:
         assert tree._self_check()
         assert tree_2._self_check()
 
+    # def test_logger(self):
+    #     tree= fixture.create_tree()
+    #     logging.basicConfig()
+    #     logger = logging.getLogger()
+    #     logger.error(tree.format())
+    #     logger.error("DONE")
+
 
 class TestDot:
     def test_serialize_dot(self):

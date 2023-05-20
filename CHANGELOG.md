@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.4.1 (Unreleased)
+- Deprecated (stop testing) Python 3.7
 
 ## 0.4.0 (2023-02-22)
 
@@ -10,6 +11,6 @@
 - Configurable default connector style
 
 
-## 0.3.0 (2022-08-01)
+## 0.3.0 (2022-08-01 and before)
 
-Initial release.
+Initial releases.
