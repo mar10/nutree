@@ -29,7 +29,7 @@ src_paths = ["nutree", "tests"]
 # Decrease the maximum line length to 79 characters.
 # line-length = 79
 # Support Python 3.10+.
-target-version = "py37"
+target-version = "py38"
 src = ["nutree", "tests"]
 select = [
   "E",  # pycodestyle
