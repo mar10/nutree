@@ -1,18 +1,15 @@
 # ![logo](https://raw.githubusercontent.com/mar10/nutree/main/docs/nutree_48x48.png) nutree
 
-[![Travis Status](https://travis-ci.com/mar10/nutree.svg?branch=main)](https://app.travis-ci.com/github/mar10/nutree)
 [![Tests](https://github.com/mar10/nutree/actions/workflows/tests.yml/badge.svg)](https://github.com/mar10/nutree/actions/workflows/tests.yml)
 [![Latest Version](https://img.shields.io/pypi/v/nutree.svg)](https://pypi.python.org/pypi/nutree/)
 [![License](https://img.shields.io/pypi/l/nutree.svg)](https://github.com/mar10/nutree/blob/main/LICENSE.txt)
 [![Documentation Status](https://readthedocs.org/projects/nutree/badge/?version=latest)](http://nutree.readthedocs.io/)
-[![Coverage Status](https://coveralls.io/repos/github/mar10/nutree/badge.svg?branch=main)](https://coveralls.io/github/mar10/nutree?branch=main)
+[![codecov](https://codecov.io/github/mar10/nutree/branch/main/graph/badge.svg?token=9xmAFm8Icl)](https://codecov.io/github/mar10/nutree)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![Released with: Yabs](https://img.shields.io/badge/released%20with-yabs-yellowgreen)](https://github.com/mar10/yabs)
 [![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree)
 
-> Elegant trees for primates&trade;
-
-_Nutree_ is a Python library for tree data structures with an intuitive,
+> _Nutree_ is a Python library for tree data structures with an intuitive,
 yet powerful, API.
 
 **Nutree Facts**
