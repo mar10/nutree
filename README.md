@@ -1,6 +1,7 @@
 # ![logo](https://raw.githubusercontent.com/mar10/nutree/main/docs/nutree_48x48.png) nutree
 
 [![Build Status](https://travis-ci.com/mar10/nutree.svg?branch=main)](https://app.travis-ci.com/github/mar10/nutree)
+[![Build Status](https://github.com/mar10/nutree/actions/workflows/tests/badge.svg)](https://app.travis-ci.com/github/mar10/nutree)
 [![Latest Version](https://img.shields.io/pypi/v/nutree.svg)](https://pypi.python.org/pypi/nutree/)
 [![License](https://img.shields.io/pypi/l/nutree.svg)](https://github.com/mar10/nutree/blob/main/LICENSE.txt)
 [![Documentation Status](https://readthedocs.org/projects/nutree/badge/?version=latest)](http://nutree.readthedocs.io/)
