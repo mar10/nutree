@@ -14,6 +14,8 @@ from typing import IO, Any, Dict, Generator, List, Union
 from nutree.diff import diff_tree
 
 from .common import (
+    FILE_FORMAT_VERSION,
+    ROOT_ID,
     AmbiguousMatchError,
     ItemIdType,
     IterMethod,
@@ -422,22 +424,33 @@ class Tree:
         """Yield a parent-referencing list of child nodes."""
         return self._root.to_list_iter(mapper=mapper)
 
-    def save(self, fp: IO[str], *, mapper: MapperCallbackType = None) -> None:
+    def save(
+        self, fp: IO[str], *, mapper: MapperCallbackType = None, meta: dict = None
+    ) -> None:
         """Store tree in a compact JSON file stream.
 
         See also :meth:`to_list_iter` and :meth:`load` methods.
         """
+        header = {
+            "$version": FILE_FORMAT_VERSION,
+            # "$nutree_version": __version__,
+        }
+        if meta:
+            header.update(meta)
         with self:
-            iter = self.to_list_iter(mapper=mapper)
-            # Materialize so we can lock the snapshot.
-            # Also because json.dump() does not supprt streaming
+            # Materialize node list, so we can lock the snapshot.
+            # Also because json.dump() does not support streaming anyway.
             # TODO: Use s.th. like https://github.com/daggaz/json-stream ?
-            json.dump(list(iter), fp)
+            res = {
+                "meta": header,
+                "nodes": list(self.to_list_iter(mapper=mapper)),
+            }
+        json.dump(res, fp)
         return
 
     @classmethod
     def _from_list(cls, obj: List[Dict], *, mapper=None) -> Tree:
-        tree = Tree()
+        tree = cls()  # Tree or TypedTree
         node_idx_map = {0: tree._root}
         for idx, (parent_idx, data) in enumerate(obj, 1):
             parent = node_idx_map[parent_idx]
@@ -451,20 +464,28 @@ class Tree:
                 data = call_mapper(mapper, parent, data)
                 n = parent.add(data)
             else:
-                raise RuntimeError("Need mapper")  # pragma: no cover
+                raise RuntimeError(f"Need mapper for {data=}")  # pragma: no cover
 
             node_idx_map[idx] = n
 
         return tree
 
     @classmethod
-    def load(cls, fp: IO[str], *, mapper=None) -> Tree:
+    def load(cls, fp: IO[str], *, mapper=None, file_meta: dict = None) -> Tree:
         """Create a new :class:`Tree` instance from a JSON file stream.
+
+        If ``file_meta`` is a dict, it receives the content if the file's
+        ``meta`` header.
 
         See also :meth:`save`.
         """
         obj = json.load(fp)
-        return cls._from_list(obj, mapper=mapper)
+        if not isinstance(obj, dict) or "meta" not in obj or "nodes" not in obj:
+            raise RuntimeError("Invalid file format")
+        if isinstance(file_meta, dict):
+            file_meta.update(obj["meta"])
+        nodes = obj["nodes"]
+        return cls._from_list(nodes, mapper=mapper)
 
     def to_dot(
         self,
@@ -592,10 +613,9 @@ class _SystemRootNode(Node):
     """Invisible system root node."""
 
     def __init__(self, tree: Tree):
-
         self._tree: Tree = tree
         self._parent = None
-        self._node_id = self._data_id = "__root__"
+        self._node_id = self._data_id = ROOT_ID
         self._data = tree.name
         self._children = []
         self._meta = None

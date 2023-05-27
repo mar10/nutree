@@ -5,13 +5,15 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Generator, List, Union
+from typing import IO, Any, Dict, Generator, List, Union
 
 from nutree.common import (
+    ROOT_ID,
     IterMethod,
     MapperCallbackType,
     PredicateCallbackType,
     UniqueConstraintError,
+    call_mapper,
 )
 
 from .node import Node
@@ -527,64 +529,23 @@ class TypedNode(Node):
     #             cl.append(n.to_dict(mapper=mapper))
     #     return res
 
-    # def to_list_iter(
-    #     self, *, mapper: MapperCallbackType = None
-    # ) -> Generator[Dict, None, None]:
-    #     """Yield children as parent-referencing list.
+    @classmethod
+    def _make_list_entry(cls, node: TypedNode) -> dict:
+        node_data = node._data
+        # is_custom_id = node._data_id != hash(node_data)
 
-    #     ```py
-    #     [(parent_key, data)]
-    #     ```
-    #     """
-    #     calc_id = self._tree._calc_data_id
-    #     #: For nodes with multiple occurrences: index of the first one
-    #     clone_idx_map = {}
-    #     parent_id_map = {self._node_id: 0}
+        if type(node_data) is str:
+            # Node._make_list_entry() would return a plain str, but we always
+            # need a dict
+            data = {
+                "str": node_data,
+            }
+        else:
+            data = Node._make_list_entry(node)
 
-    #     for id_gen, node in enumerate(self, 1):
-    #         # Compact mode: use integer sequence as keys
-    #         # Store idx with original id for later parent-ref. We only have to
-    #         # do this of nodes that have children though:
-    #         node_id = node._node_id
-    #         if node._children:
-    #             parent_id_map[node_id] = id_gen
-
-    #         parent_id = node._parent._node_id
-    #         parent_idx = parent_id_map[parent_id]
-
-    #         data = node._data
-    #         data_id = calc_id(data)
-    #         # data_id = hash(data)
-
-    #         # If node is a 2nd occurence of a clone, only store the index of the
-    #         # first occurence and do not call the mapper
-    #         clone_idx = clone_idx_map.get(data_id)
-    #         if clone_idx:
-    #             yield (parent_idx, clone_idx)
-    #             continue
-    #         elif node.is_clone():
-    #             clone_idx_map[data_id] = id_gen
-
-    #         # If data is more complex than a simple string, or if we use a custom
-    #         # data_id, we store data as a dict instead of a str:
-    #         if type(data) is str:
-    #             if data_id != node._data_id:
-    #                 data = {
-    #                     "str": data,
-    #                     "id": data_id,
-    #                 }
-    #             # else: data is stored as-is, i.e. plain string instead of dict
-    #         else:
-    #             data = {
-    #                 # "id": data_id,
-    #             }
-    #         # Let caller serialize custom data objects
-    #         data = call_mapper(mapper, node, data)
-    #         # if mapper:
-    #         #     data = mapper(node, data)
-
-    #         yield (parent_idx, data)
-    #     return
+        if node.kind != ANY_KIND:
+            data["kind"] = node.kind
+        return data
 
     def to_dot(
         self,
@@ -665,6 +626,14 @@ class TypedTree(Tree):
     #: Alias for :meth:`add_child`
     add = add_child  # Must re-bind here
 
+    def first_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+        """Return the first toplevel node."""
+        return self._root.first_child(kind=kind)
+
+    def last_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+        """Return the last toplevel node."""
+        return self._root.last_child(kind=kind)
+
     def iter_by_type(
         self, kind: Union[str, ANY_KIND]
     ) -> Generator[TypedNode, None, None]:
@@ -675,6 +644,45 @@ class TypedTree(Tree):
                 yield n
         return
 
+    @classmethod
+    def _from_list(cls, obj: List[Dict], *, mapper=None) -> TypedTree:
+        tree = cls()
+        node_idx_map = {0: tree._root}
+        for idx, (parent_idx, data) in enumerate(obj, 1):
+            parent = node_idx_map[parent_idx]
+            # print(idx, parent_idx, data, parent)
+            if type(data) is str:
+                # this can only happen if the source was generate by a plain Tree
+                n = parent.add(data, kind=DEFAULT_CHILD_TYPE)
+            elif type(data) is int:
+                first_clone = node_idx_map[data]
+                n = parent.add(
+                    first_clone, kind=first_clone.kind, data_id=first_clone.data_id
+                )
+            elif mapper:
+                kind = data.get("kind", DEFAULT_CHILD_TYPE)
+                data_id = data.get("data_id")
+                data_obj = call_mapper(mapper, parent, data)
+                n = parent.add(data_obj, kind=kind, data_id=data_id)
+            elif isinstance(data, dict) and "str" in data:
+                # this can happen if the source was generate by without a
+                # serialization mapper, for a TypedTree that has str nodes
+                n = parent.add(data["str"], kind=data.get("kind"))
+            else:
+                raise RuntimeError(f"Need mapper for {data=}")  # pragma: no cover
+
+            node_idx_map[idx] = n
+
+        return tree
+
+    @classmethod
+    def load(cls, fp: IO[str], *, mapper=None, file_meta: dict = None) -> TypedTree:
+        """Create a new :class:`TypedTree` instance from a JSON file stream.
+
+        See also :meth:`save`.
+        """
+        return super().load(fp, mapper=mapper, file_meta=file_meta)
+
 
 # ------------------------------------------------------------------------------
 # - _SystemRootTypedNode
@@ -683,10 +691,9 @@ class _SystemRootTypedNode(TypedNode):
     """Invisible system root node."""
 
     def __init__(self, tree: TypedTree):
-
         self._tree: TypedTree = tree
         self._parent = None
-        self._node_id = self._data_id = "__root__"
+        self._node_id = self._data_id = ROOT_ID
         self._data = tree.name
         self._children = []
         self._meta = None

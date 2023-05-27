@@ -6,6 +6,7 @@ import json
 import tempfile
 
 from nutree import Node, Tree
+from nutree.common import FILE_FORMAT_VERSION
 from nutree.diff import DiffClassification, diff_node_formatter
 
 from . import fixture
@@ -48,11 +49,16 @@ class TestSerialize:
 
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
-            tree.save(fp)
+            tree.save(fp, meta={"foo": "bar"})
             # Deserialize
             fp.seek(0)
-            tree_2 = Tree.load(fp)
+            meta_2 = {}
+            tree_2 = Tree.load(fp, file_meta=meta_2)
 
+        assert isinstance(tree_2, Tree)
+        assert all(isinstance(n, Node) for n in tree_2)
+        assert meta_2["$version"] == FILE_FORMAT_VERSION
+        assert meta_2["foo"] == "bar"
         assert fixture.trees_equal(tree, tree_2)
 
         # print(tree.format(repr="{node}"))

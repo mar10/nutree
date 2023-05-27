@@ -1236,11 +1236,9 @@ class Node:
         res = {
             "data": str(self.data),
         }
-        # Add custom data_id if any
-        # data_id = hash(self._data)
-        data_id = self._tree._calc_data_id(self._data)
-        if data_id != self._data_id:
-            res["data_id"] = data_id
+        # Add custom data_id if not calculated to the hash by default.
+        if self._data_id != hash(self._data):
+            res["data_id"] = self._data_id
         res = call_mapper(mapper, self, res)
         # if mapper:
         #     res = mapper(self, res)
@@ -1249,6 +1247,30 @@ class Node:
             for n in self._children:
                 cl.append(n.to_dict(mapper=mapper))
         return res
+
+    @classmethod
+    def _make_list_entry(cls, node: Node) -> dict:
+        node_data = node._data
+        is_custom_id = node._data_id != hash(node_data)
+
+        # If data is more complex than a simple string, or if we use a custom
+        # data_id, we store data as a dict instead of a str:
+        if type(node_data) is str:
+            if not is_custom_id:
+                # Special case: node.data is a plain string without custom ID
+                return node_data
+            data = {
+                "str": node_data,
+            }
+        else:
+            # data is stored as-is, i.e. plain string instead of dict
+            data = {
+                # "id": data_id,
+            }
+        # Add custom data_id if not calculated as hash by default.
+        if node._data_id != hash(node_data):
+            data["data_id"] = node._data_id
+        return data
 
     def to_list_iter(
         self, *, mapper: MapperCallbackType = None
@@ -1261,7 +1283,9 @@ class Node:
         """
         calc_id = self._tree._calc_data_id
         #: For nodes with multiple occurrences: index of the first one
-        clone_idx_map = {}
+        #: For typed nodes, we must also check if the `kind` matches, before
+        #: simply store a reference.
+        clone_idx_and_kind_map = {}
         parent_id_map = {self._node_id: 0}
 
         for id_gen, node in enumerate(self, 1):
@@ -1275,36 +1299,27 @@ class Node:
             parent_id = node._parent._node_id
             parent_idx = parent_id_map[parent_id]
 
-            data = node._data
-            data_id = calc_id(data)
-            # data_id = hash(data)
+            node_data = node._data
+            data_id = calc_id(node_data)
 
             # If node is a 2nd occurence of a clone, only store the index of the
             # first occurence and do not call the mapper
-            clone_idx = clone_idx_map.get(data_id)
+            node_kind = getattr(node, "kind", None)
+            clone_idx, clone_kind = clone_idx_and_kind_map.get(data_id, (None, None))
             if clone_idx:
-                yield (parent_idx, clone_idx)
-                continue
+                if node_kind == clone_kind:
+                    yield (parent_idx, clone_idx)
+                    continue
             elif node.is_clone():
-                clone_idx_map[data_id] = id_gen
+                # First instance of a clone node: take a note
+                clone_idx_and_kind_map[data_id] = (id_gen, node_kind)
 
-            # If data is more complex than a simple string, or if we use a custom
-            # data_id, we store data as a dict instead of a str:
-            if type(data) is str:
-                if data_id != node._data_id:
-                    data = {
-                        "str": data,
-                        "id": data_id,
-                    }
-                # else: data is stored as-is, i.e. plain string instead of dict
-            else:
-                data = {
-                    # "id": data_id,
-                }
+            # If node.data is more complex than a simple string, or if we use a
+            # custom data_id, we store data as a dict instead of a str:
+            data = self._make_list_entry(node)
+
             # Let caller serialize custom data objects
             data = call_mapper(mapper, node, data)
-            # if mapper:
-            #     data = mapper(node, data)
 
             yield (parent_idx, data)
         return

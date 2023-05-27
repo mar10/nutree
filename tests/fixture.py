@@ -40,6 +40,7 @@ def create_tree(
 ) -> Tree:
     if tree is not None:
         assert not tree, "must be empty"
+        assert isinstance(tree, Tree)
     else:
         tree = Tree(name)
 
@@ -86,6 +87,73 @@ def create_tree(
         markt.add(Person("Dave", age=54, guid="{456-456}"))
         if clones:
             dev.add(charleen)
+
+    else:
+        raise NotImplementedError(style)
+    # Since the output is only displayed when a test fails, it may be handy to
+    # see (unless caller modifies afterwards and then prints):
+    if print:
+        tree.print()
+
+    return tree
+
+
+def create_typed_tree(
+    *, style="simple", name="fixture", clones=False, tree=None, print=True
+) -> TypedTree:
+    if tree is not None:
+        assert not tree, "must be empty"
+        assert isinstance(tree, TypedTree)
+    else:
+        tree = TypedTree(name)
+
+    if style == "simple":
+        """
+        TypedTree<*>
+        +- function → func1
+        |  +- failure → fail1
+        |  |  +- cause → cause1
+        |  |  +- cause → cause2
+        |  |  +- effect → eff1
+        |  |  `- effect → eff2
+        |  `- failure → fail2
+        `- function → func2
+        """
+        func = tree.add("func1", kind="function")
+        fail1 = func.add("fail1", kind="failure")
+        fail1.add("cause1", kind="cause")
+        fail1.add("cause2", kind="cause")
+        fail1.add("eff1", kind="effect")
+        fail1.add("eff2", kind="effect")
+        func.add("fail2", kind="failure")
+        func2 = tree.add("func2", kind="function")
+
+        if clones:
+            func2.add(fail1)
+
+    elif style == "objects":
+        """
+        TypedTree<'4353629968'>
+        ├── department → Department<Development>
+        │   ├── manager → Person<Alice, 23>
+        │   ├── member → Person<Bob, 32>
+        │   ╰── member → Person<Charleen, 43>
+        ╰── department → Department<Marketing>
+            ├── member → Person<Charleen, 43>
+            ╰── manager → Person<Dave, 54>
+        """
+        dev = tree.add(Department("Development"), kind="department")
+        dev.add(Person("Alice", age=23, guid="{123-456}"), kind="manager")
+        dev.add(Person("Bob", age=32, guid="{234-456}"), kind="member")
+
+        markt = tree.add(Department("Marketing"), kind="department")
+        charleen = markt.add(
+            Person("Charleen", age=43, guid="{345-456}"), kind="member"
+        )
+        markt.add(Person("Dave", age=54, guid="{456-456}"), kind="manager")
+
+        if clones:
+            dev.add(charleen, kind="member")
 
     else:
         raise NotImplementedError(style)

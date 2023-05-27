@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.4.1 (Unreleased)
+## 0.5.0 (Unreleased)
+- BREAKING: changed `tree.load()` / `tree.save()` signature, and storage format.
+- Support load/save for TypedTree
 - Deprecated (stop testing) Python 3.7
 
 ## 0.4.0 (2023-02-22)

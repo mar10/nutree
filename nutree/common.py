@@ -13,6 +13,11 @@ from typing import TYPE_CHECKING, Any, Callable, Union
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Node
 
+#: Used as ID for the system root node
+ROOT_ID: str = "__root__"
+
+#: File format version used by `tree.save()` as `meta.$version`
+FILE_FORMAT_VERSION: str = "1.0"
 
 ItemIdType = Union[str, int]
 
