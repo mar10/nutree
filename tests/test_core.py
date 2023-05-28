@@ -146,6 +146,7 @@ class TestNavigate:
         assert records.count_descendants() == 2
         assert records.count_descendants(leaves_only=True) == 2
 
+        assert tree.children[0] is records
         assert tree.first_child() is records
         assert tree.last_child().name == "Books"
 

@@ -5,7 +5,7 @@
 .. py:currentmodule:: nutree
 
 
-Serialization
+Native Format
 -------------
 
 Assuming we have a tree like this::
@@ -21,42 +21,50 @@ Assuming we have a tree like this::
         ╰── 'b1'
             ╰── 'b11'
 
-We can serialize this tree in an efficient text format::
+We can serialize this tree in an efficient JSON based text format::
 
     with open(path, "w") as fp:
         tree.save(fp)
-
-If more control is needed, we can call :meth:`~nutree.tree.Tree.to_list_iter` and
-``json.dump()`` directly and pass 
-additional arguments, or use ``yaml.dump()`` instead::
-
-    with open(path, "w") as fp:
-        json.dump(list(tree.to_list_iter()), fp)
-
-The result will be written as a compact list of (parent-index, data) tuples. |br|
-Note how the 2nd occurence of 'a11' only stores the index of the first 
-instance::
-
-    [
-        [0, "A"],
-        [1, "a1"],
-        [2, "a11"],
-        [2, "a12"],
-        [1, "a2"],
-        [0, "B"],
-        [6, 3],
-        [6, "b1"],
-        [8, "b11"]
-    ]
-
-
-Deserialization
----------------
 
 Reading is as simple as::
 
     with open(path, "r") as fp:
         tree = Tree.load(fp)
+
+Additional data can be stored::
+
+    meta = {"foo": "bar"}
+    with open(path, "w") as fp:
+        tree.save(fp, meta=meta)
+
+and retrieved like so::
+
+    meta = {}
+    tree = Tree.load(fp, file_meta=meta)
+    assert meta["foo"] == "bar"
+
+The result will be written as a compact list of (parent-index, data) tuples. |br|
+Note how the 2nd occurence of 'a11' only stores the index of the first 
+instance::
+
+    {
+        "meta": {
+            "$version": "1.0",
+            "foo": "bar"
+        },
+        "nodes": [
+            [0, "A"],
+            [1, "a1"],
+            [2, "a11"],
+            [2, "a12"],
+            [1, "a2"],
+            [0, "B"],
+            [6, 3],
+            [6, "b1"],
+            [8, "b11"]
+        ]
+    }
+
 
 .. seealso :: This example tree only contains plain string data.
     Read :doc:`ug_objects` on how to (de)serialize arbitrary objects.
@@ -64,6 +72,10 @@ Reading is as simple as::
 
 (De)Serialize as List of Dicts
 ------------------------------
+
+.. note :: While converting a tree to/from a dict is handy at times,
+    for standard (de)serialization the :meth:`~nutree.tree.Tree.save()` /
+    :meth:`~nutree.tree.Tree.load()` API is recommended.
 
 :meth:`~nutree.tree.Tree.to_dict()` converts a tree to a list of 
 - potentially nested - dicts. 

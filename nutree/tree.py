@@ -464,7 +464,7 @@ class Tree:
                 data = call_mapper(mapper, parent, data)
                 n = parent.add(data)
             else:
-                raise RuntimeError(f"Need mapper for {data=}")  # pragma: no cover
+                raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
 
             node_idx_map[idx] = n
 

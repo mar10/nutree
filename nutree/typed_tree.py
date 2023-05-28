@@ -267,7 +267,6 @@ class TypedNode(Node):
                     )
             else:
                 pass
-                # raise NotImplementedError("Cross-tree adding")
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
@@ -669,7 +668,7 @@ class TypedTree(Tree):
                 # serialization mapper, for a TypedTree that has str nodes
                 n = parent.add(data["str"], kind=data.get("kind"))
             else:
-                raise RuntimeError(f"Need mapper for {data=}")  # pragma: no cover
+                raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
 
             node_idx_map[idx] = n
 
@@ -679,7 +678,8 @@ class TypedTree(Tree):
     def load(cls, fp: IO[str], *, mapper=None, file_meta: dict = None) -> TypedTree:
         """Create a new :class:`TypedTree` instance from a JSON file stream.
 
-        See also :meth:`save`.
+        See also Tree's :meth:`~nutree.tree.Tree.save()` and
+        :meth:`~nutree.tree.Tree.load()` methods.
         """
         return super().load(fp, mapper=mapper, file_meta=file_meta)
 
