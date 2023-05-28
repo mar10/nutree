@@ -15,7 +15,7 @@ NOTE:
     "3.0.0a4" seems not to work in this case!
 """
 # flake8: noqa
-__version__ = "0.4.1-a1"
+__version__ = "0.5.0"
 
 from .common import (
     AmbiguousMatchError,
