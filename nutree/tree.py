@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import random
 import threading
-from pathlib import PurePath
+from pathlib import Path
 from typing import IO, Any, Dict, Generator, List, Union
 
 from nutree.diff import diff_tree
@@ -425,12 +425,21 @@ class Tree:
         return self._root.to_list_iter(mapper=mapper)
 
     def save(
-        self, fp: IO[str], *, mapper: MapperCallbackType = None, meta: dict = None
+        self,
+        target: Union[IO[str], str, Path],
+        *,
+        mapper: MapperCallbackType = None,
+        meta: dict = None,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
         See also :meth:`to_list_iter` and :meth:`load` methods.
         """
+        if isinstance(target, (str, Path)):
+            with Path(target).open("wt") as fp:
+                return self.save(target=fp, mapper=mapper, meta=meta)
+        # target is a file object now
+
         header = {
             "$version": FILE_FORMAT_VERSION,
             # "$nutree_version": __version__,
@@ -445,7 +454,7 @@ class Tree:
                 "meta": header,
                 "nodes": list(self.to_list_iter(mapper=mapper)),
             }
-        json.dump(res, fp)
+        json.dump(res, target)
         return
 
     @classmethod
@@ -471,17 +480,35 @@ class Tree:
         return tree
 
     @classmethod
-    def load(cls, fp: IO[str], *, mapper=None, file_meta: dict = None) -> Tree:
-        """Create a new :class:`Tree` instance from a JSON file stream.
+    def load(
+        cls,
+        target: Union[IO[str], str, Path],
+        *,
+        mapper=None,
+        file_meta: dict = None,
+    ) -> Tree:
+        """Create a new :class:`Tree` instance from a file path or JSON file stream.
 
         If ``file_meta`` is a dict, it receives the content if the file's
         ``meta`` header.
 
         See also :meth:`save`.
         """
-        obj = json.load(fp)
-        if not isinstance(obj, dict) or "meta" not in obj or "nodes" not in obj:
+        if isinstance(target, (str, Path)):
+            with Path(target).open("rt") as fp:
+                return cls.load(target=fp, mapper=mapper, file_meta=file_meta)
+        # target is a file object now
+
+        obj = json.load(target)
+        if (
+            not isinstance(obj, dict)
+            or "meta" not in obj
+            or "nodes" not in obj
+            or "$generator" not in obj["meta"]
+            or "nutree/" not in str(obj["meta"]["$generator"])
+        ):
             raise RuntimeError("Invalid file format")
+
         if isinstance(file_meta, dict):
             file_meta.update(obj["meta"])
         nodes = obj["nodes"]
@@ -514,7 +541,7 @@ class Tree:
 
     def to_dotfile(
         self,
-        target: Union[IO[str], str, PurePath],
+        target: Union[IO[str], str, Path],
         *,
         format=None,
         add_root=True,

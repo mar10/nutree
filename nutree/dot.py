@@ -6,7 +6,7 @@ Functions and declarations to support
 """
 from __future__ import annotations
 
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import IO, TYPE_CHECKING, Generator, Union
 
 from .common import MapperCallbackType, call_mapper
@@ -109,7 +109,7 @@ def node_to_dot(
 
 def tree_to_dotfile(
     tree: Tree,
-    target: Union[IO[str], str, PurePath],
+    target: Union[IO[str], str, Path],
     *,
     format=None,
     add_root=True,
@@ -123,7 +123,7 @@ def tree_to_dotfile(
     if isinstance(target, str):
         target = Path(target)
 
-    if isinstance(target, PurePath):
+    if isinstance(target, Path):
         if format:
             dot_path = target.with_suffix(".gv")
         else:

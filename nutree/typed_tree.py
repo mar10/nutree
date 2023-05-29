@@ -5,6 +5,7 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import IO, Any, Dict, Generator, List, Union
 
 from nutree.common import (
@@ -675,13 +676,19 @@ class TypedTree(Tree):
         return tree
 
     @classmethod
-    def load(cls, fp: IO[str], *, mapper=None, file_meta: dict = None) -> TypedTree:
+    def load(
+        cls,
+        target: Union[IO[str], str, Path],
+        *,
+        mapper=None,
+        file_meta: dict = None,
+    ) -> TypedTree:
         """Create a new :class:`TypedTree` instance from a JSON file stream.
 
         See also Tree's :meth:`~nutree.tree.Tree.save()` and
         :meth:`~nutree.tree.Tree.load()` methods.
         """
-        return super().load(fp, mapper=mapper, file_meta=file_meta)
+        return super().load(target, mapper=mapper, file_meta=file_meta)
 
 
 # ------------------------------------------------------------------------------

@@ -23,24 +23,29 @@ Assuming we have a tree like this::
 
 We can serialize this tree in an efficient JSON based text format::
 
+    tree.save(path)
+
+    # or
+
     with open(path, "w") as fp:
         tree.save(fp)
 
 Reading is as simple as::
 
+    tree = Tree.load(path)
+    # or
     with open(path, "r") as fp:
         tree = Tree.load(fp)
 
 Additional data can be stored::
 
     meta = {"foo": "bar"}
-    with open(path, "w") as fp:
-        tree.save(fp, meta=meta)
+    tree.save(path, meta=meta)
 
 and retrieved like so::
 
     meta = {}
-    tree = Tree.load(fp, file_meta=meta)
+    tree = Tree.load(path, file_meta=meta)
     assert meta["foo"] == "bar"
 
 The result will be written as a compact list of (parent-index, data) tuples. |br|
@@ -49,7 +54,8 @@ instance::
 
     {
         "meta": {
-            "$version": "1.0",
+            "$generator": "nutree/0.5.1",
+            "$format_version": "1.0",
             "foo": "bar"
         },
         "nodes": [
