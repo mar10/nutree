@@ -89,7 +89,7 @@ argument and should return control value:
       In other words: copy the whole branch.
 
 :meth:`~nutree.tree.Tree.save`
-:meth:`~nutree.tree.Tree.to_dict`,
+:meth:`~nutree.tree.Tree.to_dict_list`,
 :meth:`~nutree.tree.Tree.to_dot`,
 :meth:`~nutree.tree.Tree.to_dotfile`,
 :meth:`~nutree.tree.Tree.to_list_iter`
@@ -104,7 +104,7 @@ Locking
 In multithreading scenarios, we can enforce critical sections like so::
 
     with tree:
-        snapshot = tree.to_dict()
+        snapshot = tree.to_dict_list()
 
 
 Debugging

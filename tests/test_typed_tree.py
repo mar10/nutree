@@ -138,6 +138,17 @@ class TestTypedTree:
         subtree = func2.copy()
         assert isinstance(subtree, TypedTree)
 
+    def test_to_dict_list(self):
+        tree = fixture.create_typed_tree(clones=True)
+        d = tree.to_dict_list()
+        print(d)
+        assert len(d) == 2, "two top nodes"
+        assert isinstance(d, list)
+        assert isinstance(d[0], dict)
+        # TODO:
+        assert isinstance(d[0]["data"], str)
+        # assert "kind" in l[0]
+
     def test_serialize_list(self):
         tree = fixture.create_typed_tree(clones=True)
         assert isinstance(tree, TypedTree)

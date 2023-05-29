@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     res = tree.dumps("dict")
 
-    res = json.dumps(tree.to_dict())
+    res = json.dumps(tree.to_dict_list())
     print(res)
 
     res = list(tree.to_list_iter())

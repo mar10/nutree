@@ -1,9 +1,13 @@
 # Changelog
 
-## 0.5.0 (Unreleased)
+## 0.5.1 (unreleased)
+- BREAKING: renamed `tree.to_dict()` to `tree.to_dict_list()`.
+- BREAKING: changed `tree.load()` / `tree.save()` storage format.
+- `tree.load()` / `tree.save()` accept path in addition to file objects.
+
+## 0.5.0 (2023-05-28)
 - BREAKING: changed `tree.load()` / `tree.save()` signature, and storage format.
 - Support load/save for TypedTree
-- Deprecated (stop testing) Python 3.7
 
 ## 0.4.0 (2023-02-22)
 

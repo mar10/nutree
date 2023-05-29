@@ -83,12 +83,12 @@ instance::
     for standard (de)serialization the :meth:`~nutree.tree.Tree.save()` /
     :meth:`~nutree.tree.Tree.load()` API is recommended.
 
-:meth:`~nutree.tree.Tree.to_dict()` converts a tree to a list of 
+:meth:`~nutree.tree.Tree.to_dict_list()` converts a tree to a list of 
 - potentially nested - dicts. 
 We can pass the result to `json.dump()`::
 
     with open(path, "w") as fp:
-        json.dump(tree.to_dict(), fp)
+        json.dump(tree.to_dict_list(), fp)
 
 The result will look similar to this::
 

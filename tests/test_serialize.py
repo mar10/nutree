@@ -24,7 +24,7 @@ class TestSerialize:
 
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
-            json.dump(tree.to_dict(), fp)
+            json.dump(tree.to_dict_list(), fp)
             # Deserialize
             fp.seek(0)
             obj = json.load(fp)

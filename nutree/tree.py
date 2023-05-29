@@ -23,6 +23,7 @@ from .common import (
     PredicateCallbackType,
     TraversalCallbackType,
     call_mapper,
+    get_version,
 )
 from .dot import tree_to_dotfile
 from .node import Node
@@ -397,7 +398,7 @@ class Tree:
         """
         self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
-    def to_dict(self, *, mapper: MapperCallbackType = None) -> List[Dict]:
+    def to_dict_list(self, *, mapper: MapperCallbackType = None) -> List[Dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         childnodes and return list of results."""
         res = []
@@ -410,7 +411,7 @@ class Tree:
     def from_dict(cls, obj: List[Dict], *, mapper=None) -> Tree:
         """Return a new :class:`Tree` instance from a list of dicts.
 
-        See also :meth:`~nutree.tree.Tree.to_dict` and
+        See also :meth:`~nutree.tree.Tree.to_dict_list` and
         Node's :meth:`~nutree.node.Node.find_first` methods, and
         :ref:`iteration callbacks`.
         """
