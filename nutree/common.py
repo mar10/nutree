@@ -16,7 +16,7 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 #: Used as ID for the system root node
 ROOT_ID: str = "__root__"
 
-#: File format version used by `tree.save()` as `meta.$version`
+#: File format version used by `tree.save()` as `meta.$format_version`
 FILE_FORMAT_VERSION: str = "1.0"
 
 ItemIdType = Union[str, int]
@@ -118,6 +118,12 @@ CONNECTORS = {
     "round43": ("    ", "│   ", "╰── ", "├── "),
     "round43r": ("    ", " │  ", " ╰──", " ├──"),
 }
+
+
+def get_version() -> str:
+    from nutree import __version__
+
+    return __version__
 
 
 def call_mapper(fn, node: Node, data: dict) -> Any:

@@ -57,7 +57,7 @@ class TestSerialize:
 
         assert isinstance(tree_2, Tree)
         assert all(isinstance(n, Node) for n in tree_2)
-        assert meta_2["$version"] == FILE_FORMAT_VERSION
+        assert meta_2["$format_version"] == FILE_FORMAT_VERSION
         assert meta_2["foo"] == "bar"
         assert fixture.trees_equal(tree, tree_2)
 

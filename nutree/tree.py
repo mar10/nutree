@@ -441,8 +441,8 @@ class Tree:
         # target is a file object now
 
         header = {
-            "$version": FILE_FORMAT_VERSION,
-            # "$nutree_version": __version__,
+            "$generator": f"nutree/{get_version()}",
+            "$format_version": FILE_FORMAT_VERSION,
         }
         if meta:
             header.update(meta)
