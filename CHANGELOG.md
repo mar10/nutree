@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.5.1 (unreleased)
+## 0.5.2 (unreleased)
+- `tree.load(PATH)` / `tree.save(PATH)` use UTF-8 encoding.
+
+## 0.5.1 (2023-05-29)
 - BREAKING: renamed `tree.to_dict()` to `tree.to_dict_list()`.
 - BREAKING: changed `tree.load()` / `tree.save()` storage format.
 - `tree.load()` / `tree.save()` accept path in addition to file objects.

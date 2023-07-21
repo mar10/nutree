@@ -437,7 +437,7 @@ class Tree:
         See also :meth:`to_list_iter` and :meth:`load` methods.
         """
         if isinstance(target, (str, Path)):
-            with Path(target).open("wt") as fp:
+            with Path(target).open("wt", encoding="utf8") as fp:
                 return self.save(target=fp, mapper=mapper, meta=meta)
         # target is a file object now
 
@@ -455,7 +455,7 @@ class Tree:
                 "meta": header,
                 "nodes": list(self.to_list_iter(mapper=mapper)),
             }
-        json.dump(res, target)
+        json.dump(res, target, indent=None, separators=(",", ":"))
         return
 
     @classmethod
@@ -496,7 +496,7 @@ class Tree:
         See also :meth:`save`.
         """
         if isinstance(target, (str, Path)):
-            with Path(target).open("rt") as fp:
+            with Path(target).open("rt", encoding="utf8") as fp:
                 return cls.load(target=fp, mapper=mapper, file_meta=file_meta)
         # target is a file object now
 
