@@ -33,10 +33,14 @@ Search
 ------
 
 ::
-
+    # Case sensitive:
     assert tree.find("Records") is records_node
     assert tree.find("records") is None
 
+    # 'Smart' search:
+    assert tree["Records"] is records_node
+
+    # Regular expressions
     res = tree.find_all(match=r"[GL]et.*")
     print(res)
     assert len(res) == 2
@@ -47,6 +51,27 @@ Search
     res = tree.find_first(match=r"[GL]et.*")
     assert res.name == "Let It Be"
 
+.. note::
+  ``tree[term]`` performs a 'smart' search:
+
+  1. If `term` is an integer, we look for the ``node_id``,
+  2. else if `term` is a string or integer, we look for the ``data_id``,
+  3. else if we search for ``calc_data_id(node.data) == term``.
+  4. If the search return more than one match, raise ``AmbiguousMatchError``
+  
+  Using :meth:`~nutree.tree.Tree.find_first` or :meth:`~nutree.tree.Tree.find_all`
+  may be more explicit (and faster).
+    
+.. note::
+  ``tree.find("123")`` will search for ``calc_data_id(node.data) == "123"``.
+  If a node was created with an explicit ``data_id``, this will not work.
+  Instead, use ``tree.find(data_id="123")`` to search by key::
+  
+    tree.add("A", data_id="123")
+    assert tree.find("A") is None # not found
+    assert tree.find("123") is None # not found
+    assert tree.find(data_id="123") is not None # works
+    
 
 Traversal
 ---------

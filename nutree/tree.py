@@ -255,7 +255,7 @@ class Tree:
         yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
 
     def format(self, *, repr=None, style=None, title=None, join="\n"):
-        """Return a pretty string representation of the tree hiererachy.
+        """Return a pretty string representation of the tree hierarchy.
 
         See Node's :meth:`~nutree.node.Node.format` method for details.
         """

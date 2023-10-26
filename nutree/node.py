@@ -1205,7 +1205,7 @@ class Node:
         yield from self._render_lines(repr=repr, style=style, add_self=add_self)
 
     def format(self, *, repr=None, style=None, add_self=True, join="\n") -> str:
-        r"""Return a pretty string representation of the node hiererachy.
+        r"""Return a pretty string representation of the node hierarchy.
 
         more
 
