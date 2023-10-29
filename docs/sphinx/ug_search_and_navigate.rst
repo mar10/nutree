@@ -44,11 +44,12 @@ Examples::
     print(res)
     assert len(res) == 2
 
+    res = tree.find_first(match=r"[GL]et.*")
+    assert res.name == "Let It Be"
+
     res = tree.find_all(match=lambda n: "y" in n.name.lower())
     assert len(res) == 1
 
-    res = tree.find_first(match=r"[GL]et.*")
-    assert res.name == "Let It Be"
 
 .. note::
   ``tree[term]`` performs a 'smart' search:
@@ -107,7 +108,15 @@ Different travesal methods are supported. ::
     like so::
 
         with tree:
+            for node in tree:
+                # Depth-first, pre-order by default
+                ...
+    
+    or::
+
+        with tree:
             snapshot = tree.to_dict_list()
+        ...
 
 
 .. rubric:: Visit

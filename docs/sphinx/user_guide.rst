@@ -90,8 +90,8 @@ Read :doc:`ug_clones` for more.
 .. toctree::
 
     ug_basics
-    ug_pretty_print
     ug_search_and_navigate
+    ug_pretty_print
     ug_mutation
     ug_clones
     ug_serialize

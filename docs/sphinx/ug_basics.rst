@@ -5,8 +5,8 @@ Basics
 .. py:currentmodule:: nutree
 
 
-Add Nodes
----------
+Adding Nodes
+------------
 
 Nodes are usually created by adding a new data instance to a parent ::
 
@@ -32,6 +32,11 @@ Nodes are usually created by adding a new data instance to a parent ::
    │   ╰── "Get Yer Ya-Ya's Out!"
    ╰── 'Books'
        ╰── 'The Little Prince'
+
+.. seealso::
+
+    See :doc:`ug_objects` for details on how to manage arbitrary objects instead
+    of plain strings.
 
 
 Info and Navigation
@@ -60,22 +65,16 @@ Info and Navigation
     assert n.next_sibling().name == "Get Yer Ya-Ya's Out!"
     assert not n.children
 
-    res = tree.find_all(match=r"[GL]et.*")
-    print(res)
-    assert len(res) == 2
+.. seealso::
 
-    res = tree.find_all(match=lambda n: "y" in n.name.lower())
-    assert len(res) == 1
-
-    res = tree.find_first(match=r"[GL]et.*")
-    assert res.name == "Let It Be"
+    See :doc:`ug_search_and_navigate` for details on how to find nodes.
 
 
 Iteration
 ---------
 
 Iterators are available for the hole tree or by branch. Different traversal
-methods are supported ::
+methods are supported::
 
     for node in tree:
         # Depth-first, pre-order by default
@@ -92,3 +91,7 @@ methods are supported ::
 
     # `res` contains the value passed to the `StopTraversal` constructor
     res = tree.visit(callback)  # res == "found it"
+
+.. seealso::
+
+    See :doc:`ug_search_and_navigate` for details on traversal.
