@@ -8,10 +8,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import IO, Any, Dict, Generator, List, Union
 
+from pyparsing import Optional
+
 from nutree.common import (
     ROOT_ID,
+    CalcIdCallbackType,
     IterMethod,
     MapperCallbackType,
+    NodeFactoryType,
     PredicateCallbackType,
     UniqueConstraintError,
     call_mapper,
@@ -591,10 +595,19 @@ class TypedTree(Tree):
     See :ref:`Typed Tree` for details.
     """
 
-    def __init__(self, name: str = None, *, factory=None, calc_data_id=None):
+    def __init__(
+        self,
+        name: str = None,
+        *,
+        factory: NodeFactoryType = None,
+        calc_data_id: CalcIdCallbackType = None,
+        shadow_attrs: Optional[bool | set[str]] = None,
+    ):
         if factory is None:
             factory = TypedNode
-        super().__init__(name, factory=factory, calc_data_id=calc_data_id)
+        super().__init__(
+            name, factory=factory, calc_data_id=calc_data_id, shadow_attrs=shadow_attrs
+        )
         self._root = _SystemRootTypedNode(self)
 
     def __getitem__(self, data: object) -> TypedNode:

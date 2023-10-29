@@ -41,6 +41,7 @@ ignore = [
   # We need the old syntax for python <= 3.9
   "UP006", # Use `list` instead of `List` for type annotations (since Py39)
   "UP007", # Use `X | Y` for type annotations (since Py310)
+  "E721",  #  Do not compare types, use `isinstance()`
 ]
 
 # [tool.ruff.pydocstyle]
