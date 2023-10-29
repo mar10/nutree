@@ -8,9 +8,7 @@ Search and Navigate
 Navigate
 --------
 
-::
-
-    assert tree.count == 5
+Examples::
 
     records_node = tree["Records"]
     assert tree.first_child() is records_node
@@ -32,7 +30,7 @@ Navigate
 Search
 ------
 
-::
+Examples::
 
     # Case sensitive:
     assert tree.find("Records") is records_node
@@ -100,8 +98,16 @@ Different travesal methods are supported. ::
         ...
 
     # Keep in mind that iterators are generators, so at times we may need 
-    to materialize:
+    # to materialize:
     res = list(node.iterator(add_self=True))
+
+.. note::
+
+    To avoid race conditions during iteration, we can enforce critical sections 
+    like so::
+
+        with tree:
+            snapshot = tree.to_dict_list()
 
 
 .. rubric:: Visit
@@ -152,3 +158,15 @@ same scope as the `visit()` call::
             hits.append(node)
 
     tree.visit(callback)
+
+.. rubric:: Custom Traversal
+
+If we need more control, here is an example implementation of a recursive 
+traversal::
+
+    def my_visit(node):
+        """Depth-first, pre-order traversal."""
+        print(node)
+        for child in node.children:
+            my_visit(child)
+        return
