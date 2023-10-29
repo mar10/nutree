@@ -30,8 +30,8 @@ Install Python
 We need `Python 3.7+ <https://www.python.org/downloads/>`_,
 and `pipenv <https://github.com/kennethreitz/pipenv>`_ on our system.
 
-If you want to run tests on *all* supported platforms, install Python 3.7,
-3.8, 3.9, 3.10, and 3.11.
+If you want to run tests on *all* supported platforms, install Python 
+3.8, 3.9, 3.10, 3.11, and 3.12.
 
 Create and Activate the Virtual Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,8 +64,8 @@ Run all tests with coverage report. Results are written to <nutree>/htmlcov/inde
 
 Run selective tests::
 
-    $ tox -e py39
-    $ tox -e py39 -- -k test_core
+    $ tox -e py312
+    $ tox -e py312 -- -k test_core
 
 
 Run Benchmarks

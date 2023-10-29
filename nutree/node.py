@@ -15,7 +15,7 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 from .common import (
     CONNECTORS,
     AmbiguousMatchError,
-    ItemIdType,
+    DataIdType,
     IterMethod,
     MapperCallbackType,
     PredicateCallbackType,
@@ -66,7 +66,7 @@ class Node:
         data,
         *,
         parent: Node,
-        data_id: Optional[ItemIdType] = None,
+        data_id: Optional[DataIdType] = None,
         node_id: Optional[int] = None,
         meta: Dict = None,
     ):
@@ -78,9 +78,9 @@ class Node:
         self._children: List[Node] = None
 
         if data_id is None:
-            self._data_id: ItemIdType = tree._calc_data_id(data)
+            self._data_id: DataIdType = tree._calc_data_id(data)
         else:
-            self._data_id: ItemIdType = data_id
+            self._data_id: DataIdType = data_id
 
         if node_id is None:
             self._node_id: int = id(self)
@@ -107,6 +107,13 @@ class Node:
         if isinstance(other, Node):
             return self._data == other._data
         return self._data == other
+
+    def __getattr__(self, name):
+        """Implement ``node.NAME`` aliasing  to ``node.data.NAME``."""
+        shadow_attrs = self._tree.shadow_attrs
+        if shadow_attrs is True or shadow_attrs and name in shadow_attrs:
+            return getattr(self.data, name)
+        raise AttributeError
 
     # def __iadd__(self, other) -> None:
     #     """Add child node(s)."""
@@ -156,7 +163,7 @@ class Node:
         return self._data
 
     @property
-    def data_id(self) -> ItemIdType:
+    def data_id(self) -> DataIdType:
         """Return the wrapped data instance's id
         (use :meth:`~nutree.tree.Tree.set_data()` to modify)."""
         return self._data_id

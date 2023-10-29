@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable, Type, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .tree import Node
+    from .node import Node
+    from .tree import Tree
 
 #: Used as ID for the system root node
 ROOT_ID: str = "__root__"
@@ -19,7 +20,14 @@ ROOT_ID: str = "__root__"
 #: File format version used by `tree.save()` as `meta.$format_version`
 FILE_FORMAT_VERSION: str = "1.0"
 
-ItemIdType = Union[str, int]
+#: Type of ``Node.data_id``
+DataIdType = Union[str, int]
+
+#: Type of ``Tree(..., calc_data_id)```
+CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
+
+#: Type of ``Tree(..., factory)```
+NodeFactoryType = Type["Node"]
 
 
 class TreeError(RuntimeError):

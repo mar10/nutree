@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Generator, List, Union
+from typing import IO, Any, Dict, Generator, List, Optional, Union
 
 from nutree.diff import diff_tree
 
@@ -17,9 +17,11 @@ from .common import (
     FILE_FORMAT_VERSION,
     ROOT_ID,
     AmbiguousMatchError,
-    ItemIdType,
+    CalcIdCallbackType,
+    DataIdType,
     IterMethod,
     MapperCallbackType,
+    NodeFactoryType,
     PredicateCallbackType,
     TraversalCallbackType,
     call_mapper,
@@ -40,12 +42,21 @@ class Tree:
     A Tree object is a shallow wrapper around a single, invisible system root node.
     All visible toplevel nodes are direct children of this root node.
     Trees expose methods to iterate, search, copy, filter, serialize, etc.
+
+
     """
 
     #: Default connector prefixes ``format(style=...)`` argument.
     default_connector_style = "round43"
 
-    def __init__(self, name: str = None, *, factory=None, calc_data_id=None):
+    def __init__(
+        self,
+        name: str = None,
+        *,
+        factory: NodeFactoryType = None,
+        calc_data_id: CalcIdCallbackType = None,
+        shadow_attrs: Optional[bool | set[str]] = None,
+    ):
         self._lock = threading.RLock()
         self.name = str(id(self) if name is None else name)
         self._node_factory = factory or Node
@@ -55,6 +66,8 @@ class Tree:
         #: Optional callback that calculates data_ids from data objects
         #: hash(data) is used by default
         self._calc_data_id_hook = calc_data_id
+        #: Set of attribute names that are aliased whenn accessing Node instances.
+        self.shadow_attrs = shadow_attrs
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -124,7 +137,7 @@ class Tree:
         (also makes empty trees falsy)."""
         return self.count
 
-    def _calc_data_id(self, data) -> ItemIdType:
+    def _calc_data_id(self, data) -> DataIdType:
         """Called internally to calculate `data_id` for a `data` object.
 
         This value is used to lookup nodes by data, identify clones, and for

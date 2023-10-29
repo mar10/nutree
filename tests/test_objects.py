@@ -73,3 +73,34 @@ class TestObjects:
         with pytest.raises(ValueError):
             n.rename("foo")
         assert tree._self_check()
+
+    def test_shadow_attrs_off(self):
+        tree = Tree("fixture")
+
+        records = tree.add("Records")
+        let_it_be_item = Item("Let It Be", 12.34, 17)
+        let_it_be_node = records.add(let_it_be_item)
+
+        assert let_it_be_node.data is let_it_be_item
+        assert let_it_be_node.data.name == "Let It Be"
+        assert let_it_be_node.data.price == 12.34
+        # Note caveat: `node.name` is not shadowed, but a native property:
+        assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
+        # Shadowing is off, so  `node.price` is off
+        with pytest.raises(AttributeError):
+            assert let_it_be_node.price == 12.34
+
+    def test_shadow_attrs_true(self):
+        tree = Tree("fixture", shadow_attrs=True)
+
+        records = tree.add("Records")
+        let_it_be_item = Item("Let It Be", 12.34, 17)
+        let_it_be_node = records.add(let_it_be_item)
+
+        assert let_it_be_node.data is let_it_be_item
+        assert let_it_be_node.data.name == "Let It Be"
+        assert let_it_be_node.data.price == 12.34
+        # Note caveat: `node.name` is not shadowed, but a native property:
+        assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
+        # `node.price` is alliased to `node.data.price`
+        assert let_it_be_node.price == 12.34

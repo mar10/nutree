@@ -193,7 +193,7 @@ def flatten_nodes(tree):
     res = []
     for n in tree:
         d = n.data
-        if type(d) is str:
+        if isinstance(d, str):
             res.append(d)
         else:
             res.append(d.name)
@@ -410,10 +410,8 @@ def run_timings(
 
         warnings.warn_explicit(
             "The test results are likely unreliable. "
-            "The worst time ({}) was more than four times "
-            "slower than the best time ({}).".format(
-                format_time(worst), format_time(best)
-            ),
+            f"The worst time ({format_time(worst)}) was more than four times "
+            "slower than the best time ({format_time(best)}).",
             UserWarning,
             "",
             0,
