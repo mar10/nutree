@@ -9,7 +9,6 @@ from . import fixture
 
 class TestDiff:
     def test_diff(self):
-
         tree_0 = fixture.create_tree(name="T0", print=True)
 
         tree_1 = fixture.create_tree(name="T1", print=False)

@@ -855,7 +855,6 @@ class TestCopy:
         assert subtree._self_check()
 
     def test_node_copy_to(self):
-
         tree_1 = fixture.create_tree()
 
         tree_2 = _make_tree_2()

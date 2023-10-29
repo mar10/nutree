@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-black = { version = "~=22.12", extras = ["jupyter"] }
+black = { version = "~=23.10", extras = ["jupyter"] }
 isort = "*"
 pylint = "*"
 # TODO: remove this line:
