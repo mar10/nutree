@@ -70,8 +70,8 @@ Lookup works by `data` object or `data_id` as expected::
     assert tree.find(data_id="{123-456}").data is alice
 
 
-Shadow Attributes (Attibute Aliasing)
--------------------------------------
+Shadow Attributes (Attribute Aliasing)
+--------------------------------------
 
 When storing arbitrary objects within a tree node, all its attributes must be 
 accessed through the ``node.data`` attribute. |br|
@@ -82,16 +82,22 @@ This can be simplified by using the ``shadow_attrs`` argument::
     alice = Person("Alice", age=23, guid="{123-456}")
     alice_node = dev.add(alice)
 
+    # Standard access using `node.data`:
     assert alice_node.data is alice
-    assert alice_node.data.guit == "{123-456}"
+    assert alice_node.data.guid == "{123-456}"
+    assert alice_node.data.age == 23
 
     # Direct access using shadowing:
     assert alice_node.guid == "{123-456}"
     assert alice_node.age == 23
     
     # Note caveat: `node.name` is not shadowed, but a native property:
-    assert allice.data.name == "Alice"
-    assert allice.name == "Person<Alice, 23>"
+    assert alice.data.name == "Alice"
+    assert alice.name == "Person<Alice, 23>"
+
+    # Note also: shadow attributes are readonly:
+    alice.age = 24       # ERROR: raises AttributeError
+    alice.data.age = 24  # OK!
 
 .. note::
 
@@ -101,6 +107,7 @@ This can be simplified by using the ``shadow_attrs`` argument::
     `children`, `data_id`, `data`, `kind`, `meta`, `node_id`, `parent`, `tree`, 
     and all other methods and properties.
 
+    Note also that shadow attributes are readonly.
 
 Serialize
 ---------

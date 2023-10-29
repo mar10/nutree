@@ -100,7 +100,15 @@ class TestObjects:
         assert let_it_be_node.data is let_it_be_item
         assert let_it_be_node.data.name == "Let It Be"
         assert let_it_be_node.data.price == 12.34
+
         # Note caveat: `node.name` is not shadowed, but a native property:
         assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
+        with pytest.raises(AttributeError):
+            let_it_be_node.name = "foo"
+
         # `node.price` is alliased to `node.data.price`
         assert let_it_be_node.price == 12.34
+
+        # Shadow attributes are readonly
+        with pytest.raises(AttributeError):
+            let_it_be_node.price = 9.99

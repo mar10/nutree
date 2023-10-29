@@ -4,6 +4,7 @@
 
 - Implement `Tree(..., shadow_attrs=True)`
 - `tree.load(PATH)` / `tree.save(PATH)` use UTF-8 encoding.
+- Support Py312
 
 ## 0.5.1 (2023-05-29)
 

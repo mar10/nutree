@@ -33,6 +33,7 @@ Search
 ------
 
 ::
+
     # Case sensitive:
     assert tree.find("Records") is records_node
     assert tree.find("records") is None
