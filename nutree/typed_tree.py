@@ -111,7 +111,7 @@ class TypedNode(Node):
     #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
     def first_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
-        """First direct childnode or None if no children exist."""
+        """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
             return None
@@ -124,7 +124,7 @@ class TypedNode(Node):
         return None
 
     def last_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
-        """Last direct childnode or None if no children exist."""
+        """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
             return None

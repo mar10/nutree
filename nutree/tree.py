@@ -413,7 +413,7 @@ class Tree:
 
     def to_dict_list(self, *, mapper: MapperCallbackType = None) -> List[Dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
-        childnodes and return list of results."""
+        child nodes and return list of results."""
         res = []
         with self:
             for n in self._root._children:

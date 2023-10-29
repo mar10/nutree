@@ -411,7 +411,7 @@ def run_timings(
         warnings.warn_explicit(
             "The test results are likely unreliable. "
             f"The worst time ({format_time(worst)}) was more than four times "
-            "slower than the best time ({format_time(best)}).",
+            f"slower than the best time ({format_time(best)}).",
             UserWarning,
             "",
             0,

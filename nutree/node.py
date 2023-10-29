@@ -303,11 +303,11 @@ class Node:
         return self.children
 
     def first_child(self) -> Union[Node, None]:
-        """First direct childnode or None if no children exist."""
+        """First direct child node or None if no children exist."""
         return self._children[0] if self._children else None
 
     def last_child(self) -> Union[Node, None]:
-        """Last direct childnode or None if no children exist."""
+        """Last direct child node or None if no children exist."""
         return self._children[-1] if self._children else None
 
     def get_siblings(self, *, add_self=False) -> List[Node]:
@@ -502,7 +502,7 @@ class Node:
             - False, None: append the new node as last child
             - True, 0: prepend the new node as first child
             - <int>: prepend the new node before the existing child with this index
-            - <Node>: prepend the new node before this childnode
+            - <Node>: prepend the new node before this child node
 
         Args:
             child (Node|Tree|Any):
@@ -968,7 +968,7 @@ class Node:
         """Call `callback(node, memo)` for all subnodes.
 
         The callback may return :class:`SkipBranch` (or an instance
-        thereof) to omit childnodes but continue traversal otherwise.
+        thereof) to omit child nodes but continue traversal otherwise.
         Raising `SkipBranch` has the same effect.
 
         The callback may return ``False`` or :class:`StopIteration` to immediately
