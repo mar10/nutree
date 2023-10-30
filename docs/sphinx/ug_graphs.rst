@@ -181,24 +181,24 @@ In a nutshell: `TypedTree nodes can have multiple types of children.`
 
 Main differences to plain `Tree`:
 
-    - Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
-      ``node.kind`` attribute.
-    - The kind is part of the display name by default:
-      ``repr="{node.kind} → {node.data}"``, e.g. 'friend → Alice'.
-    - Node methods like :meth:`~nutree.typed_tree.TypedNode.children()` get
-      an additional mandatory argument ``kind`` to filter by type.s
-      Pass ``kind=ANY_KIND`` to retrieve all children.
-    - Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` and
-      :meth:`~nutree.typed_tree.TypedNode.first_sibling()`
-      assume get '... of the same type'. An additional argument ``any_kind=True`` 
-      can be passed to ignore the types.
-    - When converting to a graph, `node.kind` becomes the label of the arrow
-      pointing from the parent to this node.
+- Uses :class:`~nutree.typed_tree.TypedNode` that adds an additional 
+  ``node.kind`` attribute.
+- The node's kind becomes part of the display name by default:
+  ``repr="{node.kind} → {node.data}"``, e.g. 'friend → Alice'.
+- Node methods like :meth:`~nutree.typed_tree.TypedNode.get_children()` get
+  an additional mandatory argument ``kind`` to filter by type. |br|
+  Pass ``kind=ANY_KIND`` to retrieve all children.
+- Node methods like :meth:`~nutree.typed_tree.TypedNode.get_index()` and
+  :meth:`~nutree.typed_tree.TypedNode.first_sibling()`
+  assume '... of the same type'. |br|
+  An additional argument ``any_kind=True`` can be passed to ignore the types.
+- When converting to a graph, ``node.kind`` becomes the label of the arrow
+  pointing from the parent to this node.
 
-Note:
+.. note::
 
-    - Methods like :meth:`~nutree.typed_tree.TypedNode.iter` still access all 
-      nodes, ignoring the types.
+    Methods like :meth:`~nutree.typed_tree.TypedNode.iter` still access all 
+    nodes, ignoring the types.
 
 When adding nodes, we now pass this type, e.g.::
 

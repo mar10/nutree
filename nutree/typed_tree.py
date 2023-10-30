@@ -92,7 +92,11 @@ class TypedNode(Node):
 
     @property
     def children(self) -> List[TypedNode]:
-        """Return list of direct child nodes (list may be empty)."""
+        """Return list of direct child nodes (list may be empty).
+
+        Note that this property returns all children, independent of the kind.
+        See also :meth:`get_children`.
+        """
         c = self._children
         return [] if c is None else c
 
