@@ -1,3 +1,5 @@
+.. _objects:
+
 --------------------
 Working with Objects
 --------------------
@@ -69,6 +71,8 @@ Lookup works by `data` object or `data_id` as expected::
 
     assert tree.find(data_id="{123-456}").data is alice
 
+
+.. _shadow-attributes:
 
 Shadow Attributes (Attribute Aliasing)
 --------------------------------------

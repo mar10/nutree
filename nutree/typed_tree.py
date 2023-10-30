@@ -8,8 +8,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import IO, Any, Dict, Generator, List, Union
 
-from pyparsing import Optional
-
 from nutree.common import (
     ROOT_ID,
     CalcIdCallbackType,
@@ -39,6 +37,9 @@ class TypedNode(Node):
     """
     A special node variant, derived from :class:`~nutree.node.Node` and
     used by :class:`~nutree.typed_tree.TypedTree`.
+
+    In addition to :class:`~nutree.node.Node`, we have a `kind` member to
+    define the node's type.
     """
 
     __slots__ = ("_kind",)
@@ -63,7 +64,7 @@ class TypedNode(Node):
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
-        assert isinstance(kind, str) and kind != ANY_KIND
+        assert isinstance(kind, str) and kind != ANY_KIND, f"Unsupported `kind`: {kind}"
         self._kind = kind
         # del self._children
         # self._child_map: Dict[Node] = None
@@ -419,14 +420,14 @@ class TypedNode(Node):
     def copy(self, *, add_self=True, predicate=None) -> TypedTree:
         """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
 
-        See also :meth:`_add_from` and :ref:`iteration callbacks`.
+        See also :meth:`_add_from` and :ref:`iteration-callbacks`.
         """
         return super().copy(add_self=add_self, predicate=predicate)
 
     def filtered(self, predicate: PredicateCallbackType) -> TypedTree:
         """Return a filtered copy of this node and descendants as tree.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         return super().filtered(predicate=predicate)
 
@@ -564,7 +565,7 @@ class TypedNode(Node):
     ) -> Generator[str, None, None]:
         """Generate a DOT formatted graph representation.
 
-        See :ref:`Graphs` for details.
+        See :ref:`graphs` for details.
         """
 
         # TypedNodes can provide labelled edges:
@@ -590,9 +591,11 @@ class TypedNode(Node):
 # ------------------------------------------------------------------------------
 class TypedTree(Tree):
     """
-    A special tree variant, derived from :class:`~nutree.tree.Tree`.
+    A special tree variant, derived from :class:`~nutree.tree.Tree`,
+    that uses :class:`~nutree.typed_tree.TypedNode` objects, which maintain
+    an addition `kind` attribute.
 
-    See :ref:`Typed Tree` for details.
+    See :ref:`typed-tree` for details.
     """
 
     def __init__(
@@ -601,7 +604,7 @@ class TypedTree(Tree):
         *,
         factory: NodeFactoryType = None,
         calc_data_id: CalcIdCallbackType = None,
-        shadow_attrs: Optional[bool | set[str]] = None,
+        shadow_attrs: bool = False,
     ):
         if factory is None:
             factory = TypedNode

@@ -2,6 +2,9 @@
 User Guide
 ==========
 
+Data Model
+----------
+
 A :class:`~nutree.tree.Tree` object is a shallow wrapper around a single, 
 invisible system root node. All visible toplevel nodes are direct children of
 this root node. |br|
@@ -48,41 +51,48 @@ meta (dict, readonly):
   Use :meth:`~nutree.node.Node.get_meta`, :meth:`~nutree.node.Node.set_meta`, 
   :meth:`~nutree.node.Node.update_meta`, and :meth:`~nutree.node.Node.clear_meta`,  
   to modify this value.
+
 node_id (int, readonly):
   The unique key of a `Node` instance. This value is calculated as ``hash(node)`` 
   by default, but can be set to a custom value in the constructor.
   It cannot be changed later.
 
-`Nutree` tries hard to allow developers to focus on their `data` objects instead 
-of nodes.
-Simple strings or arbitrary object instances can be added and looked-up::
+kind (str, readonly):
+  Used by :class:`~nutree.typed_tree.TypedNode` (see `Typed child nodes <ug_graphs.html>`_).
 
-  # Add a plain string node toplevel
-  team_node = tree.add("Team")
+.. General API
+.. -----------
 
-  # Add an object node as child
-  jane = User("Jane")  
-  team_node.add(jane)
-  ...
-  # Lookup by data object, in this case a plain string
-  assert tree["Team"] is team_node
+.. `Nutree` tries hard to allow developers to focus on their `data` objects instead 
+.. of nodes.
+.. Simple strings or arbitrary object instances can be added and looked-up::
+
+..   # Add a plain string as toplevel node
+..   team_node = tree.add("Team")
+
+..   # Add an object as as child node
+..   jane = User("Jane")  
+..   team_node.add(jane)
+..   ...
+..   # Lookup by data object, in this case a plain string
+..   assert tree["Team"] is team_node
   
-  # Lookup by object instance
-  jane_node = tree[jane]  # similar to tree.find(jane)
-  assert jane_node.data is jane
+..   # Lookup by object instance
+..   jane_node = tree[jane]  # similar to tree.find(jane)
+..   assert jane_node.data is jane
 
-  # Lookup by name (assuming the string representation of 
-  # the `User` instance is 'Jane'):
-  jane_node = tree.find(match="Jane")
+..   # Lookup by name (assuming the string representation of 
+..   # the `User` instance is 'Jane'):
+..   jane_node = tree.find(match="Jane")
 
-It is also possible to lookup by custom keys if objects define them.
-Read :doc:`ug_objects` for details.
+.. It is also possible to lookup by custom keys if objects define them.
+.. Read :doc:`ug_objects` for details.
 
-`Nutree` also supports the case where multiple nodes reference the same `data` 
-instance with mehods like
-:meth:`~nutree.node.Node.find_all`,
-:meth:`~nutree.node.Node.is_clone`, etc. |br|
-Read :doc:`ug_clones` for more.
+.. `Nutree` also supports the case where multiple nodes reference the same `data` 
+.. instance with mehods like
+.. :meth:`~nutree.node.Node.find_all`,
+.. :meth:`~nutree.node.Node.is_clone`, etc. |br|
+.. Read :doc:`ug_clones` for more.
 
 
 **Read the Details**

@@ -16,10 +16,12 @@ Advanced
         tree.on("change", on_change)
 
 
+.. _iteration-callbacks:
+
 Iteration Callbacks
 -------------------
 
-In the following sections we cover :ref:`Search`, :ref:`Traversal`, 
+In the following sections we cover :ref:`searching`, :ref:`traversal`, 
 :ref:`mutation`, etc. in detail. |br|
 Some methods described there, accept a `predicate` argument, for example
 :meth:`~nutree.tree.Tree.copy`, :meth:`~nutree.tree.Tree.filter`, 

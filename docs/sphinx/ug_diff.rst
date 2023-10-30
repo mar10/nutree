@@ -1,3 +1,5 @@
+.. _diff-and-merge:
+
 --------------
 Diff and Merge
 --------------

@@ -1,3 +1,5 @@
+.. _mutation:
+
 --------
 Mutation
 --------
@@ -49,4 +51,4 @@ instance::
         :meth:`~nutree.tree.Tree.find_first`,
         :meth:`~nutree.tree.Tree.visit`, ...
         
-        See :ref:`iteration callbacks` for details.
+        See :ref:`iteration-callbacks` for details.

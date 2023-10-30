@@ -2,13 +2,6 @@
 Reference Guide
 ===============
 
-.. toctree::
-   :maxdepth: 4
-
-   rg_modules
-   genindex
-
-
 Class Overview
 ==============
 
@@ -17,3 +10,12 @@ Class Overview
    :private-bases:
    :caption: nutree classes
 
+
+.. API
+.. ===
+
+.. toctree::
+   :maxdepth: 4
+
+   rg_modules
+   genindex

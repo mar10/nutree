@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Generator, List, Optional, Union
+from typing import IO, Any, Dict, Generator, List, Union
 
 from nutree.diff import diff_tree
 
@@ -43,7 +43,17 @@ class Tree:
     All visible toplevel nodes are direct children of this root node.
     Trees expose methods to iterate, search, copy, filter, serialize, etc.
 
+    A `name` string can be passed for enhanced printing.
 
+    If a `factory` is passed, it must be a class that is derived from :class:`Node`
+    and will be used to instantiate node instances.
+
+    `calc_data_id` can be a callback function that calculates data IDs from data
+    objects (by default ``hash(data)`` is used).
+
+    Set `shadow_attrs` to true, to enable aliasing of node attributes,
+    i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
+    See :ref:`shadow-attributes`.
     """
 
     #: Default connector prefixes ``format(style=...)`` argument.
@@ -55,7 +65,7 @@ class Tree:
         *,
         factory: NodeFactoryType = None,
         calc_data_id: CalcIdCallbackType = None,
-        shadow_attrs: Optional[bool | set[str]] = None,
+        shadow_attrs: bool = False,
     ):
         self._lock = threading.RLock()
         self.name = str(id(self) if name is None else name)
@@ -66,7 +76,7 @@ class Tree:
         #: Optional callback that calculates data_ids from data objects
         #: hash(data) is used by default
         self._calc_data_id_hook = calc_data_id
-        #: Set of attribute names that are aliased whenn accessing Node instances.
+        #: Enable aliasing when accessing Node instances.
         self.shadow_attrs = shadow_attrs
 
     def __repr__(self):
@@ -196,6 +206,15 @@ class Tree:
         (list may be empty)."""
         return self._root.children
 
+    def get_toplevel_nodes(self) -> List[Node]:
+        """Return list of direct child nodes, i.e. toplevel nodes (may be
+        empty, alias for :meth:`children`)."""
+        return self._root.children
+
+    @property
+    def system_root(self) -> _SystemRootNode:
+        return self._root
+
     @property
     def count(self):
         """Return the total number of nodes."""
@@ -238,7 +257,7 @@ class Tree:
         """Call `callback(node, memo)` for all nodes.
 
         See Node's :meth:`~nutree.node.Node.visit` method and
-        :ref:`iteration callbacks` for details.
+        :ref:`iteration-callbacks` for details.
         """
         return self._root.visit(callback, add_self=False, method=method, memo=memo)
 
@@ -314,7 +333,7 @@ class Tree:
         `predicate` may be passed to filter the result, which is equivalent to
         calling :meth:`~nutree.tree.Tree.filtered`
 
-        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration callbacks`
+        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
         method for details.
         """
         if name is None:
@@ -335,14 +354,14 @@ class Tree:
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of unmatching nodes.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         self._root.filter(predicate=predicate)
 
     def filtered(self, predicate: PredicateCallbackType) -> Tree:
         """Return a filtered copy of this tree.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         return self.copy(predicate=predicate)
 
@@ -356,7 +375,7 @@ class Tree:
         """Return a list of matching nodes (list may be empty).
 
         See also Node's :meth:`~nutree.node.Node.find_all` method and
-        :ref:`iteration callbacks`.
+        :ref:`iteration-callbacks`.
         """
         if data is not None:
             assert data_id is None
@@ -382,7 +401,7 @@ class Tree:
         Note that 'first' sometimes means 'one arbitrary' matching node, which
         is not neccessarily the first of a specific iteration method.
         See also Node's :meth:`~nutree.node.Node.find_first` method and
-        :ref:`iteration callbacks`.
+        :ref:`iteration-callbacks`.
         """
         if data is not None:
             assert data_id is None
@@ -426,7 +445,7 @@ class Tree:
 
         See also :meth:`~nutree.tree.Tree.to_dict_list` and
         Node's :meth:`~nutree.node.Node.find_first` methods, and
-        :ref:`iteration callbacks`.
+        :ref:`iteration-callbacks`.
         """
         new_tree = Tree()
         new_tree._root.from_dict(obj, mapper=mapper)
@@ -569,7 +588,7 @@ class Tree:
         """Serialize a DOT formatted graph representation.
 
         Optionally convert to a Graphviz display formats.
-        See :ref:`Graphs` for details.
+        See :ref:`graphs` for details.
         """
         res = tree_to_dotfile(
             self,
@@ -591,7 +610,7 @@ class Tree:
     def to_rdf_graph(self):
         """Return an instance of ``rdflib.Graph``.
 
-        See :ref:`Graphs` for details.
+        See :ref:`graphs` for details.
         """
         return tree_to_rdf(self)
 
@@ -610,7 +629,7 @@ class Tree:
         If `reduce` is true, unchanged nodes are removed, leaving a compact tree
         with only the modifications.
 
-        See :ref:`Diff and Merge` for details.
+        See :ref:`diff-and-merge` for details.
         """
         t = diff_tree(self, other, ordered=ordered, reduce=reduce)
         return t

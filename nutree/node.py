@@ -40,6 +40,29 @@ class Node:
     A Node represents a single element in the tree.
     It is a shallow wrapper around a user data instance, that adds navigation,
     modification, and other functionality.
+
+    Node objects are rarely created using this contructor, but indirectly by
+    invoking helper methods like :meth:`~nutree.node.Node.add_child`, etc.
+
+    `data`
+        is the arbitrary object that this node will hold.
+    `parent`
+        is the parent :meth:`~nutree.node.Node` instance. This node will
+        also inherit the tree reference from it.
+    `data_id`
+        is an optional integer or string that will be used as ID
+        (instead of calculating ``hash(data)``).
+        A tree may contain more than one node with the same data and data_id.
+        In this case we call the nodes 'clones'.
+    `node_id`
+        is an optional integer, that is used as unique ID for this node.
+        Even 'clones' must have unique node IDs. The default is calculated as
+        `id(self)`.
+    `meta`
+        is an optional dictionary. See also :meth:`~nutree.node.Node.get_meta`,
+        :meth:`~nutree.node.Node.set_meta`, :meth:`~nutree.node.Node.update_meta`,
+        and :meth:`~nutree.node.Node.clear_meta`.
+
     """
 
     # Slots may reduce node size (about 20% smaller):
@@ -85,7 +108,7 @@ class Node:
         if node_id is None:
             self._node_id: int = id(self)
         else:
-            self._node_id = node_id
+            self._node_id = int(node_id)
 
         self._meta = meta
 
@@ -109,9 +132,11 @@ class Node:
         return self._data == other
 
     def __getattr__(self, name):
-        """Implement ``node.NAME`` aliasing  to ``node.data.NAME``."""
-        shadow_attrs = self._tree.shadow_attrs
-        if shadow_attrs is True or shadow_attrs and name in shadow_attrs:
+        """Implement ``node.NAME`` aliasing  to ``node.data.NAME``.
+
+        See :ref:`shadow-attributes`.
+        """
+        if self._tree.shadow_attrs:
             return getattr(self.data, name)
         raise AttributeError
 
@@ -736,7 +761,7 @@ class Node:
     def copy(self, *, add_self=True, predicate: PredicateCallbackType = None) -> Tree:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         new_tree = self._tree.__class__()
         if add_self:
@@ -780,7 +805,7 @@ class Node:
     ) -> None:
         """Append copies of all source descendants to self.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         if predicate:
             return self._add_filtered(other, predicate)
@@ -796,7 +821,7 @@ class Node:
     def _add_filtered(self, other: Node, predicate: PredicateCallbackType) -> None:
         """Append a filtered copy of `other` and its descendants as children.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         # Stack of parent node objects 2-tuples (is_existing, node), used to
         # create optional parents on demand.
@@ -855,14 +880,14 @@ class Node:
     def filtered(self, predicate: PredicateCallbackType) -> Tree:
         """Return a filtered copy of this node and descendants as tree.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         return self.copy(add_self=True, predicate=predicate)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of mismatching nodes.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
 
         def _visit(parent: Node) -> bool:
@@ -975,7 +1000,7 @@ class Node:
         interrupt traversal.
         Raising `StopTraversal(value)` has the same effect but also allows to
         specify a return value for the visit method. |br|
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
 
         Args:
             callback (function(node, memo)):
@@ -1097,7 +1122,7 @@ class Node:
     ):
         """Return a list of matching nodes (list may be empty).
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         if data:
             assert data_id is None
@@ -1114,7 +1139,7 @@ class Node:
     def find_first(self, data=None, *, match=None, data_id=None):
         """Return the first matching node or `None`.
 
-        See also :ref:`iteration callbacks`.
+        See also :ref:`iteration-callbacks`.
         """
         res = self.find_all(data, match=match, data_id=data_id, max_results=1)
         return res[0] if res else None
@@ -1344,7 +1369,7 @@ class Node:
     ) -> Generator[str, None, None]:
         """Generate a DOT formatted graph representation.
 
-        See :ref:`Graphs` for details.
+        See :ref:`graphs` for details.
         """
         res = node_to_dot(
             self,
@@ -1363,6 +1388,6 @@ class Node:
     ):
         """Return an instance of ``rdflib.Graph``.
 
-        See :ref:`Graphs` for details.
+        See :ref:`graphs` for details.
         """
         return node_to_rdf(self, add_self=add_self, node_mapper=node_mapper)

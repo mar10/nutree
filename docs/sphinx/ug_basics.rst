@@ -8,7 +8,7 @@ Basics
 Adding Nodes
 ------------
 
-Nodes are usually created by adding a new data instance to a parent ::
+Nodes are usually created by adding a new data instance to a parent::
 
    from nutree import Tree, Node
 
@@ -42,7 +42,7 @@ Nodes are usually created by adding a new data instance to a parent ::
 Info and Navigation
 -------------------
 
-::
+Tree statistics and related nodes are accessible like so::
 
     assert tree.count == 5
 
@@ -53,7 +53,7 @@ Info and Navigation
     assert records_node.depth() == 1
 
     assert tree.find("Records") is records_node
-    assert tree.find("records") is None
+    assert tree.find("records") is None  # case-sensitive
 
     n = records_node.first_child()
     assert records_node.find("Let It Be") is n
@@ -80,7 +80,7 @@ methods are supported::
         # Depth-first, pre-order by default
         ...
 
-    # Alternatively use `visit` with a callback
+    # Alternatively use `visit` with a callback:
 
     def callback(node, memo):
         if node.name == "secret":

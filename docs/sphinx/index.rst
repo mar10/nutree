@@ -77,7 +77,9 @@ Nodes may be strings or arbitrary objects::
    tree.add(alice)
 
    # Lookup nodes by object, data_id, name pattern, ...
-   assert isinstance(tree[alice].data, Person)
+   alice_node = tree[alice]
+   assert isinstance(alice_node.data, Person)
+   assert alice_node.data is alice
 
    del tree[alice]
 
@@ -85,20 +87,20 @@ Nodes may be strings or arbitrary objects::
 Nutree Facts
 ============
 
-  * Handle multiple references of single objects ('clones')
-  * Search by name pattern, id, or object reference
-  * Unobtrusive handling of arbitrary objects
-  * `Compare two trees and calculate patches <ug_diff.html>`_
-  * `Save as DOT file and graphwiz diagram <ug_graphs.html>`_
-  * Nodes can be plain strings or objects
-  * Different traversal methods
-  * (De)Serialize to JSON
-  * Fully type annotated
-  * `Convert to RDF graph <ug_graphs.html>`_
-  * `Typed child nodes <ug_graphs.html>`_
-  * Pretty print
-  * Navigation
-  * Filtering
+  * :ref:`Handle multiple references of single objects ('clones') <clones>`
+  * :ref:`Search by name pattern, id, or object reference <searching>`
+  * :ref:`Unobtrusive handling of arbitrary objects <objects>`
+  * :ref:`Compare two trees and calculate patches <diff-and-merge>`
+  * :ref:`Save as DOT file and graphwiz diagram <save-dot>`
+  * :ref:`Nodes can be plain strings or objects <objects>`
+  * :ref:`Different traversal methods <traversal>`
+  * :ref:`(De)Serialize to JSON <serialize>`
+  * :ref:`Fully type annotated <api-reference>`
+  * :ref:`Convert to RDF graph <save-rdf>`
+  * :ref:`Typed child nodes <typed-tree>`
+  * :ref:`Pretty print <pretty-print>`
+  * :ref:`Navigation <navigate>`
+  * :ref:`Filtering <mutation>`
 
 
 `Read more <installation.html>`_ ...

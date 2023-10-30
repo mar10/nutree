@@ -1,3 +1,5 @@
+.. _graphs:
+
 ------
 Graphs
 ------
@@ -51,6 +53,8 @@ As a consequence
 
 
 .. rubric:: Writing Digraphs
+
+.. _save-dot:
 
 DOT Format
 ----------
@@ -125,7 +129,7 @@ In addition, the default attributes can be overriden per node and edge by passin
 mapper callbacks.
 See also `list of available attributes <https://graphviz.org/doc/info/attrs.html>`_.
 
-Let's visualize the result of the :ref:`Diff and Merge` example::
+Let's visualize the result of the :ref:`diff-and-merge` example::
 
     tree_2 = tree_0.diff(tree_1)
 
@@ -164,6 +168,7 @@ Let's visualize the result of the :ref:`Diff and Merge` example::
     Either install them separately or install nutree with extras: 
     ``pip install nutree[graph]``.
 
+.. _typed-tree:
 
 Typed Tree
 ----------
@@ -260,6 +265,7 @@ parent → child relations. Arbitrary links are not supported. |br|
 If you are looking for a data model with full graph support have a look
 at specialized libraries,such as `rdflib <https://github.com/RDFLib/rdflib>`_.
 
+.. _save-rdf:
 
 RDF Format
 ----------

@@ -4,9 +4,25 @@ Search and Navigate
 
 .. py:currentmodule:: nutree
 
+.. _navigate:
 
 Navigate
 --------
+
+Related nodes can be resolved using Node API methods, like
+:meth:`~nutree.node.Node.parent`,
+:meth:`~nutree.node.Node.children`,
+:meth:`~nutree.node.Node.first_child`,
+:meth:`~nutree.node.Node.last_child`,
+:meth:`~nutree.node.Node.first_sibling`,
+:meth:`~nutree.node.Node.prev_sibling`,
+:meth:`~nutree.node.Node.next_sibling`,
+:meth:`~nutree.node.Node.last_sibling`,
+:meth:`~nutree.node.Node.get_clones`,
+:meth:`~nutree.node.Node.get_siblings`,
+:meth:`~nutree.node.Node.get_parent_list`,
+and these Tree API methods
+:meth:`~nutree.tree.Tree.get_toplevel_nodes`,
 
 Examples::
 
@@ -27,12 +43,14 @@ Examples::
     assert not n.children
 
 
+.. _searching:
+
 Search
 ------
 
 Examples::
 
-    # Case sensitive:
+    # Case sensitive (single match):
     assert tree.find("Records") is records_node
     assert tree.find("records") is None
 
@@ -72,6 +90,8 @@ Examples::
     assert tree.find("123") is None # not found
     assert tree.find(data_id="123") is not None # works
     
+
+.. _traversal:
 
 Traversal
 ---------
@@ -129,7 +149,8 @@ The callback may return (or raise) :class:`~nutree.common.SkipBranch` to
 prevent visiting of the descendant nodes. |br|
 The callback may return (or raise) :class:`~nutree.common.StopTraversal` to 
 stop traversal immediately. An optional return value may be passed to the 
-constructor. 
+constructor. |br|
+See `Iteration Callbacks <ug_advanced>`_ for details.
 
 ::
 

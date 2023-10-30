@@ -4,6 +4,8 @@
 
 - Implement `Tree(..., shadow_attrs=True)`
 - `tree.load(PATH)` / `tree.save(PATH)` use UTF-8 encoding.
+- Add `Tree.system_root` as alias for `Tree._root`
+- Add `Tree.get_toplevel_nodes()` as alias for `tree.children.`
 - Support Py312
 
 ## 0.5.1 (2023-05-29)
