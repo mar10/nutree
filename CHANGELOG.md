@@ -1,12 +1,14 @@
 # Changelog
 
-## 0.6.0 (unreleased)
+## 0.6.1 (unreleased)
+
+## 0.6.0 (2023-11-01)
 
 - Implement `Tree(..., shadow_attrs=True)`
 - `tree.load(PATH)` / `tree.save(PATH)` use UTF-8 encoding.
 - Add `Tree.system_root` as alias for `Tree._root`
 - Add `Tree.get_toplevel_nodes()` as alias for `tree.children.`
-- Support Py312
+- Support and test with Py3.12: don't forget to update pip, pipenv, and tox.
 
 ## 0.5.1 (2023-05-29)
 
