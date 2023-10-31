@@ -132,10 +132,27 @@ faster to access attributes directly.
 
 When optimizing: 
 
-  1. Correctness before performance: |br|
-     Write simple, error free code first and cover it with unit tests, 
-     before starting to optimize.
+1. Correctness before performance: |br|
+    Write simple, error free code first and cover it with unit tests, 
+    before starting to optimize.
 
-  2. Do not guess or assume: |br|
-     Write `benchmarks <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ !
+2. Do not guess or assume: |br|
+    Write `benchmarks <https://github.com/mar10/nutree/blob/main/tests/test_bench.py>`_ !
 
+File System Helper
+------------------
+
+There is a simple helper that can be used to read a folder recursively::
+
+    from nutree import load_tree_from_fs
+    
+    path = "/my/folder/path"
+    tree = load_tree_from_fs(path)
+    tree.print()
+
+::
+
+    Tree</my/folder/path>
+    ├── 'file_1.txt', 13 bytes
+    ╰── [folder_1]
+        ╰── 'file_1_1.txt', 15 bytes

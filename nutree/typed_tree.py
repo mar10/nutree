@@ -6,7 +6,7 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, Any, Dict, Generator, List, Union
+from typing import IO, Any, Dict, Iterator, List, Union
 
 from nutree.common import (
     ROOT_ID,
@@ -437,7 +437,7 @@ class TypedNode(Node):
 
     def iterator(
         self, method=IterMethod.PRE_ORDER, *, add_self=False
-    ) -> Generator[TypedNode, None, None]:
+    ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         return super().iterator(method=method, add_self=add_self)
 
@@ -566,7 +566,7 @@ class TypedNode(Node):
         edge_attrs: dict = None,
         node_mapper: MapperCallbackType = None,
         edge_mapper: MapperCallbackType = None,
-    ) -> Generator[str, None, None]:
+    ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
         See :ref:`graphs` for details.
@@ -654,9 +654,7 @@ class TypedTree(Tree):
         """Return the last toplevel node."""
         return self._root.last_child(kind=kind)
 
-    def iter_by_type(
-        self, kind: Union[str, ANY_KIND]
-    ) -> Generator[TypedNode, None, None]:
+    def iter_by_type(self, kind: Union[str, ANY_KIND]) -> Iterator[TypedNode]:
         if kind == ANY_KIND:
             return self.iterator()
         for n in self.iterator():
@@ -717,7 +715,7 @@ class TypedTree(Tree):
 class _SystemRootTypedNode(TypedNode):
     """Invisible system root node."""
 
-    def __init__(self, tree: TypedTree):
+    def __init__(self, tree: TypedTree) -> None:
         self._tree: TypedTree = tree
         self._parent = None
         self._node_id = self._data_id = ROOT_ID

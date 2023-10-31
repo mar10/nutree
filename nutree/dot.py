@@ -7,7 +7,7 @@ Functions and declarations to support
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Generator, Union
+from typing import IO, TYPE_CHECKING, Iterator, Union
 
 from .common import MapperCallbackType, call_mapper
 
@@ -31,7 +31,7 @@ def node_to_dot(
     edge_attrs=None,
     node_mapper=None,
     edge_mapper=None,
-) -> Generator[str, None, None]:
+) -> Iterator[str]:
     """Generate DOT formatted output line-by-line.
 
     https://graphviz.org/doc/info/attrs.html
@@ -119,7 +119,7 @@ def tree_to_dotfile(
     edge_attrs=None,
     node_mapper: MapperCallbackType = None,
     edge_mapper: MapperCallbackType = None,
-):
+) -> None:
     if isinstance(target, str):
         target = Path(target)
 

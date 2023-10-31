@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Generator, List, Union
+from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 from nutree.diff import diff_tree
 
@@ -86,7 +86,7 @@ class Tree:
         """Implement ``data in tree`` syntax to check for node existence."""
         return bool(self.find_first(data))
 
-    def __delitem__(self, data: object) -> None:
+    def __delitem__(self, data):
         """Implement ``del tree[data]`` syntax to remove nodes."""
         self[data].remove()
 
@@ -163,7 +163,7 @@ class Tree:
             return self._calc_data_id_hook(self, data)
         return hash(data)
 
-    def _register(self, node: Node):
+    def _register(self, node: Node) -> None:
         assert node._tree is self
         # node._tree = self
         assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
@@ -173,7 +173,7 @@ class Tree:
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
 
-    def _unregister(self, node, *, clear=True):
+    def _unregister(self, node: Node, *, clear: bool = True) -> None:
         """Unlink node from this tree (children must be unregistered first)."""
         assert node._node_id in self._node_by_id, f"{node}"
         del self._node_by_id[node._node_id]
@@ -216,12 +216,12 @@ class Tree:
         return self._root
 
     @property
-    def count(self):
+    def count(self) -> int:
         """Return the total number of nodes."""
         return len(self._node_by_id)
 
     @property
-    def count_unique(self):
+    def count_unique(self) -> int:
         """Return the total number of `unique` nodes.
 
         Multiple references to the same data object ('clones') are only counted
@@ -231,11 +231,11 @@ class Tree:
         """
         return len(self._nodes_by_data_id)
 
-    def first_child(self):
+    def first_child(self) -> Node | None:
         """Return the first toplevel node."""
         return self._root.first_child()
 
-    def last_child(self):
+    def last_child(self) -> Node | None:
         """Return the last toplevel node."""
         return self._root.last_child()
 
@@ -253,7 +253,7 @@ class Tree:
 
     def visit(
         self, callback: TraversalCallbackType, *, method=IterMethod.PRE_ORDER, memo=None
-    ):
+    ) -> Any | None:
         """Call `callback(node, memo)` for all nodes.
 
         See Node's :meth:`~nutree.node.Node.visit` method and
@@ -261,7 +261,7 @@ class Tree:
         """
         return self._root.visit(callback, add_self=False, method=method, memo=memo)
 
-    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER):
+    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER) -> Iterator[Node]:
         """Traverse tree structure and yield nodes.
 
         See Node's :meth:`~nutree.node.Node.iterator` method for details.
@@ -277,7 +277,7 @@ class Tree:
     #: Implement ``for node in tree: ...`` syntax to iterate nodes depth-first.
     __iter__ = iterator
 
-    def format_iter(self, *, repr=None, style=None, title=None):
+    def format_iter(self, *, repr=None, style=None, title=None) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
         if title is None:
             title = False if style == "list" else True
@@ -286,7 +286,7 @@ class Tree:
         has_title = title is not False
         yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
 
-    def format(self, *, repr=None, style=None, title=None, join="\n"):
+    def format(self, *, repr=None, style=None, title=None, join="\n") -> str:
         """Return a pretty string representation of the tree hierarchy.
 
         See Node's :meth:`~nutree.node.Node.format` method for details.
@@ -294,9 +294,20 @@ class Tree:
         lines_iter = self.format_iter(repr=repr, style=style, title=title)
         return join.join(lines_iter)
 
-    def print(self, *, repr=None, style=None, title=None, join="\n"):
+    def print(
+        self,
+        *,
+        repr=None,
+        style=None,
+        title=None,
+        join: str = "\n",
+        file: Optional[IO] = None,
+    ) -> None:
         """Convenience method that simply runs print(self. :meth:`format()`)."""
-        print(self.format(repr=repr, style=style, title=title, join=join))
+        print(
+            self.format(repr=repr, style=style, title=title, join=join),
+            file=file,
+        )
 
     def add_child(
         self,
@@ -422,7 +433,7 @@ class Tree:
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort(self, *, key=None, reverse=False, deep=True):
+    def sort(self, *, key=None, reverse=False, deep=True) -> None:
         """Sort toplevel nodes (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
@@ -451,9 +462,7 @@ class Tree:
         new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
 
-    def to_list_iter(
-        self, *, mapper: MapperCallbackType = None
-    ) -> Generator[Dict, None, None]:
+    def to_list_iter(self, *, mapper: MapperCallbackType = None) -> Iterator[Dict]:
         """Yield a parent-referencing list of child nodes."""
         return self._root.to_list_iter(mapper=mapper)
 
@@ -557,7 +566,7 @@ class Tree:
         edge_attrs=None,
         node_mapper=None,
         edge_mapper=None,
-    ) -> Generator[str, None, None]:
+    ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
         See Node's :meth:`~nutree.node.Node.to_dot` method for details.
@@ -637,10 +646,10 @@ class Tree:
     # def on(self, event_name: str, callback):
     #     raise NotImplementedError
 
-    def _self_check(self):
+    def _self_check(self) -> True:
         """Internal method to check data structure sanity.
 
-        This is slow: only use for debugging, e.g. ``assert tree._self_check``.
+        This is slow: only use for debugging, e.g. ``assert tree._self_check()``.
         """
         node_list = []
         for node in self:
@@ -672,7 +681,7 @@ class Tree:
 class _SystemRootNode(Node):
     """Invisible system root node."""
 
-    def __init__(self, tree: Tree):
+    def __init__(self, tree: Tree) -> None:
         self._tree: Tree = tree
         self._parent = None
         self._node_id = self._data_id = ROOT_ID

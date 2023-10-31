@@ -149,7 +149,7 @@ def call_mapper(fn, node: Node, data: dict) -> Any:
     return res
 
 
-def call_predicate(fn, node):
+def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
     """Call the function and normalize result and exceptions.
 
     Handles `PredicateCallbackType`:
@@ -167,7 +167,7 @@ def call_predicate(fn, node):
     return res
 
 
-def call_traversal_cb(fn, node, memo):
+def call_traversal_cb(fn: Callable, node: Node, memo: Any) -> False | None:
     """Call the function and handle result and exceptions.
 
     This method calls `fn(node, memo)` and converts all returned or raised

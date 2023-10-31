@@ -5,6 +5,7 @@ Methods and classes to support file system related functionality.
 """
 from operator import attrgetter, itemgetter
 from pathlib import Path
+from typing import Union
 
 from nutree.tree import Node, Tree
 
@@ -40,7 +41,7 @@ class FileSystemEntry:
         return FileSystemEntry(v["n"], False, v["s"])
 
 
-def load_tree_from_fs(path: str, *, sort: bool = True) -> Tree:
+def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
     """Scan a filesystem folder and store as tree.
 
     Args:

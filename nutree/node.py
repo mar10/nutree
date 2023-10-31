@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
@@ -131,7 +131,7 @@ class Node:
             return self._data == other._data
         return self._data == other
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Implement ``node.NAME`` aliasing  to ``node.data.NAME``.
 
         See :ref:`shadow-attributes`.
@@ -207,7 +207,7 @@ class Node:
         """
         return self._meta
 
-    def get_meta(self, key: str, default=None):
+    def get_meta(self, key: str, default=None) -> Any:
         """Return metadata value."""
         m = self._meta
         return default if m is None else m.get(key, default)
@@ -221,7 +221,7 @@ class Node:
         else:
             self._meta[key] = value
 
-    def clear_meta(self, key: str = None):
+    def clear_meta(self, key: str = None) -> None:
         """Reset all metadata or a distinct entry."""
         if key is None:
             self._meta = None
@@ -233,7 +233,7 @@ class Node:
                 self._meta = None
         return
 
-    def update_meta(self, values: dict, *, replace: bool = False):
+    def update_meta(self, values: dict, *, replace: bool = False) -> None:
         """Add `values` dict to current metadata.
 
         If `replace` is true, previous metatdata will be cleared.
@@ -396,7 +396,7 @@ class Node:
         """Return the maximum depth of all descendants (0 for leaves)."""
         height = 0
 
-        def _ch(n, h):
+        def _ch(n: Node, h: int) -> None:
             nonlocal height
             c = n._children
             if c:
@@ -841,7 +841,7 @@ class Node:
                     parent_stack[idx] = (True, p)
             return p
 
-        def _visit(other: Node):
+        def _visit(other: Node) -> None:
             """Return True if any descendant returned True."""
 
             # print("_visit", parent_stack, other)
@@ -926,7 +926,7 @@ class Node:
             pass
         return
 
-    def from_dict(self, obj: List[Dict], *, mapper=None):
+    def from_dict(self, obj: List[Dict], *, mapper=None) -> None:
         """Append copies of all source children to self."""
         assert not self._children
         for item in obj:
@@ -945,7 +945,7 @@ class Node:
                 child.from_dict(child_items)
         return
 
-    def _visit_pre(self, callback, memo):
+    def _visit_pre(self, callback, memo) -> None:
         """Depth-first, pre-order traversal."""
         # Call callback and skip children if SkipBranch was returned.
         # Also a StopTraversal(value) exception may be raised.
@@ -958,7 +958,7 @@ class Node:
                 c._visit_pre(callback, memo)
         return
 
-    def _visit_post(self, callback, memo):
+    def _visit_post(self, callback, memo) -> None:
         """Depth-first, post-order traversal."""
         # Callback may raise StopTraversal (also if callback returns false)
         # but SkipBranch is not supported with post-order traversal
@@ -968,7 +968,7 @@ class Node:
                 c._visit_post(callback, memo)
         call_traversal_cb(callback, self, memo)
 
-    def _visit_level(self, callback, memo):
+    def _visit_level(self, callback, memo) -> None:
         """Breadth-first (aka level-order) traversal."""
         # Note that this is non-recursive.
         children = self._children
@@ -989,7 +989,7 @@ class Node:
         add_self=False,
         method=IterMethod.PRE_ORDER,
         memo=None,
-    ):
+    ) -> None | Any:
         """Call `callback(node, memo)` for all subnodes.
 
         The callback may return :class:`SkipBranch` (or an instance
@@ -1045,7 +1045,7 @@ class Node:
         except StopTraversal as e:
             return e.value
 
-    def _iter_pre(self):
+    def _iter_pre(self) -> Iterator[Node]:
         """Depth-first, pre-order traversal."""
         children = self._children
         if children:
@@ -1054,7 +1054,7 @@ class Node:
                 yield from c._iter_pre()
         return
 
-    def _iter_post(self):
+    def _iter_post(self) -> Iterator[Node]:
         """Depth-first, post-order traversal."""
         children = self._children
         if children:
@@ -1063,7 +1063,7 @@ class Node:
                 yield c
         return
 
-    def _iter_level(self):
+    def _iter_level(self) -> Iterator[Node]:
         """Breadth-first (aka level-order) traversal."""
         children = self._children
         while children:
@@ -1077,7 +1077,7 @@ class Node:
 
     def iterator(
         self, method=IterMethod.PRE_ORDER, *, add_self=False
-    ) -> Generator[Node, None, None]:
+    ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         try:
             handler = getattr(self, f"_iter_{method.value}")
@@ -1095,7 +1095,7 @@ class Node:
     #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
     __iter__ = iterator
 
-    def _search(self, match, *, max_results=None, add_self=False):
+    def _search(self, match, *, max_results=None, add_self=False) -> Iterator[Node]:
         if callable(match):
             cb_match = match
         elif type(match) is str:
@@ -1119,7 +1119,7 @@ class Node:
 
     def find_all(
         self, data=None, *, match=None, data_id=None, add_self=False, max_results=None
-    ):
+    ) -> List[Node]:
         """Return a list of matching nodes (list may be empty).
 
         See also :ref:`iteration-callbacks`.
@@ -1136,7 +1136,7 @@ class Node:
             n for n in self._search(match, add_self=add_self, max_results=max_results)
         ]
 
-    def find_first(self, data=None, *, match=None, data_id=None):
+    def find_first(self, data=None, *, match=None, data_id=None) -> Node | None:
         """Return the first matching node or `None`.
 
         See also :ref:`iteration-callbacks`.
@@ -1147,7 +1147,7 @@ class Node:
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort_children(self, *, key=None, reverse=False, deep=False):
+    def sort_children(self, *, key=None, reverse=False, deep=False) -> None:
         """Sort child nodes.
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
@@ -1164,10 +1164,10 @@ class Node:
                 c.sort_children(key=key, reverse=reverse, deep=True)
         return
 
-    def _get_prefix(self, style, lstrip):
+    def _get_prefix(self, style, lstrip) -> str:
         s0, s1, s2, s3 = style
 
-        def _is_last(p):
+        def _is_last(p) -> bool:
             # Don't use `is_last_sibling()` which is overloaded by TypedNode
             return p is p._parent._children[-1]
 
@@ -1190,7 +1190,7 @@ class Node:
 
         return "".join(parts)
 
-    def _render_lines(self, *, repr=None, style=None, add_self=True):
+    def _render_lines(self, *, repr=None, style=None, add_self=True) -> Iterator[str]:
         if type(style) not in (list, tuple):
             try:
                 style = CONNECTORS[style or self.tree.default_connector_style]
@@ -1225,7 +1225,7 @@ class Node:
 
         return
 
-    def format_iter(self, *, repr=None, style=None, add_self=True):
+    def format_iter(self, *, repr=None, style=None, add_self=True) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
         if style == "list":
             for n in self.iterator(add_self=add_self):
@@ -1304,9 +1304,7 @@ class Node:
             data["data_id"] = node._data_id
         return data
 
-    def to_list_iter(
-        self, *, mapper: MapperCallbackType = None
-    ) -> Generator[Dict, None, None]:
+    def to_list_iter(self, *, mapper: MapperCallbackType = None) -> Iterator[Dict]:
         """Yield children as parent-referencing list.
 
         ```py
@@ -1366,7 +1364,7 @@ class Node:
         edge_attrs: dict = None,
         node_mapper: MapperCallbackType = None,
         edge_mapper: MapperCallbackType = None,
-    ) -> Generator[str, None, None]:
+    ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
         See :ref:`graphs` for details.
