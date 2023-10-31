@@ -68,16 +68,17 @@ class Tree:
         shadow_attrs: bool = False,
     ):
         self._lock = threading.RLock()
+        #: Tree name used for logging
         self.name = str(id(self) if name is None else name)
         self._node_factory = factory or Node
         self._root = _SystemRootNode(self)
         self._node_by_id = {}
         self._nodes_by_data_id = {}
-        #: Optional callback that calculates data_ids from data objects
-        #: hash(data) is used by default
+        # Optional callback that calculates data_ids from data objects
+        # hash(data) is used by default
         self._calc_data_id_hook = calc_data_id
-        #: Enable aliasing when accessing Node instances.
-        self.shadow_attrs = shadow_attrs
+        # Enable aliasing when accessing Node instances.
+        self._shadow_attrs = shadow_attrs
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -301,7 +302,7 @@ class Tree:
         style=None,
         title=None,
         join: str = "\n",
-        file: Optional[IO] = None,
+        file: Optional[IO[str]] = None,
     ) -> None:
         """Convenience method that simply runs print(self. :meth:`format()`)."""
         print(

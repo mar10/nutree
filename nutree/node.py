@@ -136,7 +136,7 @@ class Node:
 
         See :ref:`shadow-attributes`.
         """
-        if self._tree.shadow_attrs:
+        if self._tree._shadow_attrs:
             return getattr(self.data, name)
         raise AttributeError
 

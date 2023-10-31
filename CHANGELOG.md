@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.6.1 (unreleased)
+- Add optional `tree.print(..., file=IO)` argument.
 
 ## 0.6.0 (2023-11-01)
 
