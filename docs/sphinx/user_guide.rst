@@ -58,7 +58,7 @@ node_id (int, readonly):
   It cannot be changed later.
 
 kind (str, readonly):
-  Used by :class:`~nutree.typed_tree.TypedNode` (see `Typed child nodes <ug_graphs.html>`_).
+  Used by :class:`~nutree.typed_tree.TypedNode` (see :ref:`Typed child nodes <typed-tree>`).
 
 .. General API
 .. -----------

@@ -2,6 +2,7 @@
 
 ## 0.6.1 (unreleased)
 - Add optional `tree.print(..., file=IO)` argument.
+- Fix invalid UniqueConstraint error message when loading a TypedTree.
 
 ## 0.6.0 (2023-11-01)
 
