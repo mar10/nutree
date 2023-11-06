@@ -94,6 +94,13 @@ class TestBasics:
         node.clear_meta()
         assert node._meta is None
 
+    # def test_logger(self):
+    #     tree= fixture.create_tree()
+    #     logging.basicConfig()
+    #     logger = logging.getLogger()
+    #     logger.error(tree.format())
+    #     logger.error("DONE")
+
 
 class TestNavigate:
     def setup_method(self):

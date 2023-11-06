@@ -5,8 +5,9 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 """
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Union
+from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
 
 from nutree.common import (
     ROOT_ID,
@@ -696,6 +697,37 @@ class TypedTree(Tree):
             node_idx_map[idx] = n
 
         return tree
+
+    def save(
+        self,
+        target: Union[IO[str], str, Path],
+        *,
+        mapper: Optional[MapperCallbackType] = None,
+        meta: Optional[dict] = None,
+        key_map: Union[dict, bool] = True,
+        value_map: Union[dict, Iterable[str], bool] = True,
+    ) -> None:
+        """Store tree in a compact JSON file stream.
+
+        See also :meth:`to_list_iter` and :meth:`load` methods.
+        """
+        # TypedTrees can assume reasaonable defaults for key_map and value_map
+        if key_map is True:
+            key_map = {"data_id": "i", "kind": "k"}
+        if value_map is True:
+            counter = Counter()
+            for n in self:
+                counter[n.kind] += 1
+            value_map = {"kind": list(counter.keys())}
+            # print("value_map -> ", value_map)
+
+        return super().save(
+            target,
+            mapper=mapper,
+            meta=meta,
+            key_map=key_map,
+            value_map=value_map,
+        )
 
     @classmethod
     def load(

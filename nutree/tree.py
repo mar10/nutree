@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Optional, Union
+from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
 
 from nutree.diff import diff_tree
 
@@ -463,16 +463,26 @@ class Tree:
         new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
 
-    def to_list_iter(self, *, mapper: MapperCallbackType = None) -> Iterator[Dict]:
+    def to_list_iter(
+        self,
+        *,
+        mapper: Optional[MapperCallbackType] = None,
+        key_map: Optional[dict] = None,
+        value_map: Optional[dict] = None,
+    ) -> Iterator[Dict]:
         """Yield a parent-referencing list of child nodes."""
-        return self._root.to_list_iter(mapper=mapper)
+        return self._root.to_list_iter(
+            mapper=mapper, key_map=key_map, value_map=value_map
+        )
 
     def save(
         self,
         target: Union[IO[str], str, Path],
         *,
-        mapper: MapperCallbackType = None,
-        meta: dict = None,
+        mapper: Optional[MapperCallbackType] = None,
+        meta: Optional[dict] = None,
+        key_map: Union[dict, bool] = True,
+        value_map: Union[dict, Iterable[str], bool] = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
@@ -480,30 +490,69 @@ class Tree:
         """
         if isinstance(target, (str, Path)):
             with Path(target).open("wt", encoding="utf8") as fp:
-                return self.save(target=fp, mapper=mapper, meta=meta)
+                return self.save(
+                    target=fp,
+                    mapper=mapper,
+                    meta=meta,
+                    key_map=key_map,
+                    value_map=value_map,
+                )
         # target is a file object now
+
+        if key_map is True:
+            key_map = {"data_id": "i"}
+        if value_map is True:
+            value_map = {}  # no default value mapping for plain Tree
 
         header = {
             "$generator": f"nutree/{get_version()}",
             "$format_version": FILE_FORMAT_VERSION,
         }
+        if key_map:
+            header["$key_map"] = key_map
+        if value_map:
+            header["$value_map"] = value_map
+
         if meta:
             header.update(meta)
+
         with self:
             # Materialize node list, so we can lock the snapshot.
             # Also because json.dump() does not support streaming anyway.
             # TODO: Use s.th. like https://github.com/daggaz/json-stream ?
             res = {
                 "meta": header,
-                "nodes": list(self.to_list_iter(mapper=mapper)),
+                "nodes": list(
+                    self.to_list_iter(
+                        mapper=mapper, key_map=key_map, value_map=value_map
+                    )
+                ),
             }
         json.dump(res, target, indent=None, separators=(",", ":"))
+        return
+
+    @classmethod
+    def _uncompress_entry(
+        cls, data: dict | str, inverse_key_map: dict, value_map: dict
+    ) -> None:
+        # if isinstance(data, str):
+        #     return
+        for key, value in list(data.items()):
+            if key in inverse_key_map:
+                long_key = inverse_key_map[key]
+                data[long_key] = data.pop(key)
+            else:
+                long_key = key
+
+            if type(value) is int and long_key in value_map:
+                data[long_key] = value_map[long_key][value]
         return
 
     @classmethod
     def _from_list(cls, obj: List[Dict], *, mapper=None) -> Tree:
         tree = cls()  # Tree or TypedTree
         node_idx_map = {0: tree._root}
+
         for idx, (parent_idx, data) in enumerate(obj, 1):
             parent = node_idx_map[parent_idx]
             # print(idx, parent_idx, data, parent)
@@ -511,10 +560,12 @@ class Tree:
                 n = parent.add(data)
             elif type(data) is int:
                 first_clone = node_idx_map[data]
-                n = parent.add(first_clone)
+                n = parent.add(first_clone, data_id=first_clone.data_id)
             elif mapper:
+                assert isinstance(data, dict), data
+                data_id = data.get("data_id")
                 data = call_mapper(mapper, parent, data)
-                n = parent.add(data)
+                n = parent.add(data, data_id=data_id)
             else:
                 raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
 
@@ -554,6 +605,18 @@ class Tree:
 
         if isinstance(file_meta, dict):
             file_meta.update(obj["meta"])
+
+        key_map = obj["meta"].get("$key_map", {})
+        inverse_key_map = {v: k for k, v in key_map.items()}
+        # print("inverse_key_map", inverse_key_map)
+        value_map = obj["meta"].get("$value_map", {})
+        # print("value_map", value_map)
+        for _parent_idx, data in obj["nodes"]:
+            print("data", data)
+            if isinstance(data, dict):
+                cls._uncompress_entry(data, inverse_key_map, value_map)
+                print("     -> ", data)
+
         nodes = obj["nodes"]
         return cls._from_list(nodes, mapper=mapper)
 

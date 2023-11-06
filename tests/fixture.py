@@ -25,6 +25,14 @@ class Person:
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
 
+    # def __eq__(self, other):
+    #     return (
+    #         self.__class__ == other.__class__
+    #         and self.guid == other.guid
+    #         and self.name == other.name
+    #         and self.age == other.age
+    #     )
+
 
 class Department:
     def __init__(self, name, *, guid=None) -> None:
@@ -33,6 +41,13 @@ class Department:
 
     def __repr__(self) -> str:
         return f"Department<{self.name}>"
+
+    # def __eq__(self, other):
+    #     return (
+    #         self.__class__ == other.__class__
+    #         and self.guid == other.guid
+    #         and self.name == other.name
+    #     )
 
 
 def create_tree(
@@ -79,10 +94,10 @@ def create_tree(
             ├── Node<'Person<Charleen, 43>', data_id={345-456}>
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
-        dev = tree.add(Department("Development"))
+        dev = tree.add(Department("Development", guid="{012-345}"))
         dev.add(Person("Alice", age=23, guid="{123-456}"))
         dev.add(Person("Bob", age=32, guid="{234-456}"))
-        markt = tree.add(Department("Marketing"))
+        markt = tree.add(Department("Marketing", guid="{012-456}"))
         charleen = markt.add(Person("Charleen", age=43, guid="{345-456}"))
         markt.add(Person("Dave", age=54, guid="{456-456}"))
         if clones:
@@ -93,7 +108,7 @@ def create_tree(
     # Since the output is only displayed when a test fails, it may be handy to
     # see (unless caller modifies afterwards and then prints):
     if print:
-        tree.print()
+        tree.print(repr="{node}")
 
     return tree
 

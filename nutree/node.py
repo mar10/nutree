@@ -1281,6 +1281,21 @@ class Node:
         return res
 
     @classmethod
+    def _compress_entry(cls, data: dict | str, key_map: dict, value_map: dict) -> None:
+        if isinstance(data, str):
+            return
+        for key, value in list(data.items()):
+            if key in key_map:
+                short_key = key_map[key]
+                data[short_key] = data.pop(key)
+            else:
+                short_key = key
+
+            if short_key in value_map:
+                data[short_key] = value_map[short_key][value]
+        return
+
+    @classmethod
     def _make_list_entry(cls, node: Node) -> dict:
         node_data = node._data
         is_custom_id = node._data_id != hash(node_data)
@@ -1304,7 +1319,13 @@ class Node:
             data["data_id"] = node._data_id
         return data
 
-    def to_list_iter(self, *, mapper: MapperCallbackType = None) -> Iterator[Dict]:
+    def to_list_iter(
+        self,
+        *,
+        mapper: Optional[MapperCallbackType] = None,
+        key_map: Optional[dict] = None,
+        value_map: Optional[dict] = None,
+    ) -> Iterator[Dict]:
         """Yield children as parent-referencing list.
 
         ```py
@@ -1317,6 +1338,17 @@ class Node:
         #: simply store a reference.
         clone_idx_and_kind_map = {}
         parent_id_map = {self._node_id: 0}
+        key_map = {} if key_map is None else key_map
+        if value_map is None:
+            value_map = {}
+        else:
+            # Convert value_map entries from lists to dicts for faster lookup
+            # of the index.
+            # E.g. `{'t': ['person', 'dept']}` -> {'t': {'person': 0, 'dept': 1}}`
+            value_map = {
+                k: {v: i for i, v in enumerate(a)} for k, a in value_map.items()
+            }
+            # print("value_map", value_map)
 
         for id_gen, node in enumerate(self, 1):
             # Compact mode: use integer sequence as keys
@@ -1335,6 +1367,7 @@ class Node:
             # If node is a 2nd occurence of a clone, only store the index of the
             # first occurence and do not call the mapper
             node_kind = getattr(node, "kind", None)
+
             clone_idx, clone_kind = clone_idx_and_kind_map.get(data_id, (None, None))
             if clone_idx:
                 if node_kind == clone_kind:
@@ -1350,6 +1383,10 @@ class Node:
 
             # Let caller serialize custom data objects
             data = call_mapper(mapper, node, data)
+
+            # Compress data if requested
+            if key_map or value_map:
+                self._compress_entry(data, key_map, value_map)
 
             yield (parent_idx, data)
         return

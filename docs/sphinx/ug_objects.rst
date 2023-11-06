@@ -79,7 +79,8 @@ Shadow Attributes (Attribute Aliasing)
 
 When storing arbitrary objects within a tree node, all its attributes must be 
 accessed through the ``node.data`` attribute. |br|
-This can be simplified by using the ``shadow_attrs`` argument::
+This can be simplified by using the ``shadow_attrs`` argument, which allow to
+access ``node.data.age`` as ``node.age`` for example::
 
     tree = Tree("Persons", shadow_attrs=True)
     dev = tree.add(Department("Development"))
@@ -113,49 +114,3 @@ This can be simplified by using the ``shadow_attrs`` argument::
 
     Note also that shadow attributes are readonly.
 
-Serialize
----------
-
-In order to (de)serialize arbitrary data objects, we need to implement 
-`mappers`::
-
-    def serialize_mapper(node, data):
-        if isinstance(node.data, Department):
-            data["type"] = "dept"
-            data["name"] = node.data.name
-        elif isinstance(node.data, Person):
-            data["type"] = "person"
-            data["name"] = node.data.name
-            data["age"] = node.data.age
-            data["guid"] = node.data.guid
-        return data
-
-    def deserialize_mapper(parent, data):
-        node_type = data["type"]
-        if node_type == "person":
-            data = Person(name=data["name"], age=data["age"], guid=data["guid"])
-        elif node_type == "dept":
-            data = Department(name=data["name"])
-        return data
-
-When we call ::
-
-    with open(path, "w") as fp:
-        tree.save(fp, mapper=serialize_mapper)
-
-the above tree would be written as ::
- 
-  [
-    [0, { "type": "dept", "name": "Development" }],
-    [1, { "type": "person", "name": "Alice", "age": 23, "guid": "{123-456}" }],
-    [1, { "type": "person", "name": "Bob", "age": 32, "guid": "{234-456}" }],
-    [1, { "type": "person", "name": "Charleen", "age": 43, "guid": "{345-456}" }],
-    [0, { "type": "dept", "name": "Marketing" }],
-    [5, 4],
-    [5, { "type": "person", "name": "Dave", "age": 54, "guid": "{456-456}" }]
-  ]
-
-Similarly load a tree from disk::
-
-    with open(path, "r") as fp:
-        tree = Tree.load(fp, mapper=deserialize_mapper)
