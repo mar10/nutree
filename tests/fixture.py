@@ -111,7 +111,6 @@ def create_tree(
     # see (unless caller modifies afterwards and then prints):
     if print:
         tree.print(repr="{node}")
-
     return tree
 
 
@@ -150,8 +149,8 @@ def create_typed_tree(
 
     elif style == "objects":
         """
-        TypedTree<'4353629968'>
-        ├── department → Department<Development>
+        TypedTree<'*'>
+        ├── org_unit → Department<Development>
         │   ├── manager → Person<Alice, 23>
         │   ├── member → Person<Bob, 32>
         │   ╰── member → Person<Charleen, 43>
@@ -159,11 +158,11 @@ def create_typed_tree(
             ├── member → Person<Charleen, 43>
             ╰── manager → Person<Dave, 54>
         """
-        dev = tree.add(Department("Development"), kind="department")
+        dev = tree.add(Department("Development", guid="{012-345}"), kind="org_unit")
         dev.add(Person("Alice", age=23, guid="{123-456}"), kind="manager")
         dev.add(Person("Bob", age=32, guid="{234-456}"), kind="member")
 
-        markt = tree.add(Department("Marketing"), kind="department")
+        markt = tree.add(Department("Marketing", guid="{345-456}"), kind="org_unit")
         charleen = markt.add(
             Person("Charleen", age=43, guid="{345-456}"), kind="member"
         )
@@ -177,7 +176,7 @@ def create_typed_tree(
     # Since the output is only displayed when a test fails, it may be handy to
     # see (unless caller modifies afterwards and then prints):
     if print:
-        tree.print()
+        tree.print(repr="{node}")
 
     return tree
 

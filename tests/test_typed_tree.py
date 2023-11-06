@@ -26,9 +26,10 @@ class TestTypedTree:
         func = tree.add("func1", kind="function")
 
         assert isinstance(func, TypedNode)
+        print(f"{func}")
         assert (
             re.sub(r"data_id=[-\d]+>", "data_id=*>", f"{func}")
-            == "TypedNode<'func1', data_id=*>"
+            == "TypedNode<kind=function, func1, data_id=*>"
         )
 
         fail1 = func.add("fail1", kind="failure")

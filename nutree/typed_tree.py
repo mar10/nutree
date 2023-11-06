@@ -70,8 +70,11 @@ class TypedNode(Node):
         # del self._children
         # self._child_map: Dict[Node] = None
 
-    # def __repr__(self) -> str:
-    #     return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}<kind={self.kind}, "
+            f"{self.name}, data_id={self.data_id!r}>"
+        )
 
     # @property
     # def name(self) -> str:
@@ -713,13 +716,20 @@ class TypedTree(Tree):
         """
         # TypedTrees can assume reasaonable defaults for key_map and value_map
         if key_map is True:
-            key_map = {"data_id": "i", "kind": "k"}
-        if value_map is True:
-            counter = Counter()
-            for n in self:
-                counter[n.kind] += 1
-            value_map = {"kind": list(counter.keys())}
-            # print("value_map -> ", value_map)
+            key_map = {"data_id": "i", "str": "s", "kind": "k"}
+
+        if value_map is True or isinstance(value_map, dict):
+            if value_map is True:
+                value_map = {}
+
+            if "kind" not in value_map:
+                counter = Counter()
+                for n in self:
+                    counter[n.kind] += 1
+                value_map.update({"kind": list(counter.keys())})
+                # print("value_map -> ", value_map)
+        else:
+            assert value_map is False, value_map
 
         return super().save(
             target,

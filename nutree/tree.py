@@ -500,9 +500,14 @@ class Tree:
         # target is a file object now
 
         if key_map is True:
-            key_map = {"data_id": "i"}
+            key_map = {"data_id": "i", "str": "s"}
+        elif key_map is False:
+            key_map = {}
+
         if value_map is True:
             value_map = {}  # no default value mapping for plain Tree
+        elif value_map is False:
+            value_map = {}
 
         header = {
             "$generator": f"nutree/{get_version()}",
@@ -510,6 +515,7 @@ class Tree:
         }
         if key_map:
             header["$key_map"] = key_map
+
         if value_map:
             header["$value_map"] = value_map
 
@@ -612,10 +618,10 @@ class Tree:
         value_map = obj["meta"].get("$value_map", {})
         # print("value_map", value_map)
         for _parent_idx, data in obj["nodes"]:
-            print("load data", data)
+            # print("load data", data)
             if isinstance(data, dict):
                 cls._uncompress_entry(data, inverse_key_map, value_map)
-                print("      -> ", data)
+                # print("      -> ", data)
 
         nodes = obj["nodes"]
         return cls._from_list(nodes, mapper=mapper)
