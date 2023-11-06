@@ -7,6 +7,7 @@
 import json
 import pprint
 import tempfile
+from typing import Tuple
 
 from nutree import Node, Tree
 from nutree.common import FILE_FORMAT_VERSION
@@ -73,7 +74,7 @@ class TestSerialize:
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
 
-        def _get_result(fp, *, print=False) -> tuple[str, dict]:
+        def _get_result(fp, *, print=False) -> Tuple[str, dict]:
             fp.seek(0)
             text = fp.read()
             data = json.loads(text)
@@ -271,7 +272,7 @@ class TestSerialize:
             ╰── TypedNode<kind=manager, Person<Dave, 54>, data_id='{456-456}'>
         """
 
-        def _get_result(fp, *, print=False) -> tuple[str, dict]:
+        def _get_result(fp, *, print=False) -> Tuple[str, dict]:
             fp.seek(0)
             text = fp.read()
             data = json.loads(text)
