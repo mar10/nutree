@@ -1291,8 +1291,8 @@ class Node:
             else:
                 short_key = key
 
-            if short_key in value_map:
-                data[short_key] = value_map[short_key][value]
+            if key in value_map:
+                data[short_key] = value_map[key][value]
         return
 
     @classmethod

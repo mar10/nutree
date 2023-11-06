@@ -150,28 +150,21 @@ class TestSerialize:
                 assert data["nodes"][1][1]["i"] == "{123-456}"  # Person
                 assert data["nodes"][1][1]["type"] == "person"
             elif mode == "key_map":
-                key_map = {
-                    "type": "t",
-                    "name": "n",
-                    "age": "a",
-                    # "guid": "g",
-                    # "data_id": "i",
-                }
-                value_map = {"t": ["person", "dept"]}
-                # tuple_map = {"t": ["person", "dept"]]}
-
                 # Serialize
-                tree.save(
-                    fp,
-                    mapper=serialize_mapper,
-                    key_map=key_map,
-                    value_map=value_map,
-                )
+                key_map = {"type": "t", "name": "n", "age": "a", "data_id": "i"}
+                tree.save(fp, mapper=serialize_mapper, key_map=key_map)
                 text, data = _get_result(fp, print=True)
-                assert len(text) == 468
-                assert data[0]["type"] == "dept"
+                assert len(text) == 456
+                assert '"i":"{012-345}"' in text
+                assert '"i":"{123-456}"' in text
+                assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
+                assert data["nodes"][0][1]["t"] == "dept"
+                assert data["nodes"][1][1]["i"] == "{123-456}"  # Person
+                assert data["nodes"][1][1]["t"] == "person"
             elif mode == "value_map":
                 # Serialize
+                key_map = {"type": "t", "name": "n", "age": "a", "data_id": "i"}
+                value_map = {"type": ["person", "dept"]}
                 tree.save(
                     fp,
                     mapper=serialize_mapper,
@@ -179,8 +172,13 @@ class TestSerialize:
                     value_map=value_map,
                 )
                 text, data = _get_result(fp, print=True)
-                assert len(text) == 4
-                assert data[0]["type"] == "dept"
+                assert len(text) == 458
+                assert '"i":"{012-345}"' in text
+                assert '"i":"{123-456}"' in text
+                assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
+                assert data["nodes"][0][1]["t"] == 1
+                assert data["nodes"][1][1]["i"] == "{123-456}"  # Person
+                assert data["nodes"][1][1]["t"] == 0
             else:
                 raise ValueError(f"Invalid mode: {mode!r}")
 
@@ -215,12 +213,17 @@ class TestSerialize:
         assert tree._self_check()
         assert tree_2._self_check()
 
-    def test_serialize_objects(self):
-        """Save/load an object tree with clones."""
+    def test_serialize_objects_verbose(self):
         self._test_serialize_objects(mode="verbose")
+
+    def test_serialize_objects_default(self):
         self._test_serialize_objects(mode="default")
-        # self._test_serialize_objects(mode="key_map")
-        # self._test_serialize_objects(mode="value_map")
+
+    def test_serialize_objects_key_map(self):
+        self._test_serialize_objects(mode="key_map")
+
+    def test_serialize_objects(self):
+        self._test_serialize_objects(mode="value_map")
 
     def test_serialize_typed_tree_plain_str(self):
         tree = fixture.create_typed_tree(clones=True)
