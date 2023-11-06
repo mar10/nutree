@@ -2,6 +2,8 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
+# ruff: noqa: T201, T203 `print` found
+
 import json
 import pprint
 import tempfile
@@ -87,7 +89,7 @@ class TestSerialize:
 
         def serialize_mapper(node, data):
             if isinstance(node.data, fixture.Department):
-                # _calc_id() already makes sure that the 'data_id' is set to guid
+                # _calc_id() already makes sure that the 'data_id' is set to `guid`
                 # data["guid"] = node.data.guid
                 data["type"] = "dept"
                 data["name"] = node.data.name

@@ -612,10 +612,10 @@ class Tree:
         value_map = obj["meta"].get("$value_map", {})
         # print("value_map", value_map)
         for _parent_idx, data in obj["nodes"]:
-            print("data", data)
+            # print("data", data)
             if isinstance(data, dict):
                 cls._uncompress_entry(data, inverse_key_map, value_map)
-                print("     -> ", data)
+                # print("     -> ", data)
 
         nodes = obj["nodes"]
         return cls._from_list(nodes, mapper=mapper)
