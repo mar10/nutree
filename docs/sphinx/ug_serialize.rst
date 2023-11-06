@@ -141,7 +141,87 @@ Similarly load a tree from disk::
 Compact Format
 ~~~~~~~~~~~~~~
 
-.. todo:: Compact Format
+File size can be reduced by using a compact format that removes redundancy: |br|
+Keys like ``"type"`` or ``"name"`` are repeated for every node. 
+
+We can pass a ``key_map`` argument to :meth:`~nutree.tree.Tree.save()` in order
+to shorten the key names::
+
+    key_map = {
+        "type": "t",
+        "name": "n",
+        "age": "a",
+        "guid": "g",
+    }
+    tree.save(path, mapper=serialize_mapper, key_map=key_map)
+
+The result will look like this::
+
+    {
+        "meta": {
+            "$generator": "nutree/0.7.0",
+            "$format_version": "1.0",
+            "$key_map": { "type": "t", "name": "n", "age": "a", "guid": "g" }
+        },
+        "nodes": [
+            [0, { "t": "dept", "n": "Development" }],
+            [1, { "t": "person", "n": "Alice", "a": 23, "g": "{123-456}" }],
+            [1, { "t": "person", "n": "Bob", "a": 32, "g": "{234-456}" }],
+            [1, { "t": "person", "n": "Charleen", "a": 43, "g": "{345-456}" }],
+            [0, { "t": "dept", "n": "Marketing" }],
+            [5, 4],
+            [5, { "t": "person", "n": "Dave", "a": 54, "g": "{456-456}" }]
+        ]
+    }
+
+Still some values like ``"dept"`` or ``"person"`` are repeated. |br|
+We can pass a ``value_map`` argument to :meth:`~nutree.tree.Tree.save()` 
+in order to replace repeating values for a distinct key with an index into a
+list of values. Note that *value_map* expects unmapped key names, i.e. 'type' 
+instead of 't'::
+
+    value_map = {
+        "type": ["dept", "person"]
+    }
+    tree.save(path, mapper=serialize_mapper, key_map=key_map, value_map=value_map)
+
+The result will look like this::
+
+    {
+        "meta": {
+            "$generator": "nutree/0.7.0",
+            "$format_version": "1.0",
+            "$key_map": { "type": "t", "name": "n", "age": "a", "guid": "g" },
+            "$value_map": { "type": ["dept", "person"] }
+        },
+        "nodes": [
+            [0, { "t": 0, "n": "Development" }],
+            [1, { "t": 1, "n": "Alice", "a": 23, "g": "{123-456}" }],
+            [1, { "t": 1, "n": "Bob", "a": 32, "g": "{234-456}" }],
+            [1, { "t": 1, "n": "Charleen", "a": 43, "g": "{345-456}" }],
+            [0, { "t": 0, "n": "Marketing" }],
+            [5, 4],
+            [5, { "t": 1, "n": "Dave", "a": 54, "g": "{456-456}" }]
+        ]
+    }
+
+.. note ::
+
+    The ``value_map`` is only useful for keys that have a limited number of 
+    distinct values.
+    If the number of distinct values is close to the number of nodes, the 
+    ``value_map`` will actually increase the file size.
+
+By default ``key_map`` is set to ``True`` which expands to 
+``key_map = {"data_id": "i", "str": "s"}``. |br|
+There is no default for ``value_map``.
+
+For a :class:`~nutree.typed_tree.TypedTree` the defaults are different::
+
+    key_map = key_map = {"data_id": "i", "str": "s", "kind": "k"}
+    value_map = {
+        "kind": [<distinct `kind` values>]
+    }
 
 (De)Serialize as List of Dicts
 ------------------------------
