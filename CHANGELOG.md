@@ -1,8 +1,10 @@
 # Changelog
 
 ## 0.6.1 (unreleased)
+
 - Add optional `tree.print(..., file=IO)` argument.
 - Fix invalid UniqueConstraint error message when loading a TypedTree.
+- Support compact serialization forrmat.
 
 ## 0.6.0 (2023-11-01)
 

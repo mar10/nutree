@@ -10,6 +10,9 @@
 Native Format
 -------------
 
+Plain String Nodes
+~~~~~~~~~~~~~~~~~~
+
 Assuming we have a tree like this::
 
     Tree<'fixture'>
@@ -26,9 +29,7 @@ Assuming we have a tree like this::
 We can serialize this tree in an efficient JSON based text format::
 
     tree.save(path)
-
     # or
-
     with open(path, "w") as fp:
         tree.save(fp)
 
@@ -51,6 +52,7 @@ and retrieved like so::
     assert meta["foo"] == "bar"
 
 The result will be written as a compact list of (parent-index, data) tuples. |br|
+The parent index starts with #1, since #0 is reserved for the system root node. |br|
 Note how the 2nd occurence of 'a11' only stores the index of the first 
 instance::
 
@@ -74,9 +76,152 @@ instance::
     }
 
 
-.. seealso :: This example tree only contains plain string data.
-    Read :doc:`ug_objects` on how to (de)serialize arbitrary objects.
+Arbitrary Objects
+~~~~~~~~~~~~~~~~~
 
+Assuming we have a tree with data objects like this::
+
+    Tree<'company'>
+    ├── Node<'Department<Development>', data_id=125578508105>
+    │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
+    │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
+    │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
+    ╰── Node<'Department<Marketing>', data_id=125578508063>
+        ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+        ╰── Node<'Person<Dave, 54>', data_id={456-456}>
+
+In order to (de)serialize arbitrary data objects, we need to implement 
+`mappers`::
+
+    def serialize_mapper(node, data):
+        if isinstance(node.data, Department):
+            data["type"] = "dept"
+            data["name"] = node.data.name
+        elif isinstance(node.data, Person):
+            data["type"] = "person"
+            data["name"] = node.data.name
+            data["age"] = node.data.age
+            data["guid"] = node.data.guid
+        return data
+
+    def deserialize_mapper(parent, data):
+        node_type = data["type"]
+        if node_type == "person":
+            data = Person(name=data["name"], age=data["age"], guid=data["guid"])
+        elif node_type == "dept":
+            data = Department(name=data["name"])
+        return data
+
+When we call ::
+
+    tree.save(path, mapper=serialize_mapper)
+
+the above tree would be written as ::
+ 
+    {
+        "meta": {
+            "$generator": "nutree/0.5.1",
+            "$format_version": "1.0",
+        },
+        "nodes": [
+            [0, { "type": "dept", "name": "Development" }],
+            [1, { "type": "person", "name": "Alice", "age": 23, "guid": "{123-456}" }],
+            [1, { "type": "person", "name": "Bob", "age": 32, "guid": "{234-456}" }],
+            [1, { "type": "person", "name": "Charleen", "age": 43, "guid": "{345-456}" }],
+            [0, { "type": "dept", "name": "Marketing" }],
+            [5, 4],
+            [5, { "type": "person", "name": "Dave", "age": 54, "guid": "{456-456}" }]
+        ]
+    }
+
+Similarly load a tree from disk::
+
+    tree = Tree.load(path, mapper=deserialize_mapper)
+
+Compact Format
+~~~~~~~~~~~~~~
+
+File size can be reduced by using a compact format that removes redundancy: |br|
+Keys like ``"type"`` or ``"name"`` are repeated for every node. 
+
+We can pass a ``key_map`` argument to :meth:`~nutree.tree.Tree.save()` in order
+to shorten the key names::
+
+    key_map = {
+        "type": "t",
+        "name": "n",
+        "age": "a",
+        "guid": "g",
+    }
+    tree.save(path, mapper=serialize_mapper, key_map=key_map)
+
+The result will look like this::
+
+    {
+        "meta": {
+            "$generator": "nutree/0.7.0",
+            "$format_version": "1.0",
+            "$key_map": { "type": "t", "name": "n", "age": "a", "guid": "g" }
+        },
+        "nodes": [
+            [0, { "t": "dept", "n": "Development" }],
+            [1, { "t": "person", "n": "Alice", "a": 23, "g": "{123-456}" }],
+            [1, { "t": "person", "n": "Bob", "a": 32, "g": "{234-456}" }],
+            [1, { "t": "person", "n": "Charleen", "a": 43, "g": "{345-456}" }],
+            [0, { "t": "dept", "n": "Marketing" }],
+            [5, 4],
+            [5, { "t": "person", "n": "Dave", "a": 54, "g": "{456-456}" }]
+        ]
+    }
+
+Still some values like ``"dept"`` or ``"person"`` are repeated. |br|
+We can pass a ``value_map`` argument to :meth:`~nutree.tree.Tree.save()` 
+in order to replace repeating values for a distinct key with an index into a
+list of values. Note that *value_map* expects unmapped key names, i.e. 'type' 
+instead of 't'::
+
+    value_map = {
+        "type": ["dept", "person"]
+    }
+    tree.save(path, mapper=serialize_mapper, key_map=key_map, value_map=value_map)
+
+The result will look like this::
+
+    {
+        "meta": {
+            "$generator": "nutree/0.7.0",
+            "$format_version": "1.0",
+            "$key_map": { "type": "t", "name": "n", "age": "a", "guid": "g" },
+            "$value_map": { "type": ["dept", "person"] }
+        },
+        "nodes": [
+            [0, { "t": 0, "n": "Development" }],
+            [1, { "t": 1, "n": "Alice", "a": 23, "g": "{123-456}" }],
+            [1, { "t": 1, "n": "Bob", "a": 32, "g": "{234-456}" }],
+            [1, { "t": 1, "n": "Charleen", "a": 43, "g": "{345-456}" }],
+            [0, { "t": 0, "n": "Marketing" }],
+            [5, 4],
+            [5, { "t": 1, "n": "Dave", "a": 54, "g": "{456-456}" }]
+        ]
+    }
+
+.. note ::
+
+    The ``value_map`` is only useful for keys that have a limited number of 
+    distinct values.
+    If the number of distinct values is close to the number of nodes, the 
+    ``value_map`` will actually increase the file size.
+
+By default ``key_map`` is set to ``True`` which expands to 
+``key_map = {"data_id": "i", "str": "s"}``. |br|
+There is no default for ``value_map``.
+
+For a :class:`~nutree.typed_tree.TypedTree` the defaults are different::
+
+    key_map = key_map = {"data_id": "i", "str": "s", "kind": "k"}
+    value_map = {
+        "kind": [<distinct `kind` values>]
+    }
 
 (De)Serialize as List of Dicts
 ------------------------------

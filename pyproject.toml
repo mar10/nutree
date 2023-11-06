@@ -35,6 +35,7 @@ select = [
   "F",  # pyflakes
   "G",  # flake8-logging-format
   "UP", # pyupgrade
+  "T",  # print, ...
   # "D",   # pydocstyle
 ]
 ignore = [

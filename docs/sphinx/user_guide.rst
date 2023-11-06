@@ -53,7 +53,7 @@ meta (dict, readonly):
   to modify this value.
 
 node_id (int, readonly):
-  The unique key of a `Node` instance. This value is calculated as ``hash(node)`` 
+  The unique key of a `Node` instance. This value is calculated as ``id(node)`` 
   by default, but can be set to a custom value in the constructor.
   It cannot be changed later.
 
@@ -104,8 +104,8 @@ kind (str, readonly):
     ug_pretty_print
     ug_mutation
     ug_clones
-    ug_serialize
     ug_objects
+    ug_serialize
     ug_diff
     ug_graphs
     ug_advanced

@@ -2,6 +2,8 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
+# ruff: noqa: T201, T203 `print` found
+
 import os
 import re
 from pathlib import Path
@@ -93,6 +95,13 @@ class TestBasics:
         assert node._meta == {"qux": False}
         node.clear_meta()
         assert node._meta is None
+
+    # def test_logger(self):
+    #     tree= fixture.create_tree()
+    #     logging.basicConfig()
+    #     logger = logging.getLogger()
+    #     logger.error(tree.format())
+    #     logger.error("DONE")
 
 
 class TestNavigate:

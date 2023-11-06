@@ -5,8 +5,9 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 """
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Union
+from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
 
 from nutree.common import (
     ROOT_ID,
@@ -69,8 +70,11 @@ class TypedNode(Node):
         # del self._children
         # self._child_map: Dict[Node] = None
 
-    # def __repr__(self) -> str:
-    #     return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}<kind={self.kind}, "
+            f"{self.name}, data_id={self.data_id!r}>"
+        )
 
     # @property
     # def name(self) -> str:
@@ -696,6 +700,44 @@ class TypedTree(Tree):
             node_idx_map[idx] = n
 
         return tree
+
+    def save(
+        self,
+        target: Union[IO[str], str, Path],
+        *,
+        mapper: Optional[MapperCallbackType] = None,
+        meta: Optional[dict] = None,
+        key_map: Union[dict, bool] = True,
+        value_map: Union[dict, Iterable[str], bool] = True,
+    ) -> None:
+        """Store tree in a compact JSON file stream.
+
+        See also :meth:`to_list_iter` and :meth:`load` methods.
+        """
+        # TypedTrees can assume reasaonable defaults for key_map and value_map
+        if key_map is True:
+            key_map = {"data_id": "i", "str": "s", "kind": "k"}
+
+        if value_map is True or isinstance(value_map, dict):
+            if value_map is True:
+                value_map = {}
+
+            if "kind" not in value_map:
+                counter = Counter()
+                for n in self:
+                    counter[n.kind] += 1
+                value_map.update({"kind": list(counter.keys())})
+                # print("value_map -> ", value_map)
+        else:
+            assert value_map is False, value_map
+
+        return super().save(
+            target,
+            mapper=mapper,
+            meta=meta,
+            key_map=key_map,
+            value_map=value_map,
+        )
 
     @classmethod
     def load(
