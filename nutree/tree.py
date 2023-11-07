@@ -59,7 +59,7 @@ class Tree:
     """
 
     #: Default connector prefixes ``format(style=...)`` argument.
-    default_connector_style = "round43"
+    DEFAULT_CONNECTOR_STYLE = "round43"
     #: Default value for ``key_map`` argument when saving
     DEFAULT_KEY_MAP = {"data_id": "i", "str": "s"}
     #: Default value for ``value_map`` argument when saving
