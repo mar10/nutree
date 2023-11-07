@@ -431,7 +431,13 @@ class TestSerialize:
         """Save/load an object tree with clones, using  derived custom tree."""
 
         class MyTree(TypedTree):
-            DEFAULT_KEY_MAP = TypedTree.DEFAULT_KEY_MAP | {
+            # TODO: when Py38 is dropped:
+            # DEFAULT_KEY_MAP = TypedTree.DEFAULT_KEY_MAP
+            #                       | { "type": "t", "name": "n", "age": "a", }
+            DEFAULT_KEY_MAP = {
+                "data_id": "i",
+                "str": "s",
+                "kind": "k",
                 "type": "t",
                 "name": "n",
                 "age": "a",

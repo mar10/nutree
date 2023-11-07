@@ -226,7 +226,7 @@ For a :class:`~nutree.typed_tree.TypedTree` the defaults are different::
 Using Derived Classes
 ~~~~~~~~~~~~~~~~~~~~~
 
-Instead of passing a ``mapper`` function, we can also use a derived class::
+Instead of passing ``mapper`` functions and args, we can also use a derived class::
 
     class MyTree(TypedTree):
         DEFAULT_KEY_MAP = TypedTree.DEFAULT_KEY_MAP | { "type": "t", "name": "n", "age": "a" }
