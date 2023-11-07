@@ -7,16 +7,18 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
+from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 from nutree.common import (
     ROOT_ID,
     CalcIdCallbackType,
     IterMethod,
+    KeyMapType,
     MapperCallbackType,
     NodeFactoryType,
     PredicateCallbackType,
     UniqueConstraintError,
+    ValueMapType,
     call_mapper,
 )
 
@@ -606,6 +608,11 @@ class TypedTree(Tree):
     See :ref:`typed-tree` for details.
     """
 
+    #: Default value for ``key_map`` argument when saving
+    DEFAULT_KEY_MAP = {"data_id": "i", "str": "s", "kind": "k"}
+    #: Default value for ``value_map`` argument when saving
+    DEFAULT_VALUE_MAP = {}  # expands to { "kind": [<distinct `kind` values>] }
+
     def __init__(
         self,
         name: str = None,
@@ -707,20 +714,19 @@ class TypedTree(Tree):
         *,
         mapper: Optional[MapperCallbackType] = None,
         meta: Optional[dict] = None,
-        key_map: Union[dict, bool] = True,
-        value_map: Union[dict, Iterable[str], bool] = True,
+        key_map: Union[KeyMapType, bool] = True,
+        value_map: Union[ValueMapType, bool] = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
         See also :meth:`to_list_iter` and :meth:`load` methods.
         """
         # TypedTrees can assume reasaonable defaults for key_map and value_map
-        if key_map is True:
-            key_map = {"data_id": "i", "str": "s", "kind": "k"}
+        # (key_map is evaluated in base class from TypedTree.DEFAULT_KEY_MAP)
 
         if value_map is True or isinstance(value_map, dict):
             if value_map is True:
-                value_map = {}
+                value_map = self.DEFAULT_VALUE_MAP.copy()
 
             if "kind" not in value_map:
                 counter = Counter()

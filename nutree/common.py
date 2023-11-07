@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
@@ -28,6 +28,12 @@ CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 
 #: Type of ``Tree(..., factory)```
 NodeFactoryType = Type["Node"]
+
+#: Type of ``tree.save(..., key_map)``
+KeyMapType = Dict[str, str]
+
+#: Type of ``tree.save(..., value_map)``
+ValueMapType = Dict[str, List[str]]
 
 
 class TreeError(RuntimeError):

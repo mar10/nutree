@@ -17,6 +17,7 @@ from .common import (
     AmbiguousMatchError,
     DataIdType,
     IterMethod,
+    KeyMapType,
     MapperCallbackType,
     PredicateCallbackType,
     SelectBranch,
@@ -24,6 +25,7 @@ from .common import (
     StopTraversal,
     TraversalCallbackType,
     UniqueConstraintError,
+    ValueMapType,
     call_mapper,
     call_predicate,
     call_traversal_cb,
@@ -1281,7 +1283,9 @@ class Node:
         return res
 
     @classmethod
-    def _compress_entry(cls, data: dict | str, key_map: dict, value_map: dict) -> None:
+    def _compress_entry(
+        cls, data: dict | str, key_map: KeyMapType, value_map: ValueMapType
+    ) -> None:
         if isinstance(data, str):
             return
         for key, value in list(data.items()):
@@ -1323,8 +1327,8 @@ class Node:
         self,
         *,
         mapper: Optional[MapperCallbackType] = None,
-        key_map: Optional[dict] = None,
-        value_map: Optional[dict] = None,
+        key_map: Optional[KeyMapType] = None,
+        value_map: Optional[ValueMapType] = None,
     ) -> Iterator[Dict]:
         """Yield children as parent-referencing list.
 

@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
+from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 from nutree.diff import diff_tree
 
@@ -20,10 +20,12 @@ from .common import (
     CalcIdCallbackType,
     DataIdType,
     IterMethod,
+    KeyMapType,
     MapperCallbackType,
     NodeFactoryType,
     PredicateCallbackType,
     TraversalCallbackType,
+    ValueMapType,
     call_mapper,
     get_version,
 )
@@ -58,6 +60,10 @@ class Tree:
 
     #: Default connector prefixes ``format(style=...)`` argument.
     default_connector_style = "round43"
+    #: Default value for ``key_map`` argument when saving
+    DEFAULT_KEY_MAP = {"data_id": "i", "str": "s"}
+    #: Default value for ``value_map`` argument when saving
+    DEFAULT_VALUE_MAP = {}
 
     def __init__(
         self,
@@ -467,8 +473,8 @@ class Tree:
         self,
         *,
         mapper: Optional[MapperCallbackType] = None,
-        key_map: Optional[dict] = None,
-        value_map: Optional[dict] = None,
+        key_map: Optional[KeyMapType] = None,
+        value_map: Optional[ValueMapType] = None,
     ) -> Iterator[Dict]:
         """Yield a parent-referencing list of child nodes."""
         return self._root.to_list_iter(
@@ -481,8 +487,8 @@ class Tree:
         *,
         mapper: Optional[MapperCallbackType] = None,
         meta: Optional[dict] = None,
-        key_map: Union[dict, bool] = True,
-        value_map: Union[dict, Iterable[str], bool] = True,
+        key_map: Union[KeyMapType, bool] = True,
+        value_map: Union[ValueMapType, bool] = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
@@ -500,12 +506,12 @@ class Tree:
         # target is a file object now
 
         if key_map is True:
-            key_map = {"data_id": "i", "str": "s"}
+            key_map = self.DEFAULT_KEY_MAP
         elif key_map is False:
             key_map = {}
 
         if value_map is True:
-            value_map = {}  # no default value mapping for plain Tree
+            value_map = self.DEFAULT_VALUE_MAP
         elif value_map is False:
             value_map = {}
 
@@ -539,7 +545,7 @@ class Tree:
 
     @classmethod
     def _uncompress_entry(
-        cls, data: dict | str, inverse_key_map: dict, value_map: dict
+        cls, data: dict | str, inverse_key_map: dict, value_map: ValueMapType
     ) -> None:
         # if isinstance(data, str):
         #     return
