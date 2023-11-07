@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
@@ -82,7 +82,7 @@ class SkipBranch(IterationControl):
 
 
 class SelectBranch(IterationControl):
-    """Raised or returned by traversal callbacks unconditionally accept all
+    """Raised or returned by traversal callbacks to unconditionally accept all
     descendants."""
 
 
@@ -98,8 +98,14 @@ class StopTraversal(IterationControl):
         self.value = value
 
 
+#:
 PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
-MapperCallbackType = Callable[["Node", dict], Union[None, dict]]
+#:
+MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
+#: Callback for `tree.save()`
+SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
+#: Callback for `tree.load()`
+DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 # MatchCallbackType = Callable[["Node"], bool]
 TraversalCallbackType = Callable[
     ["Node", Any], Union[None, bool, "StopTraversal", "SkipBranch"]
@@ -140,7 +146,7 @@ def get_version() -> str:
     return __version__
 
 
-def call_mapper(fn, node: Node, data: dict) -> Any:
+def call_mapper(fn: Optional[MapperCallbackType], node: Node, data: dict) -> Any:
     """Call the function and normalize result and exceptions.
 
     Handles `MapperCallbackType`:

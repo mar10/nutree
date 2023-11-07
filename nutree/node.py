@@ -16,11 +16,13 @@ from .common import (
     CONNECTORS,
     AmbiguousMatchError,
     DataIdType,
+    DeserializeMapperType,
     IterMethod,
     KeyMapType,
     MapperCallbackType,
     PredicateCallbackType,
     SelectBranch,
+    SerializeMapperType,
     SkipBranch,
     StopTraversal,
     TraversalCallbackType,
@@ -103,7 +105,7 @@ class Node:
         self._children: List[Node] = None
 
         if data_id is None:
-            self._data_id: DataIdType = tree._calc_data_id(data)
+            self._data_id: DataIdType = tree.calc_data_id(data)
         else:
             self._data_id: DataIdType = data_id
 
@@ -263,7 +265,7 @@ class Node:
         else:
             new_data = data
             if data_id is None:
-                data_id = tree._calc_data_id(data)
+                data_id = tree.calc_data_id(data)
 
         if data_id is None or data_id == self._data_id:
             new_data_id = None
@@ -928,19 +930,24 @@ class Node:
             pass
         return
 
-    def from_dict(self, obj: List[Dict], *, mapper=None) -> None:
+    def from_dict(
+        self, obj: List[Dict], *, mapper: Optional[DeserializeMapperType] = None
+    ) -> None:
         """Append copies of all source children to self."""
+        # TODO:
+        # if mapper is None:
+        #     mapper = self._tree.DEFAULT_DESERIALZATION_MAPPER
         assert not self._children
         for item in obj:
             if mapper:
                 # mapper may add item['data_id']
                 # data = mapper(parent=self, item=item)
-                data = call_mapper(mapper, self, item)
+                data_obj = call_mapper(mapper, self, item)
             else:
-                data = item["data"]
+                data_obj = item["data"]
 
             child = self.append_child(
-                data, data_id=item.get("data_id"), node_id=item.get("node_id")
+                data_obj, data_id=item.get("data_id"), node_id=item.get("node_id")
             )
             child_items = item.get("children")
             if child_items:
@@ -1128,7 +1135,7 @@ class Node:
         """
         if data:
             assert data_id is None
-            data_id = self._tree._calc_data_id(data)
+            data_id = self._tree.calc_data_id(data)
         if data_id:
             assert match is None
             return [
@@ -1265,7 +1272,7 @@ class Node:
         iter_lines = self.format_iter(repr=repr, style=style, add_self=add_self)
         return join.join(iter_lines)
 
-    def to_dict(self, *, mapper: MapperCallbackType = None) -> Dict:
+    def to_dict(self, *, mapper: Optional[SerializeMapperType] = None) -> Dict:
         """Return a nested dict of this node and its children."""
         res = {
             "data": str(self.data),
@@ -1326,7 +1333,7 @@ class Node:
     def to_list_iter(
         self,
         *,
-        mapper: Optional[MapperCallbackType] = None,
+        mapper: Optional[SerializeMapperType] = None,
         key_map: Optional[KeyMapType] = None,
         value_map: Optional[ValueMapType] = None,
     ) -> Iterator[Dict]:
@@ -1336,13 +1343,18 @@ class Node:
         [(parent_key, data)]
         ```
         """
-        calc_id = self._tree._calc_data_id
+        calc_id = self._tree.calc_data_id
         #: For nodes with multiple occurrences: index of the first one
         #: For typed nodes, we must also check if the `kind` matches, before
         #: simply store a reference.
         clone_idx_and_kind_map = {}
         parent_id_map = {self._node_id: 0}
+
+        if mapper is None:
+            mapper = self._tree.serialize_mapper
+
         key_map = {} if key_map is None else key_map
+
         if value_map is None:
             value_map = {}
         else:

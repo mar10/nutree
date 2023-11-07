@@ -223,6 +223,50 @@ For a :class:`~nutree.typed_tree.TypedTree` the defaults are different::
         "kind": [<distinct `kind` values>]
     }
 
+Using Derived Classes
+~~~~~~~~~~~~~~~~~~~~~
+
+Instead of passing a ``mapper`` function, we can also use a derived class::
+
+    class MyTree(TypedTree):
+        DEFAULT_KEY_MAP = TypedTree.DEFAULT_KEY_MAP | { "type": "t", "name": "n", "age": "a" }
+        DEFAULT_VALUE_MAP = {"type": ["person", "dept"]}
+
+        def calc_data_id(tree, data):
+            if hasattr(data, "guid"):
+                return data.guid
+            return hash(data)
+
+        def serialize_mapper(self, node: Node, data: dict):
+            if isinstance(node.data, fixture.Department):
+                data["type"] = "dept"
+                data["name"] = node.data.name
+            elif isinstance(node.data, fixture.Person):
+                data["type"] = "person"
+                data["name"] = node.data.name
+                data["age"] = node.data.age
+            return data
+
+        @staticmethod
+        def deserialize_mapper(parent: Node, data: dict):
+            node_type = data["type"]
+            print("deserialize_mapper", data)
+            if node_type == "person":
+                data = fixture.Person(
+                    name=data["name"], age=data["age"], guid=data["data_id"]
+                )
+            elif node_type == "dept":
+                data = fixture.Department(name=data["name"], guid=data["data_id"])
+            print(f"deserialize_mapper -> {data}")
+            return data
+
+    tree = MyTree(name="MyTree")
+    ...
+    tree.save(path)
+    ...
+    tree.load(path)
+
+
 (De)Serialize as List of Dicts
 ------------------------------
 

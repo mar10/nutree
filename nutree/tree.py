@@ -19,11 +19,12 @@ from .common import (
     AmbiguousMatchError,
     CalcIdCallbackType,
     DataIdType,
+    DeserializeMapperType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     NodeFactoryType,
     PredicateCallbackType,
+    SerializeMapperType,
     TraversalCallbackType,
     ValueMapType,
     call_mapper,
@@ -60,17 +61,21 @@ class Tree:
 
     #: Default connector prefixes ``format(style=...)`` argument.
     DEFAULT_CONNECTOR_STYLE = "round43"
-    #: Default value for ``key_map`` argument when saving
+    #: Default value for ``save(..., key_map=...)`` argument.
     DEFAULT_KEY_MAP = {"data_id": "i", "str": "s"}
-    #: Default value for ``value_map`` argument when saving
+    #: Default value for ``save(..., value_map=...)`` argument.
     DEFAULT_VALUE_MAP = {}
+    # #: Default value for ``save(..., mapper=...)`` argument.
+    # DEFAULT_SERIALZATION_MAPPER = None
+    # #: Default value for ``load(..., mapper=...)`` argument.
+    # DEFAULT_DESERIALZATION_MAPPER = None
 
     def __init__(
         self,
-        name: str = None,
+        name: Optional[str] = None,
         *,
-        factory: NodeFactoryType = None,
-        calc_data_id: CalcIdCallbackType = None,
+        factory: Optional[NodeFactoryType] = None,
+        calc_data_id: Optional[CalcIdCallbackType] = None,
         shadow_attrs: bool = False,
     ):
         self._lock = threading.RLock()
@@ -154,7 +159,7 @@ class Tree:
         (also makes empty trees falsy)."""
         return self.count
 
-    def _calc_data_id(self, data) -> DataIdType:
+    def calc_data_id(self, data) -> DataIdType:
         """Called internally to calculate `data_id` for a `data` object.
 
         This value is used to lookup nodes by data, identify clones, and for
@@ -237,6 +242,17 @@ class Tree:
         nodes.
         """
         return len(self._nodes_by_data_id)
+
+    def serialize_mapper(self, node: Node, data: dict) -> dict | None:
+        """Used as default `mapper` argument for :meth:`save`."""
+        return data
+
+    @staticmethod
+    def deserialize_mapper(parent: Node, data: dict) -> Union[str, object] | None:
+        """Used as default `mapper` argument for :meth:`load`."""
+        raise NotImplementedError(
+            f"Override this method or pass a mapper callback to evaluate {data}."
+        )
 
     def first_child(self) -> Node | None:
         """Return the first toplevel node."""
@@ -397,7 +413,7 @@ class Tree:
         """
         if data is not None:
             assert data_id is None
-            data_id = self._calc_data_id(data)
+            data_id = self.calc_data_id(data)
 
         if data_id is not None:
             assert match is None
@@ -423,7 +439,7 @@ class Tree:
         """
         if data is not None:
             assert data_id is None
-            data_id = self._calc_data_id(data)
+            data_id = self.calc_data_id(data)
 
         if data_id is not None:
             assert match is None
@@ -448,7 +464,9 @@ class Tree:
         """
         self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
-    def to_dict_list(self, *, mapper: MapperCallbackType = None) -> List[Dict]:
+    def to_dict_list(
+        self, *, mapper: Optional[SerializeMapperType] = None
+    ) -> List[Dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         child nodes and return list of results."""
         res = []
@@ -472,7 +490,7 @@ class Tree:
     def to_list_iter(
         self,
         *,
-        mapper: Optional[MapperCallbackType] = None,
+        mapper: Optional[SerializeMapperType] = None,
         key_map: Optional[KeyMapType] = None,
         value_map: Optional[ValueMapType] = None,
     ) -> Iterator[Dict]:
@@ -485,14 +503,14 @@ class Tree:
         self,
         target: Union[IO[str], str, Path],
         *,
-        mapper: Optional[MapperCallbackType] = None,
+        mapper: Optional[SerializeMapperType] = None,
         meta: Optional[dict] = None,
         key_map: Union[KeyMapType, bool] = True,
         value_map: Union[ValueMapType, bool] = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
-        See also :meth:`to_list_iter` and :meth:`load` methods.
+        See also :ref:`serialize` and :meth:`to_list_iter` and :meth:`load` methods.
         """
         if isinstance(target, (str, Path)):
             with Path(target).open("wt", encoding="utf8") as fp:
@@ -505,6 +523,7 @@ class Tree:
                 )
         # target is a file object now
 
+        # print("key_map", key_map, self, self.DEFAULT_KEY_MAP)
         if key_map is True:
             key_map = self.DEFAULT_KEY_MAP
         elif key_map is False:
@@ -561,9 +580,13 @@ class Tree:
         return
 
     @classmethod
-    def _from_list(cls, obj: List[Dict], *, mapper=None) -> Tree:
+    def _from_list(
+        cls, obj: List[Dict], *, mapper: Optional[DeserializeMapperType] = None
+    ) -> Tree:
         tree = cls()  # Tree or TypedTree
         node_idx_map = {0: tree._root}
+        if mapper is None:
+            mapper = cls.deserialize_mapper
 
         for idx, (parent_idx, data) in enumerate(obj, 1):
             parent = node_idx_map[parent_idx]
@@ -573,13 +596,13 @@ class Tree:
             elif type(data) is int:
                 first_clone = node_idx_map[data]
                 n = parent.add(first_clone, data_id=first_clone.data_id)
-            elif mapper:
+            else:
                 assert isinstance(data, dict), data
                 data_id = data.get("data_id")
                 data = call_mapper(mapper, parent, data)
                 n = parent.add(data, data_id=data_id)
-            else:
-                raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
+            # else:
+            #     raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
 
             node_idx_map[idx] = n
 
@@ -590,7 +613,7 @@ class Tree:
         cls,
         target: Union[IO[str], str, Path],
         *,
-        mapper=None,
+        mapper: Optional[DeserializeMapperType] = None,
         file_meta: dict = None,
     ) -> Tree:
         """Create a new :class:`Tree` instance from a file path or JSON file stream.
@@ -618,11 +641,14 @@ class Tree:
         if isinstance(file_meta, dict):
             file_meta.update(obj["meta"])
 
+        # Uncompress key/value maps
         key_map = obj["meta"].get("$key_map", {})
         inverse_key_map = {v: k for k, v in key_map.items()}
         # print("inverse_key_map", inverse_key_map)
+
         value_map = obj["meta"].get("$value_map", {})
         # print("value_map", value_map)
+
         for _parent_idx, data in obj["nodes"]:
             # print("load data", data)
             if isinstance(data, dict):
@@ -732,7 +758,7 @@ class Tree:
             node_list.append(node)
             assert node._tree is self, node
             assert node in node._parent._children, node
-            # assert node._data_id == self._calc_data_id(node.data), node
+            # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
             assert (

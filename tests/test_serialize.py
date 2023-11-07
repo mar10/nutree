@@ -17,6 +17,16 @@ from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree
 from . import fixture
 
 
+def _get_fp_result(fp, *, do_print=False) -> Tuple[str, dict]:
+    fp.seek(0)
+    text = fp.read()
+    data = json.loads(text)
+    if do_print:
+        print("text", text)
+        pprint.pprint(data)
+    return text, data
+
+
 class TestSerialize:
     def setup_method(self):
         self.tree = None  # Tree("fixture")
@@ -74,21 +84,13 @@ class TestSerialize:
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
 
-        def _get_result(fp, *, print=False) -> Tuple[str, dict]:
-            fp.seek(0)
-            text = fp.read()
-            data = json.loads(text)
-            if print:
-                pprint.pprint(data)
-            return text, data
-
         def _calc_id(tree, data):
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
                 return data.guid
             return hash(data)
 
-        def serialize_mapper(node, data):
+        def serialize_mapper(node: Node, data: dict) -> dict:
             if isinstance(node.data, fixture.Department):
                 # _calc_id() already makes sure that the 'data_id' is set to `guid`
                 # data["guid"] = node.data.guid
@@ -125,7 +127,7 @@ class TestSerialize:
             if mode == "verbose":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper, key_map=False)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 477
                 assert '"data_id":"{012-345}"' in text
                 assert '"data_id":"{123-456}"' in text
@@ -142,7 +144,7 @@ class TestSerialize:
             elif mode == "default":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 478
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -154,7 +156,7 @@ class TestSerialize:
                 # Serialize
                 key_map = {"type": "t", "name": "n", "age": "a", "data_id": "i"}
                 tree.save(fp, mapper=serialize_mapper, key_map=key_map)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 456
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -172,7 +174,7 @@ class TestSerialize:
                     key_map=key_map,
                     value_map=value_map,
                 )
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 458
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -272,14 +274,6 @@ class TestSerialize:
             ╰── TypedNode<kind=manager, Person<Dave, 54>, data_id='{456-456}'>
         """
 
-        def _get_result(fp, *, print=False) -> Tuple[str, dict]:
-            fp.seek(0)
-            text = fp.read()
-            data = json.loads(text)
-            if print:
-                pprint.pprint(data)
-            return text, data
-
         def _calc_id(tree, data):
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
@@ -323,7 +317,7 @@ class TestSerialize:
             if mode == "verbose":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper, key_map=False, value_map=False)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 579
                 assert '"data_id":"{012-345}"' in text
                 assert '"data_id":"{123-456}"' in text
@@ -340,7 +334,7 @@ class TestSerialize:
             elif mode == "default":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 579
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -359,7 +353,7 @@ class TestSerialize:
                     "kind": "k",
                 }
                 tree.save(fp, mapper=serialize_mapper, key_map=key_map, value_map=False)
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 551
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -378,7 +372,7 @@ class TestSerialize:
                     key_map=key_map,
                     value_map=value_map,
                 )
-                text, data = _get_result(fp, print=True)
+                text, data = _get_fp_result(fp, do_print=True)
                 assert len(text) == 551
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
@@ -432,6 +426,100 @@ class TestSerialize:
 
     def test_serialize_typed_tree_objects_value_map(self):
         self._test_serialize_typed_tree_objects(mode="value_map")
+
+    def test_serialize_typed_tree_derived(self):
+        """Save/load an object tree with clones, using  derived custom tree."""
+
+        class MyTree(TypedTree):
+            DEFAULT_KEY_MAP = TypedTree.DEFAULT_KEY_MAP | {
+                "type": "t",
+                "name": "n",
+                "age": "a",
+            }
+            DEFAULT_VALUE_MAP = {"type": ["person", "dept"]}
+
+            def calc_data_id(tree, data):
+                if hasattr(data, "guid"):
+                    return data.guid
+                return hash(data)
+
+            def serialize_mapper(self, node: Node, data: dict):
+                if isinstance(node.data, fixture.Department):
+                    data["type"] = "dept"
+                    data["name"] = node.data.name
+                elif isinstance(node.data, fixture.Person):
+                    data["type"] = "person"
+                    data["name"] = node.data.name
+                    data["age"] = node.data.age
+                return data
+
+            @staticmethod
+            def deserialize_mapper(parent: Node, data: dict):
+                node_type = data["type"]
+                print("deserialize_mapper", data)
+                if node_type == "person":
+                    data = fixture.Person(
+                        name=data["name"], age=data["age"], guid=data["data_id"]
+                    )
+                elif node_type == "dept":
+                    data = fixture.Department(name=data["name"], guid=data["data_id"])
+                print(f"deserialize_mapper -> {data}")
+                return data
+
+        # Use a TypedTree
+        tree = MyTree(name="MyTree")
+        fixture.create_typed_tree(style="objects", clones=True, tree=tree)
+
+        # print(tree._nodes_by_data_id)
+        assert tree["{123-456}"].data.name == "Alice"
+        alice = tree["{123-456}"].data
+        assert tree[alice].data is alice
+
+        with tempfile.TemporaryFile("r+t") as fp:
+            # Serialize
+            tree.save(fp)
+            # Check raw result file
+            text, data = _get_fp_result(fp, do_print=True)
+
+            assert len(text) == 554
+            assert '"i":"{012-345}"' in text
+            assert '"i":"{123-456}"' in text
+            assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
+            assert data["nodes"][0][1]["t"] == 1
+            assert data["nodes"][1][1]["i"] == "{123-456}"  # Person
+            assert data["nodes"][1][1]["k"] == 1
+            assert data["nodes"][1][1]["t"] == 0
+
+            # Deserialize
+            fp.seek(0)
+            meta_2 = {}
+            tree_2 = tree.load(fp, file_meta=meta_2)
+            tree_2.name = "tree_2"
+            tree_2.print(repr="{node}")
+
+        assert isinstance(tree_2, TypedTree)
+        assert all(isinstance(n, TypedNode) for n in tree_2)
+        assert meta_2["$format_version"] == FILE_FORMAT_VERSION
+        assert meta_2["$generator"].startswith("nutree/")
+        assert fixture.trees_equal(tree, tree_2)
+        assert tree.count == tree_2.count
+        assert tree.first_child(kind=ANY_KIND) is not tree_2.first_child(kind=ANY_KIND)
+        # TODO: implement `__eq__` for `Person` and `Department`
+        # assert tree.first_child() == tree_2.first_child()
+
+        # TODO: also make a test-case, where the mapper returns a data_id,
+        #       so that `tree.first_child() == tree_2.first_child()`
+        # assert tree.first_child() == tree_2.first_child()
+
+        alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2.data.guid == "{123-456}"
+
+        charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2.is_clone(), "Restored clone"
+        # assert len(tree_2.find_all("Charleen")) == 2
+
+        assert tree._self_check()
+        assert tree_2._self_check()
 
     def test_graph(self):
         tree = TypedTree("fixture")

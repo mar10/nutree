@@ -2,9 +2,9 @@
 
 ## 0.7.0 (unreleased)
 
-- Add optional `tree.print(..., file=IO)` argument.
-- Fix invalid UniqueConstraint error message when loading a TypedTree.
 - Support compact serialization forrmat using `key_map` and `value_map`.
+- Fix invalid UniqueConstraint error message when loading a TypedTree.
+- Add optional `tree.print(..., file=IO)` argument.
 - Rename `default_connector_style` to `DEFAULT_CONNECTOR_STYLE`
 
 ## 0.6.0 (2023-11-01)

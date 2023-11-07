@@ -22,8 +22,9 @@ class FileSystemEntry:
             return f"[{self.name}]"
         return f"{self.name!r}, {self.size:,} bytes"
 
-    @staticmethod
-    def serialize_mapper(node, data):
+
+class FileSystemTree(Tree):
+    def serialize_mapper(self, node: Node, data: dict):
         """Callback for use with :meth:`~nutree.tree.Tree.save`."""
         inst = node.data
         if inst.is_dir:
@@ -33,7 +34,7 @@ class FileSystemEntry:
         return data
 
     @staticmethod
-    def deserialize_mapper(parent, data):
+    def deserialize_mapper(parent: Node, data: dict):
         """Callback for use with :meth:`~nutree.tree.Tree.load`."""
         v = data["v"]
         if "d" in v:
@@ -49,7 +50,7 @@ def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
         Especially useful when comparing unit test fixtures.
     """
     path = Path(path)
-    tree = Tree(path)
+    tree = FileSystemTree(path)
 
     def visit(node: Node, pth: Path):
         if sort:

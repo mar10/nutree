@@ -999,7 +999,7 @@ class TestFS:
         assert fixture.check_content(
             tree,
             """
-            Tree<*>
+            FileSystemTree<*>
             ├── 'file_1.txt', 13 bytes
             ╰── [folder_1]
                 ╰── 'file_1_1.txt', 15 bytes
