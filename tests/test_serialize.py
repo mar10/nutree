@@ -17,13 +17,17 @@ from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree
 from . import fixture
 
 
-def _get_fp_result(fp, *, do_print=False) -> Tuple[str, dict]:
+def _get_fp_result(fp, *, do_print=True, assert_len: int) -> Tuple[str, dict]:
     fp.seek(0)
     text = fp.read()
     data = json.loads(text)
     if do_print:
         print("text", text)
         pprint.pprint(data)
+    if assert_len:
+        generator_len = len(data["meta"]["$generator"])
+        extra_len = generator_len - len("nutree/1.0.0")
+        assert len(text) - extra_len == assert_len
     return text, data
 
 
@@ -45,6 +49,7 @@ class TestSerialize:
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
             tree.save(fp, meta={"foo": "bar"})
+            _text, _data = _get_fp_result(fp, assert_len=200)
             # Deserialize
             fp.seek(0)
             meta_2 = {}
@@ -127,8 +132,7 @@ class TestSerialize:
             if mode == "verbose":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper, key_map=False)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 477
+                text, data = _get_fp_result(fp, assert_len=474)
                 assert '"data_id":"{012-345}"' in text
                 assert '"data_id":"{123-456}"' in text
                 assert (
@@ -144,8 +148,7 @@ class TestSerialize:
             elif mode == "default":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 478
+                text, data = _get_fp_result(fp, assert_len=475)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -156,8 +159,7 @@ class TestSerialize:
                 # Serialize
                 key_map = {"type": "t", "name": "n", "age": "a", "data_id": "i"}
                 tree.save(fp, mapper=serialize_mapper, key_map=key_map)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 456
+                text, data = _get_fp_result(fp, assert_len=453)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -174,8 +176,7 @@ class TestSerialize:
                     key_map=key_map,
                     value_map=value_map,
                 )
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 458
+                text, data = _get_fp_result(fp, assert_len=455)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -235,6 +236,7 @@ class TestSerialize:
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
             tree.save(fp, meta={"foo": "bar"})
+            _text, _data = _get_fp_result(fp, assert_len=418)
             # Deserialize
             fp.seek(0)
             meta_2 = {}
@@ -317,8 +319,7 @@ class TestSerialize:
             if mode == "verbose":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper, key_map=False, value_map=False)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 579
+                text, data = _get_fp_result(fp, assert_len=576)
                 assert '"data_id":"{012-345}"' in text
                 assert '"data_id":"{123-456}"' in text
                 assert (
@@ -334,8 +335,7 @@ class TestSerialize:
             elif mode == "default":
                 # Serialize
                 tree.save(fp, mapper=serialize_mapper)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 579
+                text, data = _get_fp_result(fp, assert_len=576)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -353,8 +353,7 @@ class TestSerialize:
                     "kind": "k",
                 }
                 tree.save(fp, mapper=serialize_mapper, key_map=key_map, value_map=False)
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 551
+                text, data = _get_fp_result(fp, assert_len=548)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -372,8 +371,7 @@ class TestSerialize:
                     key_map=key_map,
                     value_map=value_map,
                 )
-                text, data = _get_fp_result(fp, do_print=True)
-                assert len(text) == 551
+                text, data = _get_fp_result(fp, assert_len=548)
                 assert '"i":"{012-345}"' in text
                 assert '"i":"{123-456}"' in text
                 assert data["nodes"][0][1]["i"] == "{012-345}"  # Department
@@ -485,9 +483,7 @@ class TestSerialize:
             # Serialize
             tree.save(fp)
             # Check raw result file
-            text, data = _get_fp_result(fp, do_print=True)
-
-            assert len(text) == 554
+            text, data = _get_fp_result(fp, assert_len=551)
             assert '"i":"{012-345}"' in text
             assert '"i":"{123-456}"' in text
             assert data["nodes"][0][1]["i"] == "{012-345}"  # Department

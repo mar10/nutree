@@ -3,6 +3,8 @@
 ## 0.7.0 (unreleased)
 
 - Support compact serialization forrmat using `key_map` and `value_map`.
+- Better support for working with derived classes (overload methods instead of
+  callbacks).
 - Fix invalid UniqueConstraint error message when loading a TypedTree.
 - Add optional `tree.print(..., file=IO)` argument.
 - Rename `default_connector_style` to `DEFAULT_CONNECTOR_STYLE`
