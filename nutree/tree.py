@@ -28,6 +28,7 @@ from .common import (
     TraversalCallbackType,
     ValueMapType,
     call_mapper,
+    check_python_version,
     get_version,
 )
 from .dot import tree_to_dotfile
@@ -35,6 +36,11 @@ from .node import Node
 from .rdf import tree_to_rdf
 
 _DELETED_TAG = "<deleted>"
+
+#: Minimal Python version that is supported by WsgiDAV
+MIN_PYTHON_VERSION_INFO = (3, 8)
+
+check_python_version(MIN_PYTHON_VERSION_INFO)
 
 
 # ------------------------------------------------------------------------------

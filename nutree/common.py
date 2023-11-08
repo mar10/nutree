@@ -6,9 +6,20 @@ modules.
 """
 from __future__ import annotations
 
+import sys
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
@@ -34,6 +45,9 @@ KeyMapType = Dict[str, str]
 
 #: Type of ``tree.save(..., value_map)``
 ValueMapType = Dict[str, List[str]]
+
+#: Currently used Python version as string
+PYTHON_VERSION = ".".join([str(s) for s in sys.version_info[:3]])
 
 
 class TreeError(RuntimeError):
@@ -144,6 +158,20 @@ def get_version() -> str:
     from nutree import __version__
 
     return __version__
+
+
+def check_python_version(min_version: Tuple[str]) -> bool:
+    """Check for deprecated Python version."""
+    if sys.version_info < min_version:
+        min_ver = ".".join([str(s) for s in min_version[:3]])
+        warnings.warn(
+            f"Support for Python version less than `{min_ver}` is deprecated "
+            f"(using {PYTHON_VERSION})",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return False
+    return True
 
 
 def call_mapper(fn: Optional[MapperCallbackType], node: Node, data: dict) -> Any:
