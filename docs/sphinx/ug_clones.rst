@@ -18,7 +18,7 @@ locations::
     │   ╰── 'a2'
     ╰── 'B'
         ├── 'b1'
-        ╰── 'a2'  <- 2nd occurence
+        ╰── 'a2'  <- 2nd occurrence
 
 .. seealso::
     `Clones` have several appliances in the real world, for example store items

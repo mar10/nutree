@@ -1380,8 +1380,8 @@ class Node:
             node_data = node._data
             data_id = calc_id(node_data)
 
-            # If node is a 2nd occurence of a clone, only store the index of the
-            # first occurence and do not call the mapper
+            # If node is a 2nd occurrence of a clone, only store the index of the
+            # first occurrence and do not call the mapper
             node_kind = getattr(node, "kind", None)
 
             clone_idx, clone_kind = clone_idx_and_kind_map.get(data_id, (None, None))

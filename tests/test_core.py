@@ -312,7 +312,7 @@ class TestNavigate:
         with pytest.raises(ValueError):  # missing args
             tree.find_first("a1").set_data(None)
 
-        # Only rename first occurence:
+        # Only rename first occurrence:
         tree.find_first("a1").set_data("new_a1", with_clones=False)
 
         assert fixture.check_content(

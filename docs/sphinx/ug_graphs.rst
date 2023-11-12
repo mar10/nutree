@@ -70,7 +70,7 @@ Given this tree ::
     │   ╰── 'a2'
     ╰── 'B'
         ╰── 'b1'
-            ├── 'a11'  <- second occurence
+            ├── 'a11'  <- second occurrence
             ╰── 'b11'
 
 we can write a DOT formatted file like so::

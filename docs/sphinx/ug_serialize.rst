@@ -53,7 +53,7 @@ and retrieved like so::
 
 The result will be written as a compact list of (parent-index, data) tuples. |br|
 The parent index starts with #1, since #0 is reserved for the system root node. |br|
-Note how the 2nd occurence of 'a11' only stores the index of the first 
+Note how the 2nd occurrence of 'a11' only stores the index of the first 
 instance::
 
     {

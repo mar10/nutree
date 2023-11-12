@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.7.1 (unreleased)
+## 0.7.2 (unreleased)
 
-## 0.7.0 (2023-11-08)
+## 0.7.1 (2023-11-08)
 
 - Support compact serialization forrmat using `key_map` and `value_map`.
 - Better support for working with derived classes (overload methods instead of
