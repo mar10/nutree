@@ -266,6 +266,28 @@ Instead of passing ``mapper`` functions and args, we can also use a derived clas
     ...
     tree.load(path)
 
+Compressed Format
+~~~~~~~~~~~~~~~~~
+
+``Tree.save()`` accepts a ``compress`` argument that can be set to ``True``. |br|
+``Tree.load()`` can detect if the input file has a compression header and will
+decompress automatically. Note that this works independently from the file
+extension::
+    
+        tree.save(path, compress=True)  # default is False
+        tree_2 = Tree.load(path, auto_uncompress=True)  # default is True
+        assert tree.compare(tree_2) == 0
+
+If `compression` is true, the file is compressed using zipfile.ZIP_DEFLATED, 
+which is used by zip/gzip. |br|
+Other values are: zipfile.ZIP_STORED, ZIP_BZIP2, and ZIP_LZMA.
+Pass False to disable compression and store as plain json.
+Though mileage may vary, ZIP_DEFLATED is usually the fastest compression method,
+while ZIP_LZMA is the most effective but slower. ZIP_BZIP2 is somewhere in the
+middle. |br|
+Load times of (un)compressed files is often not affected by the compression 
+method.
+
 
 (De)Serialize as List of Dicts
 ------------------------------

@@ -6,10 +6,15 @@ modules.
 """
 from __future__ import annotations
 
+import io
 import sys
 import warnings
+import zipfile
+from contextlib import contextmanager
 from enum import Enum
+from pathlib import Path
 from typing import (
+    IO,
     TYPE_CHECKING,
     Any,
     Callable,
@@ -250,3 +255,68 @@ def call_traversal_cb(fn: Callable, node: Node, memo: Any) -> False | None:
         )
         raise StopTraversal(e.value)
     return None
+
+
+@contextmanager
+def open_as_uncompressed_input_stream(
+    path: Union[str, Path],
+    *,
+    encoding: str = "utf8",
+    auto_uncompress: bool = True,
+) -> IO[str]:
+    """Open a file for reading, decompressing if necessary.
+
+    Decompression is done by checking for the magic header (independent of the
+    file extension).
+
+    Example::
+
+        with open_as_uncompressed_stream("/path/to/foo.nutree") as fp:
+            for line in fp:
+                print(line)
+    """
+    path = Path(path)
+    if auto_uncompress and zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path, mode="r") as zf:
+            if len(zf.namelist()) != 1:
+                raise ValueError(
+                    f"ZIP file must contain exactly one file: {zf.namelist()}"
+                )
+            with zf.open(zf.namelist()[0], mode="r") as fp:
+                yield io.TextIOWrapper(fp, encoding=encoding)
+    else:
+        with path.open(mode="r", encoding=encoding) as fp:
+            yield fp
+    return
+
+
+@contextmanager
+def open_as_compressed_output_stream(
+    path: Union[str, Path],
+    *,
+    compression: bool | int = True,
+    encoding: str = "utf8",
+) -> IO[str]:
+    """Open a file for writing, ZIP-compressing if requested.
+
+    Example::
+
+        with open_as_compressed_stream("/path/to/foo.nutree") as fp:
+            fp:
+                print(line)
+    """
+    path = Path(path)
+    if compression is False:
+        with path.open("w", encoding=encoding) as fp:
+            yield fp
+    else:
+        if compression is True:
+            compression = zipfile.ZIP_DEFLATED
+        compression = int(compression)
+        name = f"{path.name}.json"
+        with zipfile.ZipFile(path, mode="w", compression=compression) as zf:
+            with zf.open(name, mode="w") as fp:
+                wrapper = io.TextIOWrapper(fp, encoding=encoding)
+                yield wrapper
+                wrapper.flush()
+    return

@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.7.2 (unreleased)
+## 0.8.0 (unreleased)
+
+- `Tree.save()` accepts a `compress` argument that will enable ZIP compression.
+  `Tree.load()` can detect if the input file has a compression header and will
+  decompress automatically.
 
 ## 0.7.1 (2023-11-08)
 

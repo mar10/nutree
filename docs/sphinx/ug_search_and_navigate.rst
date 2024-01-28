@@ -6,6 +6,19 @@ Search and Navigate
 
 .. _navigate:
 
+Assuming we have a tree like this::
+
+    Tree<'fixture'>
+    ├── 'A'
+    │   ├── 'a1'
+    │   │   ├── 'a11'
+    │   │   ╰── 'a12'
+    │   ╰── 'a2'
+    ╰── 'B'
+        ├── 'a11'  <- a clone node here
+        ╰── 'b1'
+            ╰── 'b11'
+
 Navigate
 --------
 

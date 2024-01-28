@@ -76,6 +76,18 @@ class TestSerialize:
         assert tree._self_check()
         assert tree_2._self_check()
 
+    def test_serialize_compressed(self):
+        tree = fixture.create_tree()
+
+        with fixture.WritableTempFile("r+t") as temp_file:
+            # Serialize
+            tree.save(temp_file.name, meta={"foo": "bar"}, compression=True)
+            # Deserialize
+            meta_2 = {}
+            tree_2 = Tree.load(temp_file.name, file_meta=meta_2)
+
+        assert fixture.trees_equal(tree, tree_2)
+
     def _test_serialize_objects(self, *, mode: str):
         """Save/load an object tree with clones.
 

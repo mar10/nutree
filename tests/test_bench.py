@@ -3,8 +3,10 @@
 """
 """
 # ruff: noqa: T201, T203 `print` found
+# ruff: noqa: E501 Line too long
 
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -20,9 +22,8 @@ benchmark = pytest.mark.skipif(
 
 @benchmark
 class TestBenchmarks:
-    def test_index(self, capsys):
+    def test_bench_index(self, capsys):
         """ """
-
         results = ["Benchmark results"]
         tree = fixture.create_tree()
 
@@ -60,7 +61,7 @@ class TestBenchmarks:
         with capsys.disabled():
             print("\n  - ".join(results))
 
-    def test_properties(self, capsys):
+    def test_bench_properties(self, capsys):
         """ """
 
         results = ["Benchmark results"]
@@ -90,7 +91,7 @@ class TestBenchmarks:
         with capsys.disabled():
             print("\n  - ".join(results))
 
-    def test_iter(self, capsys):
+    def test_bench_iter(self, capsys):
         """ """
 
         results = ["Benchmark results"]
@@ -165,8 +166,130 @@ class TestBenchmarks:
 
 
 @benchmark
+class TestCompress:
+    """
+    Tree: ~100,000 nodes, 3 levels
+
+    Compression            | Size (Bytes) | Save (sec) | Load (sec)
+    -----------------------+--------------+------------+-----------
+    Uncompressed ('.json') |    2.000.733 |       1.24 |    0.37
+    ZIP_DEFLATED ('.zip')  |      196.934 |       1.29 |    0.37
+    ZIP_BZIP2 ('.bz2')     |      103.519 |       1.32 |    0.39
+    ZIP_LZMA ('.lzma')     |       44.347 |       2.13 |    0.38
+    """
+
+    def test_bench_serialize(self, capsys):
+        import zipfile  # noqa: F401
+
+        results = ["Benchmark results"]
+        directory = Path("~").expanduser()
+        # with WritableTempFile("w", suffix=".gz") as temp_file:
+
+        tree = fixture.generate_tree([10, 100, 100])
+
+        path = directory / "test.json"
+        results.append(
+            fixture.run_timings(
+                f"tree.save({path}, compression=False, nodes={len(tree):,})",
+                f"""\
+                tree.save("{path}", compression=False)
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        results.append(
+            fixture.run_timings(
+                f"tree.load({path}, nodes={len(tree):,})",
+                f"""\
+                tree.load("{path}")
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        # --- ZIP
+        path = directory / "test.zip"
+        results.append(
+            fixture.run_timings(
+                f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+                f"""\
+                tree.save("{path}", compression=zipfile.ZIP_DEFLATED)
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        results.append(
+            fixture.run_timings(
+                f"tree.load({path}, nodes={len(tree):,})",
+                f"""\
+                tree.load("{path}")
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        # --- ZIP
+        path = directory / "test.bz2"
+        results.append(
+            fixture.run_timings(
+                f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+                f"""\
+                tree.save("{path}", compression=zipfile.ZIP_BZIP2)
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        results.append(
+            fixture.run_timings(
+                f"tree.load({path}, nodes={len(tree):,})",
+                f"""\
+                tree.load("{path}")
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        # --- ZIP
+        path = directory / "test.lzma"
+        results.append(
+            fixture.run_timings(
+                f"tree.save({path}, compression=LZMA, nodes={len(tree):,})",
+                f"""\
+                tree.save("{path}", compression=zipfile.ZIP_LZMA)
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+        results.append(
+            fixture.run_timings(
+                f"tree.load({path}, nodes={len(tree):,})",
+                f"""\
+                tree.load("{path}")
+                """,
+                repeat=1,
+                number=1,
+                globals=locals(),
+            )
+        )
+
+        with capsys.disabled():
+            print("\n  - ".join(results))
+
+
+@benchmark
 class TestMemory:
-    def test_node_size(self, capsys):
+    def test_bench_node_size(self, capsys):
         """ """
         from pympler.asizeof import asized, asizeof
 
@@ -200,7 +323,7 @@ class TestMemory:
         with capsys.disabled():
             print("\n  - ".join(results))
 
-    # def test_tree_mem(self, capsys):
+    # def test_bench_tree_mem(self, capsys):
     #     """ """
     #     from pympler import tracker
 
@@ -222,7 +345,7 @@ class TestMemory:
     #     with capsys.disabled():
     #         print("\n  - ".join(results))
 
-    # def test_tree_mem_2(self, capsys):
+    # def test_bench_tree_mem_2(self, capsys):
     #     """ """
     #     from pympler import classtracker
 

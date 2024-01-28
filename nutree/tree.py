@@ -30,6 +30,8 @@ from .common import (
     call_mapper,
     check_python_version,
     get_version,
+    open_as_compressed_output_stream,
+    open_as_uncompressed_input_stream,
 )
 from .dot import tree_to_dotfile
 from .node import Node
@@ -118,7 +120,7 @@ class Tree:
         return
 
     def __eq__(self, other) -> bool:
-        raise NotImplementedError("Use `is` or `tree.compare()` instead.")
+        raise NotImplementedError("Use `is` or `tree.compare()` instead of `==`.")
 
     def __getitem__(self, data: object) -> Node:
         """Implement ``tree[data]`` syntax to lookup a node.
@@ -509,6 +511,7 @@ class Tree:
         self,
         target: Union[IO[str], str, Path],
         *,
+        compression: bool | int = False,
         mapper: Optional[SerializeMapperType] = None,
         meta: Optional[dict] = None,
         key_map: Union[KeyMapType, bool] = True,
@@ -516,10 +519,21 @@ class Tree:
     ) -> None:
         """Store tree in a compact JSON file stream.
 
+        If `target` is a string, it is interpreted as a file path. Otherwise it
+        must be a file object.
+
+        If `compression` is true, the file is compressed using gzip
+        (zipfile.ZIP_DEFLATED).
+        Other values are: zipfile.ZIP_STORED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA.
+        Pass False to disable compression and store as plain json.
+
         See also :ref:`serialize` and :meth:`to_list_iter` and :meth:`load` methods.
         """
         if isinstance(target, (str, Path)):
-            with Path(target).open("wt", encoding="utf8") as fp:
+            # with Path(target).open("wt", encoding="utf8") as fp:
+            with open_as_compressed_output_stream(
+                target, compression=compression
+            ) as fp:
                 return self.save(
                     target=fp,
                     mapper=mapper,
@@ -565,6 +579,7 @@ class Tree:
                     )
                 ),
             }
+
         json.dump(res, target, indent=None, separators=(",", ":"))
         return
 
@@ -621,6 +636,7 @@ class Tree:
         *,
         mapper: Optional[DeserializeMapperType] = None,
         file_meta: dict = None,
+        auto_uncompress: bool = True,
     ) -> Tree:
         """Create a new :class:`Tree` instance from a file path or JSON file stream.
 
@@ -630,7 +646,12 @@ class Tree:
         See also :meth:`save`.
         """
         if isinstance(target, (str, Path)):
-            with Path(target).open("rt", encoding="utf8") as fp:
+            # Check for zip file
+            # with Path(target).open("rt", encoding="utf8") as fp:
+            with open_as_uncompressed_input_stream(
+                target,
+                auto_uncompress=auto_uncompress,
+            ) as fp:
                 return cls.load(target=fp, mapper=mapper, file_meta=file_meta)
         # target is a file object now
 

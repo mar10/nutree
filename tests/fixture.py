@@ -327,6 +327,7 @@ def run_timings(
     setup="pass",
     *,
     verbose=0,
+    repeat=timeit.default_repeat,
     number=0,
     globals=None,
     time_unit=None,
@@ -336,7 +337,7 @@ def run_timings(
     # if o in ("-p", "--process"):
     #     timer = time.process_time
     # number = 0  # auto-determine
-    repeat = timeit.default_repeat
+    # repeat = timeit.default_repeat
     # time_unit = None
     units = {
         "fsec": 1e-15,  # femto
