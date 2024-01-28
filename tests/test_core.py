@@ -563,6 +563,15 @@ class TestTraversal:
         s = ",".join(n.data for n in tree.iterator(IterMethod.LEVEL_ORDER))
         assert s == "A,B,a1,a2,b1,a11,a12,b11"
 
+        s = ",".join(n.data for n in tree.iterator(IterMethod.LEVEL_ORDER_RTL))
+        assert s == "B,A,b1,a2,a1,b11,a12,a11"
+
+        s = ",".join(n.data for n in tree.iterator(IterMethod.ZIGZAG))
+        assert s == "A,B,b1,a2,a1,a11,a12,b11"
+
+        s = ",".join(n.data for n in tree.iterator(IterMethod.ZIGZAG_RTL))
+        assert s == "B,A,a1,a2,b1,b11,a12,a11"
+
         s = [n.data for n in tree.iterator(IterMethod.UNORDERED)]
         assert len(s) == 8
 

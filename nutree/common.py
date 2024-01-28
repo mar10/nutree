@@ -76,6 +76,12 @@ class IterMethod(Enum):
     POST_ORDER = "post"
     #: Breadth-first (aka level-order)
     LEVEL_ORDER = "level"
+    #: Breadth-first (aka level-order) right-to-left
+    LEVEL_ORDER_RTL = "level_rtl"
+    #: ZigZag order
+    ZIGZAG = "zigzag"
+    #: ZigZag order
+    ZIGZAG_RTL = "zigzag_rtl"
     #: Random order traversal
     RANDOM_ORDER = "random"
     #: Fastest traversal in unpredictable order.

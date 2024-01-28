@@ -1072,17 +1072,38 @@ class Node:
                 yield c
         return
 
-    def _iter_level(self) -> Iterator[Node]:
+    def _iter_level(self, *, revert=False, toggle=False) -> Iterator[Node]:
         """Breadth-first (aka level-order) traversal."""
         children = self._children
         while children:
             next_level = []
             for c in children:
-                yield c
                 if c._children:
                     next_level.extend(c._children)
+
+            if revert:
+                yield from reversed(children)
+            else:
+                yield from children
+
+            if toggle:
+                revert = not revert
+
             children = next_level
+
         return
+
+    def _iter_level_rtl(self) -> Iterator[Node]:
+        """Breadth-first (aka level-order) traversal, right-to-left."""
+        return self._iter_level(revert=True, toggle=False)
+
+    def _iter_zigzag(self) -> Iterator[Node]:
+        """ZigZag traversal."""
+        return self._iter_level(revert=False, toggle=True)
+
+    def _iter_zigzag_rtl(self) -> Iterator[Node]:
+        """ZigZag traversal, right-to-left."""
+        return self._iter_level(revert=True, toggle=True)
 
     def iterator(
         self, method=IterMethod.PRE_ORDER, *, add_self=False

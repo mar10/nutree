@@ -114,7 +114,7 @@ Traversal
 Iterators are the most performant and memory efficient way to traverse the tree.
 
 Iterators are available for the whole tree or by branch (i.e. starting at a node). 
-Different travesal methods are supported. ::
+Different traversal methods are supported. ::
 
     for node in tree:
         # Depth-first, pre-order by default
@@ -134,6 +134,18 @@ Different travesal methods are supported. ::
     # Keep in mind that iterators are generators, so at times we may need 
     # to materialize:
     res = list(node.iterator(add_self=True))
+
+Available iteration methods (`IterMethod.MODE`)::
+    
+    PRE_ORDER       # Depth-first, pre-order
+    POST_ORDER      # Depth-first, post-order
+    LEVEL_ORDER     # Breadth-first (aka level-order)
+    LEVEL_ORDER_RTL # Breadth-first (aka level-order) right-to-left
+    ZIGZAG          # ZigZag order
+    ZIGZAG_RTL      # ZigZag order right-to-left
+    RANDOM_ORDER    # Random order traversal
+    UNORDERED       # Fastest traversal in unpredictable order. It may appear to 
+                    # be the order of node insertion, but do not rely on it.
 
 .. note::
 
