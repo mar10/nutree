@@ -7,6 +7,7 @@
   decompress automatically.
 - New traversal methods `LEVEL_ORDER`, `LEVEL_ORDER_RTL`, `ZIGZAG`, `ZIGZAG_RTL`.
   decompress transparently.
+- New compact connector styles `'lines32c'`, `'round43c'``, ...
 
 ## 0.7.1 (2023-11-08)
 

@@ -480,6 +480,36 @@ class TestFormat:
         )
 
         assert fixture.check_content(
+            tree.format(repr="{node.name}", style="lines32c"),
+            """\
+            Tree<*>
+            ├┬ A
+            │├┬ a1
+            ││├─ a11
+            ││└─ a12
+            │└─ a2
+            └┬ B
+             └┬ b1
+              └─ b11
+            """,
+        )
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}", style="round43c"),
+            """\
+            Tree<*>
+            ├─┬ A
+            │ ├─┬ a1
+            │ │ ├── a11
+            │ │ ╰── a12
+            │ ╰── a2
+            ╰─┬ B
+              ╰─┬ b1
+                ╰── b11
+            """,
+        )
+
+        assert fixture.check_content(
             tree.format(repr="{node.data}", title=False),
             """\
             A
