@@ -713,3 +713,21 @@ class TestDot:
         print(res)
         assert 'node  [style="filled" fillcolor="#e0e0e0"]' in res
         assert '[label="C" color="#00c000"]' in res
+
+
+class TestMermaid:
+    def test_serialize_mermaid(self):
+        """Save/load as  object tree with clones."""
+
+        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+
+        with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
+            tree.to_mermaid(temp_file.name)
+
+        # res = [line for line in tree.to_dot()]
+        # assert len(res) == 25
+        # res = "\n".join(res)
+        # print(res)
+        # assert '__root__ [label="Root" shape="box"]' in res
+        # assert "__root__ -> " in res
+        # # assert False

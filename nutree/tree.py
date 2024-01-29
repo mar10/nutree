@@ -745,6 +745,13 @@ class Tree:
     # def from_dot(self, dot):
     #     pass
 
+    def to_mermaid(self, target: Union[IO[str], str, Path], *, format=None):
+        """Save as mermaid flow diagram.
+
+        See :ref:`` for details.
+        """
+        return tree_to_rdf(self)
+
     def to_rdf_graph(self):
         """Return an instance of ``rdflib.Graph``.
 
