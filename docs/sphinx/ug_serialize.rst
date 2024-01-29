@@ -278,10 +278,10 @@ extension::
         tree_2 = Tree.load(path, auto_uncompress=True)  # default is True
         assert tree.compare(tree_2) == 0
 
-If `compression` is true, the file is compressed using zipfile.ZIP_DEFLATED, 
-which is used by zip/gzip. |br|
-Other values are: zipfile.ZIP_STORED, ZIP_BZIP2, and ZIP_LZMA.
-Pass False to disable compression and store as plain json.
+`compression` defines an optional compression method.
+Possible values are: zipfile.ZIP_STORED, .ZIP_DEFLATED, .ZIP_BZIP2, and .ZIP_LZMA. |br|
+`True` is uses the default compression zipfile.ZIP_BZIP2. |br|
+The default `False` disables compression and stores as plain json. |br|
 Though mileage may vary, ZIP_DEFLATED is usually the fastest compression method,
 while ZIP_LZMA is the most effective but slower. ZIP_BZIP2 is somewhere in the
 middle. |br|

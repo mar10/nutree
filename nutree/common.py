@@ -317,7 +317,7 @@ def open_as_compressed_output_stream(
             yield fp
     else:
         if compression is True:
-            compression = zipfile.ZIP_DEFLATED
+            compression = zipfile.ZIP_BZIP2
         compression = int(compression)
         name = f"{path.name}.json"
         with zipfile.ZipFile(path, mode="w", compression=compression) as zf:

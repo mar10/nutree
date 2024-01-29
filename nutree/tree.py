@@ -120,7 +120,7 @@ class Tree:
         return
 
     def __eq__(self, other) -> bool:
-        raise NotImplementedError("Use `is` or `tree.compare()` instead of `==`.")
+        raise NotImplementedError("Use `is` instead of `==`.")
 
     def __getitem__(self, data: object) -> Node:
         """Implement ``tree[data]`` syntax to lookup a node.

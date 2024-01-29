@@ -7,6 +7,7 @@
 import json
 import pprint
 import tempfile
+import zipfile
 from typing import Tuple
 
 from nutree import Node, Tree
@@ -78,14 +79,22 @@ class TestSerialize:
 
     def test_serialize_compressed(self):
         tree = fixture.create_tree()
+        tree.add_child("äöüß: \u00e4\u00f6\u00fc\u00df")
+        tree.add_child("emoji: 😀")
 
         with fixture.WritableTempFile("r+t") as temp_file:
-            # Serialize
-            tree.save(temp_file.name, meta={"foo": "bar"}, compression=True)
-            # Deserialize
-            meta_2 = {}
-            tree_2 = Tree.load(temp_file.name, file_meta=meta_2)
+            tree.save(temp_file.name, compression=zipfile.ZIP_DEFLATED)
+            tree_2 = Tree.load(temp_file.name)
+        assert fixture.trees_equal(tree, tree_2)
 
+        with fixture.WritableTempFile("r+t") as temp_file:
+            tree.save(temp_file.name, compression=zipfile.ZIP_BZIP2)
+            tree_2 = Tree.load(temp_file.name)
+        assert fixture.trees_equal(tree, tree_2)
+
+        with fixture.WritableTempFile("r+t") as temp_file:
+            tree.save(temp_file.name, compression=zipfile.ZIP_LZMA)
+            tree_2 = Tree.load(temp_file.name)
         assert fixture.trees_equal(tree, tree_2)
 
     def _test_serialize_objects(self, *, mode: str):
