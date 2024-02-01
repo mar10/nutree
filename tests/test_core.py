@@ -508,6 +508,7 @@ class TestFormat:
                 ╰── b11
             """,
         )
+        # assert 0
 
         assert fixture.check_content(
             tree.format(repr="{node.data}", title=False),
