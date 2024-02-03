@@ -1195,7 +1195,14 @@ class Node:
         return
 
     def _get_prefix(self, style, lstrip) -> str:
-        s0, s1, s2, s3 = style
+        if len(style) == 4:
+            s0, s1, s2, s3 = style
+            s4 = s2
+            s5 = s3
+        elif len(style) == 6:
+            s0, s1, s2, s3, s4, s5 = style
+        else:
+            raise ValueError(f"Invalid style {style!r}")
 
         def _is_last(p) -> bool:
             # Don't use `is_last_sibling()` which is overloaded by TypedNode
@@ -1213,10 +1220,16 @@ class Node:
                 parts.append(s1)  # " |  "
 
         if depth >= lstrip:
-            if _is_last(self):
-                parts.append(s2)  # " ╰─ "
+            if self._children:
+                if _is_last(self):
+                    parts.append(s4)  # " ╰┬─ "
+                else:
+                    parts.append(s5)  # " ├┬─ "
             else:
-                parts.append(s3)  # " ├─ "
+                if _is_last(self):
+                    parts.append(s2)  # " ╰── "
+                else:
+                    parts.append(s3)  # " ├── "
 
         return "".join(parts)
 

@@ -33,7 +33,7 @@ See :data:`~nutree.common.CONNECTORS` for possible values. ::
 
     tree.format(repr="{node}", style="lines32", title="My Store")
 
-::
+:: 
 
     My Store
     ├─ Node<'Records', data_id=-7187943508994743157>
@@ -41,6 +41,21 @@ See :data:`~nutree.common.CONNECTORS` for possible values. ::
     │  └─ Node<"Get Yer Ya-Ya's Out!", data_id=-3432395703643407922>
     └─ Node<'Books', data_id=-4949478653955058708>
        └─ Node<'The Little Prince', data_id=6520761245273801231>
+
+or try a more compact style ::
+
+    "round32c"      "round43c"          "round43"
+
+    Tree<*>          Tree<*>            Tree<*>
+    ├┬ A             ├─┬ A              ├── A
+    │├┬ a1           │ ├─┬ a1           │   ├── a1
+    ││├─ a11         │ │ ├── a11        │   │   ├── a11
+    ││╰─ a12         │ │ ╰── a12        │   │   ╰── a12
+    │╰─ a2           │ ╰── a2           │   ╰── a2
+    ╰┬ B             ╰─┬ B              ╰── B
+     ╰┬ b1             ╰─┬ b1               ╰── b1
+      ╰─ b11             ╰── b11                ╰── b11
+
 
 Set `title` to false to remove the root from the display. ::
 
