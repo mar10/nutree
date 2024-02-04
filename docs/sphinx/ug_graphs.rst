@@ -175,12 +175,10 @@ Mermaid Format
 
 Mermaid is a diagramming and charting tool that uses Markdown-inspired text 
 for defining diagrams. |br|
-It is a popular choice for documentation and is supported by many 
-`Markdown`_ editors. |br|
-`Mermaid`_ is a JavaScript library that renders the diagrams. |br|
+It is a popular choice for documentation and is supported by many `Markdown`_ editors. |br|
 Nutree can convert trees to Mermaid format.
 
-Nutree implements conversion to `DOT format <https://en.wikipedia.org/wiki/DOT_(graph_description_language)>`_.
+Nutree implements conversion to `Mermaid flowchart format <https://mermaid.js.org/syntax/flowchart.html>`_.
 Given this tree ::
 
     Tree<'Root'>
@@ -194,41 +192,47 @@ Given this tree ::
             ├── 'a11'  <- second occurrence
             ╰── 'b11'
 
-we can write a DOT formatted file like so::
+we can write a Markdown file with embedded Mermaid flowchart like so::
 
-    tree.to_dotfile("graph.gv")
+    tree.to_mermaid_flowchart("graph.md")
 
 ::
 
-    digraph Root {
-        // Node definitions
-        __root__ [label="Root" shape="box"]
-        -2117698517398243110 [label="A"]
-        8696834500465194416 [label="a1"]
-        3848329043807418154 [label="a11"]
-        -8723831530700312132 [label="a12"]
-        -1180776893324476219 [label="a2"]
-        8369695036033697218 [label="B"]
-        1739272887205481547 [label="b1"]
-        -1397849070657872512 [label="b11"]
+    ```mermaid
+    ---
+    title: Root
+    ---
 
-        // Edge definitions
-        __root__ -> -2117698517398243110
-        -2117698517398243110 -> 8696834500465194416
-        8696834500465194416 -> 3848329043807418154
-        8696834500465194416 -> -8723831530700312132
-        -2117698517398243110 -> -1180776893324476219
-        __root__ -> 8369695036033697218
-        8369695036033697218 -> 1739272887205481547
-        1739272887205481547 -> 3848329043807418154
-        1739272887205481547 -> -1397849070657872512
-    }
+    %% Generator: https://github.com/mar10/nutree/
 
-This DOT graph may be rendered in different formats like so::
+    flowchart TD
 
-    tree.to_dotfile("tree_graph.png", format="png")
+    %% Nodes:
+    1("A")
+    2("a1")
+    3("a11")
+    4("a12")
+    5("a2")
+    6("B")
+    7("b1")
+    8("b11")
 
-.. image:: tree_graph.png
+    %% Edges:
+    1 --> 2
+    2 --> 3
+    2 --> 4
+    1 --> 5
+    6 --> 7
+    7 --> 3
+    7 --> 8
+    ```
+
+
+This graph may be rendered in different formats like so::
+
+    tree.to_dotfile("graph.svg", format="svg")
+
+.. image:: test_serialize_1.svg 
 
 Note that in the previous image, the `clone` tree node "a11" is represented 
 as a single graph node.

@@ -8,7 +8,17 @@ from __future__ import annotations
 import re
 from operator import attrgetter
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Union,
+)
 
 from nutree.mermaid import (
     MermaidDirectionType,
@@ -1483,6 +1493,7 @@ class Node:
         format: MermaidFormatType | None = None,
         add_self: bool = True,
         unique_nodes: bool = True,
+        headers: Iterable[str] | None = None,
         node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
         edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
     ) -> None:
@@ -1500,6 +1511,7 @@ class Node:
             format=format,
             add_root=add_self,
             unique_nodes=unique_nodes,
+            headers=headers,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

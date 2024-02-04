@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Optional, Union
+from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -761,6 +761,7 @@ class Tree:
         format: MermaidFormatType | None = None,
         add_root: bool = True,
         unique_nodes: bool = True,
+        headers: Iterable[str] | None = None,
         node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
         edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
     ) -> Iterator[str]:
@@ -777,6 +778,7 @@ class Tree:
             format=format,
             add_self=add_root,
             unique_nodes=unique_nodes,
+            headers=headers,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

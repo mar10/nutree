@@ -9,14 +9,22 @@ Functions and declarations to support
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Callable, Iterator, Literal, Optional, Union
+from subprocess import check_output
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Callable,
+    Iterable,
+    Iterator,
+    Literal,
+    Optional,
+    Union,
+)
 
 from .common import DataIdType
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
-
-    # from .tree import Tree
 
 MermaidDirectionType = Literal["LR", "RL", "TB", "TD", "BT"]
 MermaidFormatType = Literal["svg", "pdf", "png"]
@@ -37,7 +45,6 @@ DEFAULT_NODE_TEMPLATE: str = "{node.name}"
 
 DEFAULT_EDGE_TEMPLATE: str = "{from_id} --> {to_id}"
 DEFAULT_EDGE_TEMPLATE_TYPED: str = '{from_id}-- "{kind}" -->{to_id}'
-# DEFAULT_EDGE_TEMPLATE_TYPED: str = '{from_id}-- "`{kind}`" -->{to_id}'
 
 
 def _node_to_mermaid_flowchart_iter(
@@ -49,6 +56,7 @@ def _node_to_mermaid_flowchart_iter(
     format: MermaidFormatType | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
+    headers: Iterable[str] | None = None,
     node_mapper: Optional[MermaidNodeMapperCallbackType] | str = None,
     edge_mapper: Optional[MermaidEdgeMapperCallbackType] | str = None,
 ) -> Iterator[str]:
@@ -60,8 +68,10 @@ def _node_to_mermaid_flowchart_iter(
         add_self (bool):
         unique_nodes (bool):
     """
-    name = node.tree.name
     id_to_idx = {}
+
+    def _id(n: Node) -> DataIdType:
+        return n._data_id if unique_nodes else n._node_id
 
     if node_mapper is None:
         node_mapper = lambda node: DEFAULT_NODE_TEMPLATE.format(node=node)
@@ -93,15 +103,12 @@ def _node_to_mermaid_flowchart_iter(
     else:
         assert callable(edge_mapper), "edge_mapper must be str or callable"
 
-    def _id(n: Node) -> DataIdType:
-        return n._data_id if unique_nodes else n._node_id
-
     if as_markdown:
         yield "```mermaid"
 
     if title:
         yield "---"
-        yield f"title: {title if title is not True else name}"
+        yield f"title: {node.name if title is True else title}"
         yield "---"
 
     yield ""
@@ -110,13 +117,17 @@ def _node_to_mermaid_flowchart_iter(
 
     yield f"flowchart {direction}"
 
+    if headers:
+        yield ""
+        yield "%% Headers:"
+        yield from headers
+
     yield ""
     yield "%% Nodes:"
     if add_root:
         id_to_idx[_id(node)] = 0
         name = node.name
         yield f'0{{{{"{name}"}}}}'
-        # yield f'0("`{name}`")'
 
     idx = 1
     for n in node:
@@ -127,7 +138,6 @@ def _node_to_mermaid_flowchart_iter(
 
         name = node_mapper(n)
         yield f'{idx}("{name}")'
-        # yield f'{idx}("`{name}`")'
         idx += 1
 
     yield ""
@@ -157,10 +167,13 @@ def node_to_mermaid_flowchart(
     format: MermaidFormatType | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
+    headers: Iterable[str] | None = None,
     node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
     edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
 ) -> None:
     """Write a Mermaid flowchart to a file or stream."""
+    if format:
+        as_markdown = False
 
     def _write(fp):
         for line in _node_to_mermaid_flowchart_iter(
@@ -171,6 +184,7 @@ def node_to_mermaid_flowchart(
             format=format,
             add_root=add_root,
             unique_nodes=unique_nodes,
+            headers=headers,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         ):
@@ -180,17 +194,17 @@ def node_to_mermaid_flowchart(
         target = Path(target)
 
     if isinstance(target, Path):
-        if format:
-            mm_path = target.with_suffix(".mermaid")
-        else:
-            mm_path = target
+        mm_path = target.with_suffix(".tmp") if format else target
 
         with open(mm_path, "w") as fp:
             _write(fp)
+
+        if format:
+            # See https://github.com/mermaid-js/mermaid-cli
+            check_output(["mmdc", "-i", mm_path, "-o", target])
         return
     elif format:
         raise RuntimeError("Need a filepath to convert Mermaid output.")
 
-    # TODO: Use https://github.com/mermaid-js/mermaid-cli
     _write(target)
     return

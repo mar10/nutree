@@ -719,20 +719,23 @@ class TestDot:
 
 class TestMermaid:
     def test_serialize_mermaid(self):
-        """Save/load as  object tree with clones."""
+        """Save/load as object tree with clones."""
         KEEP_FILES = True
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
             tree.to_mermaid_flowchart(
                 temp_file.name,
-                add_root=False,
+                # add_root=False,
+                # headers=("classDef default fill:#f9f,stroke:#333,stroke-width:4px;",),
                 # node_mapper=lambda node: f"{node}",
+                unique_nodes=False,
+                format="svg",
             )
             if KEEP_FILES:  # save to tests/temp/...
                 shutil.copy(
                     temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.md",
+                    Path(__file__).parent / "temp/test_serialize_1.svg",
                 )
 
     def test_serialize_mermaid_typed(self):
@@ -752,4 +755,24 @@ class TestMermaid:
                 shutil.copy(
                     temp_file.name,
                     Path(__file__).parent / "temp/test_serialize_2.md",
+                )
+
+    def test_serialize_mermaid_svg(self):
+        """Save/load as typed object tree with clones."""
+        KEEP_FILES = True
+        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
+
+        with fixture.WritableTempFile("w", suffix=".svg") as temp_file:
+            tree.to_mermaid_flowchart(
+                temp_file.name,
+                title="Typed Tree",
+                direction="LR",
+                format="svg",
+                # add_root=False,
+                # node_mapper=lambda node: f"{node}",
+            )
+            if KEEP_FILES:  # save to tests/temp/...
+                shutil.copy(
+                    temp_file.name,
+                    Path(__file__).parent / "temp/test_serialize_2.svg",
                 )
