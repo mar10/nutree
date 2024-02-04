@@ -7,7 +7,16 @@ from __future__ import annotations
 
 import re
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from pathlib import Path
+from typing import IO, TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+
+from nutree.mermaid import (
+    MermaidDirectionType,
+    MermaidEdgeMapperCallbackType,
+    MermaidFormatType,
+    MermaidNodeMapperCallbackType,
+    node_to_mermaid_flowchart,
+)
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
@@ -1463,3 +1472,34 @@ class Node:
         See :ref:`graphs` for details.
         """
         return node_to_rdf(self, add_self=add_self, node_mapper=node_mapper)
+
+    def to_mermaid_flowchart(
+        self,
+        target: Union[IO[str], str, Path],
+        *,
+        as_markdown: bool = True,
+        direction: MermaidDirectionType = "TD",
+        title: str | bool | None = True,
+        format: MermaidFormatType | None = None,
+        add_self: bool = True,
+        unique_nodes: bool = True,
+        node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
+        edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
+    ) -> None:
+        """Serialize a Mermaid flowchart representation.
+
+        Optionally convert to a Graphviz display formats.
+        See :ref:`graphs` for details.
+        """
+        return node_to_mermaid_flowchart(
+            node=self,
+            target=target,
+            as_markdown=as_markdown,
+            direction=direction,
+            title=title,
+            format=format,
+            add_root=add_self,
+            unique_nodes=unique_nodes,
+            node_mapper=node_mapper,
+            edge_mapper=edge_mapper,
+        )

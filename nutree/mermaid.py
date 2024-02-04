@@ -4,154 +4,193 @@
 Functions and declarations to support 
 `Mermaid <https://mermaid-js.github.io/mermaid/#/flowchart>`_ exports.
 """
+# ruff: noqa: E731 # do not assign a lambda expression, use a def
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Iterator, Optional, Union
+from typing import IO, TYPE_CHECKING, Callable, Iterator, Literal, Optional, Union
 
-from .common import MapperCallbackType, call_mapper
+from .common import DataIdType
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
-    from .tree import Tree
+
+    # from .tree import Tree
+
+MermaidDirectionType = Literal["LR", "RL", "TB", "TD", "BT"]
+MermaidFormatType = Literal["svg", "pdf", "png"]
+
+#: Callback to map a node to a Mermaid node definition string.
+#: The callback is called with the following arguments:
+#: `node`.
+MermaidNodeMapperCallbackType = Callable[["Node"], str]
+
+#: Callback to map a node to a Mermaid edge definition string.
+#: The callback is called with the following arguments:
+#: `from_id`, `from_node`, `to_id`, `to_node`.
+MermaidEdgeMapperCallbackType = Callable[[int, "Node", int, "Node"], str]
+
+DEFAULT_DIRECTION: MermaidDirectionType = "TD"
+
+DEFAULT_NODE_TEMPLATE: str = "{node.name}"
+
+DEFAULT_EDGE_TEMPLATE: str = "{from_id} --> {to_id}"
+DEFAULT_EDGE_TEMPLATE_TYPED: str = '{from_id}-- "{kind}" -->{to_id}'
+# DEFAULT_EDGE_TEMPLATE_TYPED: str = '{from_id}-- "`{kind}`" -->{to_id}'
 
 
-def node_to_dot(
-    node: Node,
+def _node_to_mermaid_flowchart_iter(
     *,
-    add_self=False,
-    unique_nodes=True,
-    graph_attrs=None,
-    node_attrs=None,
-    edge_attrs=None,
-    node_mapper=None,
-    edge_mapper=None,
+    node: Node,
+    as_markdown: bool = True,
+    direction: MermaidDirectionType = "TD",
+    title: str | bool | None = True,
+    format: MermaidFormatType | None = None,
+    add_root: bool = True,
+    unique_nodes: bool = True,
+    node_mapper: Optional[MermaidNodeMapperCallbackType] | str = None,
+    edge_mapper: Optional[MermaidEdgeMapperCallbackType] | str = None,
 ) -> Iterator[str]:
-    """Generate DOT formatted output line-by-line.
+    """Generate Mermaid formatted output line-by-line.
 
-    https://graphviz.org/doc/info/attrs.html
+    https://mermaid.js.org/syntax/flowchart.html
     Args:
         mapper (method):
         add_self (bool):
         unique_nodes (bool):
     """
-    indent = "  "
     name = node.tree.name
-    used_keys = set()
+    id_to_idx = {}
 
-    def _key(n: Node):
+    if node_mapper is None:
+        node_mapper = lambda node: DEFAULT_NODE_TEMPLATE.format(node=node)
+    elif isinstance(node_mapper, str):
+        templ = node_mapper
+        node_mapper = lambda node: templ.format(node=node)
+
+    if isinstance(edge_mapper, str):
+        templ = edge_mapper
+
+        def edge_mapper(from_id, from_node, to_id, to_node):
+            return templ.format(
+                from_id=from_id, from_node=from_node, to_id=to_id, to_node=to_node
+            )
+
+    elif edge_mapper is None:
+
+        def edge_mapper(from_id, from_node, to_id, to_node):
+            kind = getattr(to_node, "kind", None)
+            templ = DEFAULT_EDGE_TEMPLATE_TYPED if kind else DEFAULT_EDGE_TEMPLATE
+            return templ.format(
+                from_id=from_id,
+                from_node=from_node,
+                to_id=to_id,
+                to_node=to_node,
+                kind=kind,
+            )
+
+    else:
+        assert callable(edge_mapper), "edge_mapper must be str or callable"
+
+    def _id(n: Node) -> DataIdType:
         return n._data_id if unique_nodes else n._node_id
 
-    def _attr_str(attr_def: dict, mapper=None, node=None):
-        if mapper:
-            if attr_def is None:
-                attr_def = {}
-            call_mapper(mapper, node, attr_def)
-        if not attr_def:
-            return ""
-        attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())  # noqa: B028
-        return " [" + attr_str + "]"
+    if as_markdown:
+        yield "```mermaid"
 
-    yield "# Generator: https://github.com/mar10/nutree/"
-    yield f'digraph "{name}" {{'  # noqa: B028
-
-    if graph_attrs or node_attrs or edge_attrs:
-        yield ""
-        yield f"{indent}# Default Definitions"
-        if graph_attrs:
-            yield f"{indent}graph {_attr_str(graph_attrs)}"
-        if node_attrs:
-            yield f"{indent}node {_attr_str(node_attrs)}"
-        if edge_attrs:
-            yield f"{indent}edge {_attr_str(edge_attrs)}"
+    if title:
+        yield "---"
+        yield f"title: {title if title is not True else name}"
+        yield "---"
 
     yield ""
-    yield f"{indent}# Node Definitions"
+    yield "%% Generator: https://github.com/mar10/nutree/"
+    yield ""
 
-    if add_self:
-        if node._parent:
-            attr_def = {}
-        else:  # __root__ inherits tree name by default
-            attr_def = {"label": f"{name}", "shape": "box"}
-
-        attr_str = _attr_str(attr_def, node_mapper, node)
-        yield f"{indent}{_key(node)}{attr_str}"
-
-    for n in node:
-        if unique_nodes:
-            key = n._data_id
-            if key in used_keys:
-                continue
-            used_keys.add(key)
-        else:
-            key = n._node_id
-
-        attr_def = {"label": n.name}
-        attr_str = _attr_str(attr_def, node_mapper, n)
-        yield f"{indent}{key}{attr_str}"
+    yield f"flowchart {direction}"
 
     yield ""
-    yield f"{indent}# Edge Definitions"
+    yield "%% Nodes:"
+    if add_root:
+        id_to_idx[_id(node)] = 0
+        name = node.name
+        yield f'0{{{{"{name}"}}}}'
+        # yield f'0("`{name}`")'
+
+    idx = 1
     for n in node:
-        if not add_self and n._parent is node:
+        key = _id(n)
+        if key in id_to_idx:
+            continue  # we use the initial clone instead
+        id_to_idx[key] = idx
+
+        name = node_mapper(n)
+        yield f'{idx}("{name}")'
+        # yield f'{idx}("`{name}`")'
+        idx += 1
+
+    yield ""
+    yield "%% Edges:"
+    for n in node:
+        if not add_root and n._parent is node:
             continue
-        attr_def = {}
-        attr_str = _attr_str(attr_def, edge_mapper, n)
-        yield f"{indent}{_key(n._parent)} -> {_key(n)}{attr_str}"
+        parent_key = _id(n._parent)
+        key = _id(n)
 
-    yield "}"
+        parent_idx = id_to_idx[parent_key]
+        idx = id_to_idx[key]
+        yield edge_mapper(parent_idx, n._parent, idx, n)
+
+    if as_markdown:
+        yield "```"
+    return
 
 
-def tree_to_mermaid(
-    tree: Tree,
+def node_to_mermaid_flowchart(
+    node: Node,
     target: Union[IO[str], str, Path],
     *,
-    format=None,
-    add_root=True,
-    unique_nodes=True,
-    graph_attrs=None,
-    node_attrs=None,
-    edge_attrs=None,
-    node_mapper: Optional[MapperCallbackType] = None,
-    edge_mapper: Optional[MapperCallbackType] = None,
+    as_markdown: bool = True,
+    direction: MermaidDirectionType = "TD",
+    title: str | bool | None = True,
+    format: MermaidFormatType | None = None,
+    add_root: bool = True,
+    unique_nodes: bool = True,
+    node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
+    edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
 ) -> None:
+    """Write a Mermaid flowchart to a file or stream."""
+
+    def _write(fp):
+        for line in _node_to_mermaid_flowchart_iter(
+            node=node,
+            as_markdown=as_markdown,
+            direction=direction,
+            title=title,
+            format=format,
+            add_root=add_root,
+            unique_nodes=unique_nodes,
+            node_mapper=node_mapper,
+            edge_mapper=edge_mapper,
+        ):
+            fp.write(line + "\n")
+
     if isinstance(target, str):
         target = Path(target)
 
     if isinstance(target, Path):
         if format:
-            dot_path = target.with_suffix(".gv")
+            mm_path = target.with_suffix(".mermaid")
         else:
-            dot_path = target
+            mm_path = target
 
-        # print("write", dot_path)
-        with open(dot_path, "w") as fp:
-            tree_to_mermaid(
-                tree=tree,
-                target=fp,
-                add_root=add_root,
-                unique_nodes=unique_nodes,
-                graph_attrs=graph_attrs,
-                node_attrs=node_attrs,
-                edge_attrs=edge_attrs,
-                node_mapper=node_mapper,
-                edge_mapper=edge_mapper,
-            )
+        with open(mm_path, "w") as fp:
+            _write(fp)
         return
+    elif format:
+        raise RuntimeError("Need a filepath to convert Mermaid output.")
 
-    # `target` is suppoesed to be an open, writable filelike
-    if format:
-        raise RuntimeError("Need a filepath to convert DOT output.")
-
-    with tree:
-        for line in tree.to_mermaid(
-            add_root=add_root,
-            unique_nodes=unique_nodes,
-            graph_attrs=graph_attrs,
-            node_attrs=node_attrs,
-            edge_attrs=edge_attrs,
-            node_mapper=node_mapper,
-            edge_mapper=edge_mapper,
-        ):
-            target.write(line + "\n")
+    # TODO: Use https://github.com/mermaid-js/mermaid-cli
+    _write(target)
     return

@@ -168,6 +168,127 @@ Let's visualize the result of the :ref:`diff-and-merge` example::
     Either install them separately or install nutree with extras: 
     ``pip install nutree[graph]``.
 
+.. _save-mermaid:
+
+Mermaid Format
+--------------
+
+Mermaid is a diagramming and charting tool that uses Markdown-inspired text 
+for defining diagrams. |br|
+It is a popular choice for documentation and is supported by many 
+`Markdown`_ editors. |br|
+`Mermaid`_ is a JavaScript library that renders the diagrams. |br|
+Nutree can convert trees to Mermaid format.
+
+Nutree implements conversion to `DOT format <https://en.wikipedia.org/wiki/DOT_(graph_description_language)>`_.
+Given this tree ::
+
+    Tree<'Root'>
+    ├── 'A'
+    │   ├── 'a1'
+    │   │   ├── 'a11'
+    │   │   ╰── 'a12'
+    │   ╰── 'a2'
+    ╰── 'B'
+        ╰── 'b1'
+            ├── 'a11'  <- second occurrence
+            ╰── 'b11'
+
+we can write a DOT formatted file like so::
+
+    tree.to_dotfile("graph.gv")
+
+::
+
+    digraph Root {
+        // Node definitions
+        __root__ [label="Root" shape="box"]
+        -2117698517398243110 [label="A"]
+        8696834500465194416 [label="a1"]
+        3848329043807418154 [label="a11"]
+        -8723831530700312132 [label="a12"]
+        -1180776893324476219 [label="a2"]
+        8369695036033697218 [label="B"]
+        1739272887205481547 [label="b1"]
+        -1397849070657872512 [label="b11"]
+
+        // Edge definitions
+        __root__ -> -2117698517398243110
+        -2117698517398243110 -> 8696834500465194416
+        8696834500465194416 -> 3848329043807418154
+        8696834500465194416 -> -8723831530700312132
+        -2117698517398243110 -> -1180776893324476219
+        __root__ -> 8369695036033697218
+        8369695036033697218 -> 1739272887205481547
+        1739272887205481547 -> 3848329043807418154
+        1739272887205481547 -> -1397849070657872512
+    }
+
+This DOT graph may be rendered in different formats like so::
+
+    tree.to_dotfile("tree_graph.png", format="png")
+
+.. image:: tree_graph.png
+
+Note that in the previous image, the `clone` tree node "a11" is represented 
+as a single graph node.
+Separate nodes can be created by passing the ``unique_nodes=False`` argument::
+
+    tree.to_dotfile("graph.png", format="png", unique_nodes=False)
+
+.. image:: tree_graph_single_inst.png
+
+Pass the ``add_root=False`` argument to remove the root node::
+
+    tree.to_dotfile("graph.png", format="png", add_root=False)
+
+.. image:: tree_graph_no_root.png
+
+The DOT output can be customized with default attribute definitions by passing 
+the `graph_attrs`, `node_attrs`, and `edge_attrs` arguments. |br|
+In addition, the default attributes can be overriden per node and edge by passing 
+mapper callbacks.
+See also `list of available attributes <https://graphviz.org/doc/info/attrs.html>`_.
+
+Let's visualize the result of the :ref:`diff-and-merge` example::
+
+    tree_2 = tree_0.diff(tree_1)
+
+    def node_mapper(node: Node, attr_def: dict):
+        dc = node.get_meta("dc")
+        if dc == DiffClassification.ADDED:
+            attr_def["color"] = "#00c000"
+        elif dc == DiffClassification.REMOVED:
+            attr_def["color"] = "#c00000"
+
+    def edge_mapper(node: Node, attr_def: dict):
+        dc = node.get_meta("dc")
+        if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
+            attr_def["color"] = "#00C000"
+        elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
+            attr_def["style"] = "dashed"
+            attr_def["color"] = "#C00000"
+
+    tree_2.to_dotfile(
+        "result.png",
+        format="png",
+        graph_attrs={},
+        node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
+        edge_attrs={},
+        node_mapper=node_mapper,
+        edge_mapper=edge_mapper,
+    )
+
+.. image:: tree_flowchart_diff.png
+
+.. note::
+    Writing of plain Markdown/Mermaid formats is natively implemented by `nutree`. |br|
+    Rendering of output formats like `png`, `svg`, etc. requires an installation
+    of `mermaid-cli <https://github.com/mermaid-js/mermaid-cli>`_.
+
+    Saving to Mermaid format is only available for :class:`~nutree.typed_tree.TypedTree`.
+
+
 .. _typed-tree:
 
 Typed Tree

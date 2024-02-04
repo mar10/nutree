@@ -93,6 +93,7 @@ Nutree Facts
   * :ref:`Compare two trees and calculate patches <diff-and-merge>`
   * :ref:`Save as DOT file and graphwiz diagram <save-dot>`
   * :ref:`Nodes can be plain strings or objects <objects>`
+  * :ref:`Save as Mermaid flow diagram <save-mermaid>`
   * :ref:`Different traversal methods <traversal>`
   * :ref:`(De)Serialize to JSON <serialize>`
   * :ref:`Fully type annotated <api-reference>`

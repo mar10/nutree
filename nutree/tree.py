@@ -12,6 +12,12 @@ from pathlib import Path
 from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 from nutree.diff import diff_tree
+from nutree.mermaid import (
+    MermaidDirectionType,
+    MermaidEdgeMapperCallbackType,
+    MermaidFormatType,
+    MermaidNodeMapperCallbackType,
+)
 
 from .common import (
     FILE_FORMAT_VERSION,
@@ -700,7 +706,7 @@ class Tree:
 
         See Node's :meth:`~nutree.node.Node.to_dot` method for details.
         """
-        yield from self._root.to_dot(
+        yield from self.system_root.to_dot(
             add_self=add_root,
             unique_nodes=unique_nodes,
             graph_attrs=graph_attrs,
@@ -745,12 +751,36 @@ class Tree:
     # def from_dot(self, dot):
     #     pass
 
-    def to_mermaid(self, target: Union[IO[str], str, Path], *, format=None):
-        """Save as mermaid flow diagram.
+    def to_mermaid_flowchart(
+        self,
+        target: Union[IO[str], str, Path],
+        *,
+        as_markdown: bool = True,
+        direction: MermaidDirectionType = "TD",
+        title: str | bool | None = True,
+        format: MermaidFormatType | None = None,
+        add_root: bool = True,
+        unique_nodes: bool = True,
+        node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
+        edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
+    ) -> Iterator[str]:
+        """Serialize a Mermaid flowchart representation.
 
-        See :ref:`` for details.
+        Optionally convert to a Graphviz display formats.
+        See :ref:`graphs` for details.
         """
-        return tree_to_rdf(self)
+        res = self.system_root.to_mermaid_flowchart(
+            target=target,
+            as_markdown=as_markdown,
+            direction=direction,
+            title=title,
+            format=format,
+            add_self=add_root,
+            unique_nodes=unique_nodes,
+            node_mapper=node_mapper,
+            edge_mapper=edge_mapper,
+        )
+        return res
 
     def to_rdf_graph(self):
         """Return an instance of ``rdflib.Graph``.
