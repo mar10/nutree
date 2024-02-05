@@ -741,7 +741,6 @@ class TestMermaid:
                     Path(__file__).parent / "temp/test_serialize_1.png",
                 )
 
-    @pytest.mark.xfail
     def test_serialize_mermaid_typed(self):
         """Save/load as  object tree with clones."""
         KEEP_FILES = not fixture.is_running_on_ci() and False
@@ -761,6 +760,7 @@ class TestMermaid:
                     Path(__file__).parent / "temp/test_serialize_2.md",
                 )
 
+    @pytest.mark.xfail(reason="mmdc may not be installed")
     def test_serialize_mermaid_svg(self):
         """Save/load as typed object tree with clones."""
         KEEP_FILES = not fixture.is_running_on_ci() and False
