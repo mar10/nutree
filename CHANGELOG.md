@@ -2,11 +2,13 @@
 
 ## 0.8.0 (unreleased)
 
+- BREAKING: Drop Python 3.7 support (EoL 2023-06-27).
 - `Tree.save()` accepts a `compression` argument that will enable compression.
   `Tree.load()` can detect if the input file has a compression header and will
   decompress automatically.
 - New traversal methods `LEVEL_ORDER`, `LEVEL_ORDER_RTL`, `ZIGZAG`, `ZIGZAG_RTL`.
   decompress transparently.
+- Save as mermaid flow diagram.
 
 ## 0.7.1 (2023-11-08)
 
@@ -24,7 +26,7 @@
 - Add `Tree.system_root` as alias for `Tree._root`.
 - Add `Tree.get_toplevel_nodes()` as alias for `tree.children.`
 - Support and test with Py3.12: don't forget to update pip, pipenv, and tox.
-- Deprecate Python 3.7 support.
+- Deprecate Python 3.7 support (EoL 2023-06-27).
 
 ## 0.5.1 (2023-05-29)
 

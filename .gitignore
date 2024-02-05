@@ -131,3 +131,4 @@ dmypy.json
 .vscode/
 tests/test_dev_local*.py
 .DS_Store
+tests/temp/
