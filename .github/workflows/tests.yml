@@ -25,7 +25,7 @@ jobs:
         # Python 3.11 # EOL 2027-10-24
         # Python 3.12 # EOL 2028-10-02
         # Python 3.13 # EOL
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v3

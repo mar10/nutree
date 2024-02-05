@@ -168,6 +168,80 @@ Let's visualize the result of the :ref:`diff-and-merge` example::
     Either install them separately or install nutree with extras: 
     ``pip install nutree[graph]``.
 
+.. _save-mermaid:
+
+Mermaid Format
+--------------
+
+Mermaid is a diagramming and charting tool that uses Markdown-inspired text 
+for defining diagrams. |br|
+It is a popular choice for documentation and is supported by many `Markdown`_ editors. |br|
+Nutree can convert trees to Mermaid format.
+
+Nutree implements conversion to `Mermaid flowchart format <https://mermaid.js.org/syntax/flowchart.html>`_.
+Given this tree ::
+
+    Tree<'Root'>
+    ├── 'A'
+    │   ├── 'a1'
+    │   │   ├── 'a11'
+    │   │   ╰── 'a12'
+    │   ╰── 'a2'
+    ╰── 'B'
+        ╰── 'b1'
+            ├── 'a11'  <- second occurrence
+            ╰── 'b11'
+
+we can write a Markdown file with embedded Mermaid flowchart like so::
+
+    tree.to_mermaid_flowchart("graph.md")
+
+::
+
+    ```mermaid
+    ---
+    title: Root
+    ---
+
+    %% Generator: https://github.com/mar10/nutree/
+
+    flowchart TD
+
+    %% Nodes:
+    1("A")
+    2("a1")
+    3("a11")
+    4("a12")
+    5("a2")
+    6("B")
+    7("b1")
+    8("b11")
+
+    %% Edges:
+    1 --> 2
+    2 --> 3
+    2 --> 4
+    1 --> 5
+    6 --> 7
+    7 --> 3
+    7 --> 8
+    ```
+
+
+This graph may be rendered in different formats like so (using a TypedTree
+example here)::
+
+    tree.to_mermaid_flowchart(
+        "/path/to/tree_1.png",
+        title="Typed Tree",
+        direction="LR",
+        format="png",
+        mmdc_options={"--theme": "forest"},
+    )
+
+.. image:: test_mermaid_typed.png
+
+
 .. _typed-tree:
 
 Typed Tree
