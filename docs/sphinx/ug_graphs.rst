@@ -227,6 +227,12 @@ we can write a Markdown file with embedded Mermaid flowchart like so::
     7 --> 8
     ```
 
+:: 
+
+    tree.to_mermaid_flowchart("graph.png", format="png")
+
+.. image:: test_mermaid.png
+
 
 This graph may be rendered in different formats like so (using a TypedTree
 example here)::
