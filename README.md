@@ -10,7 +10,7 @@
 [![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree)
 
 > _Nutree_ is a Python library for tree data structures with an intuitive,
-yet powerful, API.
+> yet powerful, API.
 
 **Nutree Facts**
 
@@ -20,8 +20,9 @@ Unobtrusive handling of arbitrary objects <br>
 Compare two trees and calculate patches <br>
 Save as DOT file and graphwiz diagram <br>
 Nodes can be plain strings or objects <br>
+(De)Serialize to (compressed) JSON <br>
+Save as Mermaid flow diagram <br>
 Different traversal methods <br>
-(De)Serialize to JSON <br>
 Fully type annotated <br>
 Convert to RDF graph <br>
 Typed child nodes <br>

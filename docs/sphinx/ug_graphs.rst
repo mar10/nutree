@@ -228,69 +228,18 @@ we can write a Markdown file with embedded Mermaid flowchart like so::
     ```
 
 
-This graph may be rendered in different formats like so::
+This graph may be rendered in different formats like so (using a TypedTree
+example here)::
 
-    tree.to_dotfile("graph.svg", format="svg")
-
-.. image:: test_serialize_1.svg 
-
-Note that in the previous image, the `clone` tree node "a11" is represented 
-as a single graph node.
-Separate nodes can be created by passing the ``unique_nodes=False`` argument::
-
-    tree.to_dotfile("graph.png", format="png", unique_nodes=False)
-
-.. image:: tree_graph_single_inst.png
-
-Pass the ``add_root=False`` argument to remove the root node::
-
-    tree.to_dotfile("graph.png", format="png", add_root=False)
-
-.. image:: tree_graph_no_root.png
-
-The DOT output can be customized with default attribute definitions by passing 
-the `graph_attrs`, `node_attrs`, and `edge_attrs` arguments. |br|
-In addition, the default attributes can be overriden per node and edge by passing 
-mapper callbacks.
-See also `list of available attributes <https://graphviz.org/doc/info/attrs.html>`_.
-
-Let's visualize the result of the :ref:`diff-and-merge` example::
-
-    tree_2 = tree_0.diff(tree_1)
-
-    def node_mapper(node: Node, attr_def: dict):
-        dc = node.get_meta("dc")
-        if dc == DiffClassification.ADDED:
-            attr_def["color"] = "#00c000"
-        elif dc == DiffClassification.REMOVED:
-            attr_def["color"] = "#c00000"
-
-    def edge_mapper(node: Node, attr_def: dict):
-        dc = node.get_meta("dc")
-        if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
-            attr_def["color"] = "#00C000"
-        elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
-            attr_def["style"] = "dashed"
-            attr_def["color"] = "#C00000"
-
-    tree_2.to_dotfile(
-        "result.png",
+    tree.to_mermaid_flowchart(
+        "/path/to/tree_1.png",
+        title="Typed Tree",
+        direction="LR",
         format="png",
-        graph_attrs={},
-        node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
-        edge_attrs={},
-        node_mapper=node_mapper,
-        edge_mapper=edge_mapper,
+        mmdc_options={"--theme": "forest"},
     )
 
-.. image:: tree_flowchart_diff.png
-
-.. note::
-    Writing of plain Markdown/Mermaid formats is natively implemented by `nutree`. |br|
-    Rendering of output formats like `png`, `svg`, etc. requires an installation
-    of `mermaid-cli <https://github.com/mermaid-js/mermaid-cli>`_.
-
-    Saving to Mermaid format is only available for :class:`~nutree.typed_tree.TypedTree`.
+.. image:: test_mermaid_typed.png
 
 
 .. _typed-tree:

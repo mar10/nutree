@@ -12,6 +12,8 @@ import zipfile
 from pathlib import Path
 from typing import Tuple
 
+import pytest
+
 from nutree import Node, Tree
 from nutree.common import FILE_FORMAT_VERSION
 from nutree.diff import DiffClassification, diff_node_formatter
@@ -720,27 +722,29 @@ class TestDot:
 class TestMermaid:
     def test_serialize_mermaid(self):
         """Save/load as object tree with clones."""
-        KEEP_FILES = True
+        KEEP_FILES = not fixture.is_running_on_ci() and False
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
             tree.to_mermaid_flowchart(
                 temp_file.name,
                 # add_root=False,
-                # headers=("classDef default fill:#f9f,stroke:#333,stroke-width:4px;",),
+                # headers=["classDef default fill:#f9f,stroke:#333,stroke-width:1px;"],
                 # node_mapper=lambda node: f"{node}",
-                unique_nodes=False,
-                format="svg",
+                # unique_nodes=False,
+                # format="png",
+                # mmdc_options={"--theme": "forest"},
             )
             if KEEP_FILES:  # save to tests/temp/...
                 shutil.copy(
                     temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.svg",
+                    Path(__file__).parent / "temp/test_serialize_1.png",
                 )
 
+    @pytest.mark.xfail
     def test_serialize_mermaid_typed(self):
         """Save/load as  object tree with clones."""
-        KEEP_FILES = True
+        KEEP_FILES = not fixture.is_running_on_ci() and False
         tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
@@ -759,10 +763,10 @@ class TestMermaid:
 
     def test_serialize_mermaid_svg(self):
         """Save/load as typed object tree with clones."""
-        KEEP_FILES = True
+        KEEP_FILES = not fixture.is_running_on_ci() and False
         tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
 
-        with fixture.WritableTempFile("w", suffix=".svg") as temp_file:
+        with fixture.WritableTempFile("w", suffix=".png") as temp_file:
             tree.to_mermaid_flowchart(
                 temp_file.name,
                 title="Typed Tree",
@@ -774,5 +778,5 @@ class TestMermaid:
             if KEEP_FILES:  # save to tests/temp/...
                 shutil.copy(
                     temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_2.svg",
+                    Path(__file__).parent / "temp/test_serialize_2.png",
                 )

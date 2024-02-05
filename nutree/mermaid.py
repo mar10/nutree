@@ -9,7 +9,7 @@ Functions and declarations to support
 from __future__ import annotations
 
 from pathlib import Path
-from subprocess import check_output
+from subprocess import CalledProcessError, check_output
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -53,7 +53,6 @@ def _node_to_mermaid_flowchart_iter(
     as_markdown: bool = True,
     direction: MermaidDirectionType = "TD",
     title: str | bool | None = True,
-    format: MermaidFormatType | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
@@ -165,6 +164,7 @@ def node_to_mermaid_flowchart(
     direction: MermaidDirectionType = "TD",
     title: str | bool | None = True,
     format: MermaidFormatType | None = None,
+    mmdc_options: dict | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
@@ -175,13 +175,15 @@ def node_to_mermaid_flowchart(
     if format:
         as_markdown = False
 
+    if mmdc_options is None:
+        mmdc_options = {}
+
     def _write(fp):
         for line in _node_to_mermaid_flowchart_iter(
             node=node,
             as_markdown=as_markdown,
             direction=direction,
             title=title,
-            format=format,
             add_root=add_root,
             unique_nodes=unique_nodes,
             headers=headers,
@@ -200,9 +202,35 @@ def node_to_mermaid_flowchart(
             _write(fp)
 
         if format:
+            # Convert Mermaid output using mmdc
             # See https://github.com/mermaid-js/mermaid-cli
-            check_output(["mmdc", "-i", mm_path, "-o", target])
+
+            # Make sure the source markdown stream is flushed
+            # fp.close()
+
+            mmdc_options["-i"] = str(mm_path)
+            mmdc_options["-o"] = str(target)
+            mmdc_options["-e"] = format
+
+            cmd = ["mmdc"]
+            for k, v in mmdc_options.items():
+                cmd.extend((k, v))
+
+            try:
+                check_output(cmd)
+            except CalledProcessError as e:
+                raise RuntimeError(
+                    f"Could not convert Mermaid output using {cmd}.\n"
+                    f"Error: {e.output.decode()}"
+                ) from e
+            except FileNotFoundError as e:
+                raise RuntimeError(
+                    f"Could not convert Mermaid output using {cmd}.\n"
+                    "Mermaid CLI (mmdc) not found.\n"
+                    "Please install it with `npm install -g mermaid.cli`."
+                ) from e
         return
+
     elif format:
         raise RuntimeError("Need a filepath to convert Mermaid output.")
 

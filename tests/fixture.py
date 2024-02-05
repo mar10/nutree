@@ -18,6 +18,10 @@ from nutree.tree import Node, Tree
 from nutree.typed_tree import TypedNode, TypedTree
 
 
+def is_running_on_ci() -> bool:
+    return bool(os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"))
+
+
 class Person:
     def __init__(self, name, *, age, guid=None) -> None:
         self.name = name
