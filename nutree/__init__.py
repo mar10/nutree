@@ -16,7 +16,7 @@ NOTE:
 """
 
 # flake8: noqa
-__version__ = "0.8.0"
+__version__ = "0.8.1-a1"
 
 from .common import (
     AmbiguousMatchError,
