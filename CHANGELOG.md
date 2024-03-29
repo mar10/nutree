@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.8.0 (unreleased)
+## 0.8.1 (unreleased)
+
+## 0.8.0 (2024-03-29)
 
 - BREAKING: Drop Python 3.7 support (EoL 2023-06-27).
 - `Tree.save()` accepts a `compression` argument that will enable compression.
