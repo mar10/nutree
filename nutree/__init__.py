@@ -14,6 +14,7 @@ NOTE:
     When pywin32 is installed, number must be a.b.c for MSI builds?
     "3.0.0a4" seems not to work in this case!
 """
+
 # flake8: noqa
 __version__ = "0.7.2-a1"
 

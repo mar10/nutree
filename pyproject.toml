@@ -30,7 +30,10 @@ src_paths = ["nutree", "tests"]
 # Support Python 3.10+.
 target-version = "py38"
 src = ["nutree", "tests"]
+
+[tool.ruff.lint]
 select = [
+  "B",  # bugbear
   "E",  # pycodestyle
   "F",  # pyflakes
   "G",  # flake8-logging-format

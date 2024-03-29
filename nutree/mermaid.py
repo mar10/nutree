@@ -10,16 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Callable,
-    Iterable,
-    Iterator,
-    Literal,
-    Optional,
-    Union,
-)
+from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, Literal
 
 from .common import DataIdType
 
@@ -56,8 +47,8 @@ def _node_to_mermaid_flowchart_iter(
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
-    node_mapper: Optional[MermaidNodeMapperCallbackType] | str = None,
-    edge_mapper: Optional[MermaidEdgeMapperCallbackType] | str = None,
+    node_mapper: MermaidNodeMapperCallbackType | None | str = None,
+    edge_mapper: MermaidEdgeMapperCallbackType | None | str = None,
 ) -> Iterator[str]:
     """Generate Mermaid formatted output line-by-line.
 
@@ -158,7 +149,7 @@ def _node_to_mermaid_flowchart_iter(
 
 def node_to_mermaid_flowchart(
     node: Node,
-    target: Union[IO[str], str, Path],
+    target: IO[str] | str | Path,
     *,
     as_markdown: bool = True,
     direction: MermaidDirectionType = "TD",
@@ -168,8 +159,8 @@ def node_to_mermaid_flowchart(
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
-    node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
-    edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
+    node_mapper: MermaidNodeMapperCallbackType | None = None,
+    edge_mapper: MermaidEdgeMapperCallbackType | None = None,
 ) -> None:
     """Write a Mermaid flowchart to a file or stream."""
     if format:

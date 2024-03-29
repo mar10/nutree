@@ -7,7 +7,7 @@ Functions and declarations to support
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Iterator, Optional, Union
+from typing import IO, TYPE_CHECKING, Iterator
 
 from .common import MapperCallbackType, call_mapper
 
@@ -109,7 +109,7 @@ def node_to_dot(
 
 def tree_to_dotfile(
     tree: Tree,
-    target: Union[IO[str], str, Path],
+    target: IO[str] | str | Path,
     *,
     format=None,
     add_root=True,
@@ -117,8 +117,8 @@ def tree_to_dotfile(
     graph_attrs=None,
     node_attrs=None,
     edge_attrs=None,
-    node_mapper: Optional[MapperCallbackType] = None,
-    edge_mapper: Optional[MapperCallbackType] = None,
+    node_mapper: MapperCallbackType | None = None,
+    edge_mapper: MapperCallbackType | None = None,
 ) -> None:
     if isinstance(target, str):
         target = Path(target)

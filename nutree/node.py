@@ -8,17 +8,7 @@ from __future__ import annotations
 import re
 from operator import attrgetter
 from pathlib import Path
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Union,
-)
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator
 
 from nutree.mermaid import (
     MermaidDirectionType,
@@ -112,16 +102,16 @@ class Node:
         data,
         *,
         parent: Node,
-        data_id: Optional[DataIdType] = None,
-        node_id: Optional[int] = None,
-        meta: Dict = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
+        meta: dict = None,
     ):
         self._data = data
         self._parent: Node = parent
 
         tree = parent._tree
         self._tree: Tree = tree
-        self._children: List[Node] = None
+        self._children: list[Node] = None
 
         if data_id is None:
             self._data_id: DataIdType = tree.calc_data_id(data)
@@ -199,7 +189,7 @@ class Node:
         return p if p._parent else None
 
     @property
-    def children(self) -> List[Node]:
+    def children(self) -> list[Node]:
         """Return list of direct child nodes (list may be empty)."""
         c = self._children
         return [] if c is None else c
@@ -222,7 +212,7 @@ class Node:
         return self._node_id
 
     @property
-    def meta(self) -> Union[Dict, None]:
+    def meta(self) -> dict | None:
         """Return the node's metadata dictionary or None if empty.
 
         See also :meth:`get_meta`, :meth:`set_meta`, :meth:`update_meta`,
@@ -346,19 +336,19 @@ class Node:
 
         return
 
-    def get_children(self) -> List[Node]:
+    def get_children(self) -> list[Node]:
         """Return list of direct child nodes (list may be empty)."""
         return self.children
 
-    def first_child(self) -> Union[Node, None]:
+    def first_child(self) -> Node | None:
         """First direct child node or None if no children exist."""
         return self._children[0] if self._children else None
 
-    def last_child(self) -> Union[Node, None]:
+    def last_child(self) -> Node | None:
         """Last direct child node or None if no children exist."""
         return self._children[-1] if self._children else None
 
-    def get_siblings(self, *, add_self=False) -> List[Node]:
+    def get_siblings(self, *, add_self=False) -> list[Node]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if add_self:
             return self._parent._children
@@ -368,14 +358,14 @@ class Node:
         """Return first sibling (may be self)."""
         return self._parent._children[0]
 
-    def prev_sibling(self) -> Union[Node, None]:
+    def prev_sibling(self) -> Node | None:
         """Predecessor or None, if node is first sibling."""
         if self.is_first_sibling():
             return None
         idx = self._parent._children.index(self)
         return self._parent._children[idx - 1]
 
-    def next_sibling(self) -> Union[Node, None]:
+    def next_sibling(self) -> Node | None:
         """Return successor or None, if node is last sibling."""
         if self.is_last_sibling():
             return None
@@ -386,7 +376,7 @@ class Node:
         """Return last node, that share own parent (may be `self`)."""
         return self._parent._children[-1]
 
-    def get_clones(self, *, add_self=False) -> List[Node]:
+    def get_clones(self, *, add_self=False) -> list[Node]:
         """Return a list of all nodes that reference the same data if any."""
         clones = self._tree._nodes_by_data_id[self._data_id]
         if add_self:
@@ -488,7 +478,7 @@ class Node:
         """Return true if this node is a parent, grandparent, ... of `other`."""
         return other.is_descendant_of(self)
 
-    def get_common_ancestor(self, other: Node) -> Union[Node, None]:
+    def get_common_ancestor(self, other: Node) -> Node | None:
         """Return the nearest node that contains `self` and `other` (may be None)."""
         if self._tree is other._tree:
             other_parent_set = {
@@ -499,7 +489,7 @@ class Node:
                     return parent
         return None
 
-    def get_parent_list(self, *, add_self=False, bottom_up=False) -> List[Node]:
+    def get_parent_list(self, *, add_self=False, bottom_up=False) -> list[Node]:
         """Return ordered list of all parent nodes."""
         res = []
         parent = self if add_self else self._parent
@@ -519,9 +509,9 @@ class Node:
 
     def add_child(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
-        before: Union[Node, bool, int, None] = None,
+        before: Node | bool | int | None = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
@@ -641,7 +631,7 @@ class Node:
 
     def append_child(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
         deep=None,
         data_id=None,
@@ -657,7 +647,7 @@ class Node:
 
     def prepend_child(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
         deep=None,
         data_id=None,
@@ -677,7 +667,7 @@ class Node:
 
     def prepend_sibling(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
         deep=None,
         data_id=None,
@@ -693,7 +683,7 @@ class Node:
 
     def append_sibling(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
         deep=None,
         data_id=None,
@@ -710,9 +700,9 @@ class Node:
 
     def move_to(
         self,
-        new_parent: Union[Node, Tree],
+        new_parent: Node | Tree,
         *,
-        before: Union[Node, bool, int, None] = None,
+        before: Node | bool | int | None = None,
     ):
         """Move this node to another parent.
 
@@ -796,10 +786,10 @@ class Node:
 
     def copy_to(
         self,
-        target: Union[Node, Tree],
+        target: Node | Tree,
         *,
         add_self=True,
-        before: Union[Node, bool, int, None] = None,
+        before: Node | bool | int | None = None,
         deep: bool = False,
     ) -> Node:
         """Copy this node to another parent and return the new node.
@@ -950,7 +940,7 @@ class Node:
         return
 
     def from_dict(
-        self, obj: List[Dict], *, mapper: Optional[DeserializeMapperType] = None
+        self, obj: list[dict], *, mapper: DeserializeMapperType | None = None
     ) -> None:
         """Append copies of all source children to self."""
         # TODO:
@@ -1046,7 +1036,9 @@ class Node:
         try:
             handler = getattr(self.__class__, f"_visit_{method.value}")
         except AttributeError:
-            raise NotImplementedError(f"Unsupported traversal method {method!r}.")
+            raise NotImplementedError(
+                f"Unsupported traversal method {method!r}."
+            ) from None
 
         if memo is None:
             memo = {}
@@ -1131,7 +1123,9 @@ class Node:
         try:
             handler = getattr(self, f"_iter_{method.value}")
         except AttributeError:
-            raise NotImplementedError(f"Unsupported traversal method {method!r}.")
+            raise NotImplementedError(
+                f"Unsupported traversal method {method!r}."
+            ) from None
 
         if add_self and method != IterMethod.POST_ORDER:
             yield self
@@ -1168,7 +1162,7 @@ class Node:
 
     def find_all(
         self, data=None, *, match=None, data_id=None, add_self=False, max_results=None
-    ) -> List[Node]:
+    ) -> list[Node]:
         """Return a list of matching nodes (list may be empty).
 
         See also :ref:`iteration-callbacks`.
@@ -1259,7 +1253,7 @@ class Node:
             except KeyError:
                 raise ValueError(
                     f"Invalid style {style!r}. Expected: {'|'.join(CONNECTORS.keys())}"
-                )
+                ) from None
 
         if repr is None:
             repr = self.DEFAULT_RENDER_REPR
@@ -1325,7 +1319,7 @@ class Node:
         iter_lines = self.format_iter(repr=repr, style=style, add_self=add_self)
         return join.join(iter_lines)
 
-    def to_dict(self, *, mapper: Optional[SerializeMapperType] = None) -> Dict:
+    def to_dict(self, *, mapper: SerializeMapperType | None = None) -> dict:
         """Return a nested dict of this node and its children."""
         res = {
             "data": str(self.data),
@@ -1386,10 +1380,10 @@ class Node:
     def to_list_iter(
         self,
         *,
-        mapper: Optional[SerializeMapperType] = None,
-        key_map: Optional[KeyMapType] = None,
-        value_map: Optional[ValueMapType] = None,
-    ) -> Iterator[Dict]:
+        mapper: SerializeMapperType | None = None,
+        key_map: KeyMapType | None = None,
+        value_map: ValueMapType | None = None,
+    ) -> Iterator[dict]:
         """Yield children as parent-referencing list.
 
         ```py
@@ -1498,7 +1492,7 @@ class Node:
 
     def to_mermaid_flowchart(
         self,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
         as_markdown: bool = True,
         direction: MermaidDirectionType = "TD",
@@ -1508,8 +1502,8 @@ class Node:
         add_self: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
-        edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
+        node_mapper: MermaidNodeMapperCallbackType | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
