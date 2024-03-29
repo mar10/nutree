@@ -4,7 +4,7 @@
 nutree
 ######
 
-|travis_badge| |nbsp| |pypi_badge| |nbsp| |lic_badge| |nbsp| |rtd_badge| |nbsp|
+|gha_badge| |nbsp| |pypi_badge| |nbsp| |lic_badge| |nbsp| |rtd_badge| |nbsp|
 |coverage_badge| |nbsp| |black_badge| |nbsp| |so_badge|
 
 *A Python library for tree data structures with an intuitive, yet powerful, API.*
@@ -107,9 +107,13 @@ Nutree Facts
 `Read more <installation.html>`_ ...
 
 
-.. |travis_badge| image:: https://travis-ci.com/mar10/nutree.svg?branch=main
+.. .. |travis_badge| image:: https://travis-ci.com/mar10/nutree.svg?branch=main
+..    :alt: Build Status
+..    :target: https://app.travis-ci.com/github/mar10/nutree
+
+.. |gha_badge| image:: https://github.com/mar10/nutree/actions/workflows/tests.yml/badge.svg
    :alt: Build Status
-   :target: https://app.travis-ci.com/github/mar10/nutree
+   :target: https://github.com/mar10/nutree/actions/workflows/tests.yml
 
 .. |pypi_badge| image:: https://img.shields.io/pypi/v/nutree.svg
    :alt: PyPI Version

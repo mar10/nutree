@@ -173,12 +173,13 @@ Let's visualize the result of the :ref:`diff-and-merge` example::
 Mermaid Format
 --------------
 
-Mermaid is a diagramming and charting tool that uses Markdown-inspired text 
-for defining diagrams. |br|
-It is a popular choice for documentation and is supported by many `Markdown`_ editors. |br|
-Nutree can convert trees to Mermaid format.
+`Mermaid <https://mermaid.js.org>`_ is a diagramming and charting tool that uses 
+`Markdown <https://www.markdownguide.org>`_ -inspired text for defining diagrams. |br|
+It is a popular choice for documentation and is supported by many Markdown 
+editors. 
 
-Nutree implements conversion to `Mermaid flowchart format <https://mermaid.js.org/syntax/flowchart.html>`_.
+Nutree implements conversion to 
+`Mermaid flowchart format <https://mermaid.js.org/syntax/flowchart.html>`_. |br|
 Given this tree ::
 
     Tree<'Root'>
@@ -227,7 +228,8 @@ we can write a Markdown file with embedded Mermaid flowchart like so::
     7 --> 8
     ```
 
-:: 
+A preview application would render a graph from this markdown definition. |br|
+However we can also create a rendered image file instead:: 
 
     tree.to_mermaid_flowchart("graph.png", format="png")
 
@@ -238,14 +240,21 @@ This graph may be rendered in different formats like so (using a TypedTree
 example here)::
 
     tree.to_mermaid_flowchart(
-        "/path/to/tree_1.png",
+        "/path/to/tree_1.svg",
         title="Typed Tree",
         direction="LR",
-        format="png",
+        format="svg",
         mmdc_options={"--theme": "forest"},
     )
 
 .. image:: test_mermaid_typed.png
+
+.. note::
+    Writing of plain Markdown format is natively implemented by `nutree`.
+
+    Rendering output formats like `png`, `svg`, or `pdf` requires the 
+    installation of the Node.js based command-line interface (CLI) ``mmdc``. |br|
+    See `mermaid.cli <https://github.com/mermaid-js/mermaid-cli>`_ for details.
 
 
 .. _typed-tree:

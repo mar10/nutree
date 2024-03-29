@@ -722,7 +722,7 @@ class TestDot:
 class TestMermaid:
     def test_serialize_mermaid(self):
         """Save/load as object tree with clones."""
-        KEEP_FILES = not fixture.is_running_on_ci() and True
+        KEEP_FILES = not fixture.is_running_on_ci() and False
         tree = fixture.create_tree(style="simple", clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
@@ -732,13 +732,13 @@ class TestMermaid:
                 # headers=["classDef default fill:#f9f,stroke:#333,stroke-width:1px;"],
                 # node_mapper=lambda node: f"{node}",
                 # unique_nodes=False,
-                format="png",
+                # format="png",
                 # mmdc_options={"--theme": "forest"},
             )
             if KEEP_FILES:  # save to tests/temp/...
                 shutil.copy(
                     temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.png",
+                    Path(__file__).parent / "temp/test_serialize_1.md",
                 )
 
     def test_serialize_mermaid_typed(self):
