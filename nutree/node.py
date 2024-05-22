@@ -960,7 +960,7 @@ class Node:
             )
             child_items = item.get("children")
             if child_items:
-                child.from_dict(child_items)
+                child.from_dict(child_items, mapper=mapper)
         return
 
     def _visit_pre(self, callback, memo) -> None:
