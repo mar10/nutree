@@ -630,7 +630,9 @@ class TestFromDict:
         tree_2 = Tree.from_dict(tree_dict_list)
 
         assert fixture.trees_equal(tree, tree_2)
-        assert type(tree_2.first_child().first_child().data) is type(tree.first_child().first_child().data)
+        assert type(tree_2.first_child().first_child().data) is type(
+            tree.first_child().first_child().data
+        )
         assert tree.first_child() is not tree_2.first_child()
         assert tree.first_child() == tree_2.first_child()
         assert tree.count == tree_2.count
@@ -678,7 +680,9 @@ class TestFromDict:
         tree_2 = Tree.from_dict(tree_dict_list, mapper=deserialize_mapper)
 
         assert fixture.trees_equal(tree, tree_2)
-        assert type(tree_2.first_child().first_child().data) is type(tree.first_child().first_child().data)
+        assert type(tree_2.first_child().first_child().data) is type(
+            tree.first_child().first_child().data
+        )
         assert tree.first_child() is not tree_2.first_child()
         assert tree.first_child().data.name == tree_2.first_child().data.name
         assert tree.count == tree_2.count
