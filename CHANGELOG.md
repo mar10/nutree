@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.8.1 (unreleased)
+## 0.9.0 (unreleased)
 
+- Add TypedTree.build_random_tree()
 - Fixed #7 Tree.from_dict failing to recreate an arbitrary object tree with a mapper.
 
 ## 0.8.0 (2024-03-29)

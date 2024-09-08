@@ -18,6 +18,7 @@ from nutree.mermaid import (
     MermaidFormatType,
     MermaidNodeMapperCallbackType,
 )
+from nutree.tree_generator import build_random_tree
 
 from .common import (
     FILE_FORMAT_VERSION,
@@ -841,6 +842,12 @@ class Tree:
                 assert node._data_id == data_id, node
         assert clone_count == len(node_list)
         return True
+
+    @classmethod
+    def build_random_tree(cls, structure_def: dict) -> Tree:
+        """Build a random tree for testing."""
+        tt = build_random_tree(cls, structure_def) 
+        return tt
 
 
 # ------------------------------------------------------------------------------
