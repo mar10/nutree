@@ -13,11 +13,13 @@ import zipfile
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
+from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, TypeVar, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
     from .tree import Tree
+
+    TTree = TypeVar("TTree", bound=Tree)
 
 #: Used as ID for the system root node
 ROOT_ID: str = "__root__"
@@ -158,6 +160,55 @@ CONNECTORS = {
     "round43c": ("  ", "│ ", "╰── ", "├── ", "╰─┬ ", "├─┬ "),
 }
 
+# ------------------------------------------------------------------------------
+# Generic data object to be used when nutree.Node instances
+# ------------------------------------------------------------------------------
+
+
+class GenericNodeData:
+    """Can be used as `node.data` instance for dict-like data.
+
+    Initialized with a dictionary of values. The values can be accessed
+    via the `node.data` attribute like `node.data["KEY"]`.
+    If the Tree is initialized with `shadow_attrs=True`, the values are also
+    available as attributes of the node like `node.KEY`.
+
+    If the tree is serialized, the values are copied to the serialized data.
+
+    Examples:
+
+    ```py
+    tree = Tree(shadow_attrs=True)
+    node = Node(GenericNodeData(a=1, b=2))
+    tree.add_child(node)
+
+    print(node.a)  # 1
+    print(node.data["b"])  # 2
+    ```
+
+    Alternatively, the data can be initialized with a dictionary like this:
+
+    ```py
+    d = {"a": 1, "b": 2}
+    node = Node(GenericNodeData(**d))
+    ```
+
+    See :ref:`generic-node-data` for details.
+    """
+
+    def __init__(self, **values) -> None:
+        self.values: dict = values
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}<{self.values}>"
+
+    def __getitem__(self, key):
+        return self.values[key]
+
+    @staticmethod
+    def serialize_mapper(nutree_node, data):
+        return nutree_node.data.values.copy()
+
 
 def get_version() -> str:
     from nutree import __version__
@@ -263,7 +314,7 @@ def open_as_uncompressed_input_stream(
     *,
     encoding: str = "utf8",
     auto_uncompress: bool = True,
-) -> IO[str]:
+) -> IO[str]:  # type: ignore
     """Open a file for reading, decompressing if necessary.
 
     Decompression is done by checking for the magic header (independent of the
@@ -296,7 +347,7 @@ def open_as_compressed_output_stream(
     *,
     compression: bool | int = True,
     encoding: str = "utf8",
-) -> IO[str]:
+) -> IO[str]:  # type: ignore
     """Open a file for writing, ZIP-compressing if requested.
 
     Example::

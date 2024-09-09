@@ -5,10 +5,8 @@ name = "pypi"
 
 [dev-packages]
 black = { version = "~=24.3", extras = ["jupyter"] }
+fabulist="*"
 isort = "*"
-# pylint = "*"
-# TODO: remove this line:
-# pytest-html = "!=3.2.0" # wait for https://github.com/pytest-dev/pytest-html/pull/583
 pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"
@@ -22,9 +20,9 @@ tox = "*"
 twine = "*"
 wheel = "*"
 yabs = "*"
-nutree = {path = ".",editable = true}
 ipykernel = "*"
 notebook = "*"
+nutree = {path = ".",editable = true}
 
 [packages]
 
@@ -32,4 +30,3 @@ notebook = "*"
 python_version = "3.12"
 
 [pipenv]
-# allow_prereleases = true

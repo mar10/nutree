@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 from typing import IO, Any, Iterator
 
-from nutree.common import (
+from .common import (
     ROOT_ID,
     CalcIdCallbackType,
     DeserializeMapperType,
@@ -23,8 +23,6 @@ from nutree.common import (
     ValueMapType,
     call_mapper,
 )
-from nutree.tree_generator import build_random_tree
-
 from .node import Node
 from .tree import Tree
 
@@ -779,11 +777,12 @@ class TypedTree(Tree):
         """
         return super().load(target, mapper=mapper, file_meta=file_meta)
 
-    @classmethod
-    def build_random_tree(cls, structure_def: dict) -> TypedTree:
-        """Build a random tree for testing."""
-        tt = build_random_tree(cls, structure_def) 
-        return tt
+    # @classmethod
+    # def build_random_tree(cls, structure_def: dict) -> TypedTree:
+    #     """Build a random tree for testing."""
+    #     tt = build_random_tree(cls, structure_def)
+    #     return tt
+
 
 # ------------------------------------------------------------------------------
 # - _SystemRootTypedNode

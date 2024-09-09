@@ -79,7 +79,7 @@ Shadow Attributes (Attribute Aliasing)
 
 When storing arbitrary objects within a tree node, all its attributes must be 
 accessed through the ``node.data`` attribute. |br|
-This can be simplified by using the ``shadow_attrs`` argument, which allow to
+This can be simplified by using the ``shadow_attrs`` argument, which allows to
 access ``node.data.age`` as ``node.age`` for example::
 
     tree = Tree("Persons", shadow_attrs=True)
@@ -114,3 +114,112 @@ access ``node.data.age`` as ``node.age`` for example::
 
     Note also that shadow attributes are readonly.
 
+.. _generic-node-data:
+
+Generic Node Data
+-----------------
+
+
+.. _random-trees:
+
+Generate Random Trees
+---------------------
+
+Example::
+
+    structure_def = {
+        #: Name of the new tree (str, optiona)
+        "name": "fmea",
+        #: Types define the default properties of the nodes
+        "types": {
+            #: Default properties for all node types
+            "*": { ... },
+            #: Specific default properties for each node type (optional)
+            "TYPE_1": { ... },
+            "TYPE_2": { ... },
+            ...
+        },
+        #: Relations define the possible parent / child relationships between
+        #: node types and optionally override the default properties.
+        "relations": {
+            "__root__": {
+                "TYPE_1": {
+                    ":count": 10,
+                    "ATTR_1": "Function {hier_idx}",
+                    "expanded": True,
+                },
+            },
+            "function": {
+                "failure": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Failure {hier_idx}",
+                },
+            },
+            "failure": {
+                "cause": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Cause {hier_idx}",
+                },
+                "effect": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Effect {hier_idx}",
+                },
+            },
+        },
+    }
+    tree = Tree.build_random_tree(structure_def)
+    tree.print()
+    assert type(tree) is Tree
+    assert tree.calc_height() == 3
+
+Example::
+
+    structure_def = {
+        "name": "fmea",
+        #: Types define the default properties of the nodes
+        "types": {
+            #: Default properties for all node types
+            "*": {":factory": GenericNodeData},
+            #: Specific default properties for each node type
+            "function": {"icon": "bi bi-gear"},
+            "failure": {"icon": "bi bi-exclamation-triangle"},
+            "cause": {"icon": "bi bi-tools"},
+            "effect": {"icon": "bi bi-lightning"},
+        },
+        #: Relations define the possible parent / child relationships between
+        #: node types and optionally override the default properties.
+        "relations": {
+            "__root__": {
+                "function": {
+                    ":count": 10,
+                    "title": "Function {hier_idx}",
+                    "expanded": True,
+                },
+            },
+            "function": {
+                "failure": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Failure {hier_idx}",
+                },
+            },
+            "failure": {
+                "cause": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Cause {hier_idx}",
+                },
+                "effect": {
+                    ":count": RangeRandomizer(1, 3),
+                    "title": "Effect {hier_idx}",
+                },
+            },
+        },
+    }
+    tree = Tree.build_random_tree(structure_def)
+    tree.print()
+    assert type(tree) is Tree
+    assert tree.calc_height() == 3
+
+    tree2 = TypedTree.build_random_tree(structure_def)
+    tree2.print()
+    assert type(tree2) is TypedTree
+    assert tree2.calc_height() == 3

@@ -54,71 +54,27 @@ tree.print()
 ```
 """
 
-from abc import ABC, abstractmethod
-
-from datetime import date, datetime, timedelta, timezone
 import random
-from typing import Any, Sequence, Union
+import sys
+from abc import ABC, abstractmethod
+from datetime import date, datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any, Sequence, Type, Union
+
+from nutree.common import GenericNodeData
+from nutree.node import Node
+from nutree.typed_tree import TypedNode
 
 try:
     from fabulist import Fabulist  # type: ignore
+
     fab = Fabulist()
 except ImportError:
+    # We run without fabulist (with reduced functionality in this case)
     Fabulist = None
     fab = None
 
-from nutree.typed_tree import TypedTree, TypedNode
-
-
-# fab = Fabulist()
-
-
-# ------------------------------------------------------------------------------
-# Generic data object to be used when nutree.Node instances
-# ------------------------------------------------------------------------------
-
-
-class GenericNodeData:
-    """Used as `node.data` instance in nutree.
-
-    Initialized with a dictionary of values. The values can be accessed
-    via the `node.data` attribute like `node.data["KEY"]`.
-    If the Tree is initialized with `shadow_attrs=True`, the values are also
-    available as attributes of the node like `node.KEY`.
-
-    If the tree is serialized, the values are copied to the serialized data.
-
-    Examples:
-
-    ```py
-    node = TypedNode(DictNodeData(a=1, b=2))
-    tree.add_child(node)
-
-    print(node.a)  # 1
-    print(node.data["b"])  # 2
-    ```
-
-    Alternatively, the data can be initialized with a dictionary like this:
-    ```py
-    d = {"a": 1, "b": 2}
-    node = TypedNode(DictNodeData(**d))
-    ```
-
-    See https://github.com/mar10/nutree
-    """
-
-    def __init__(self, **values) -> None:
-        self.values: dict = values
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}<{self.values}>"
-
-    def __getitem__(self, key):
-        return self.values[key]
-
-    @staticmethod
-    def serialize_mapper(nutree_node, data):
-        return nutree_node.data.values.copy()
+if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
+    from nutree.common import TTree
 
 
 # ------------------------------------------------------------------------------
@@ -136,7 +92,7 @@ class Randomizer(ABC):
 
     def __init__(self, *, probability: float = 1.0) -> None:
         assert (
-            probability is None or 0.0 <= probability <= 1.0
+            type(probability) is float and 0.0 <= probability <= 1.0
         ), f"probality must be in the range [0.0 .. 1.0]: {probability}"
         self.probability = probability
 
@@ -155,11 +111,14 @@ class RangeRandomizer(Randomizer):
     Args:
         min_val (Union[float, int]): The minimum value of the range.
         max_val (Union[float, int]): The maximum value of the range.
-        probability (float, optional): The probability of generating a value. Defaults to 1.0.
-        none_value (Any, optional): The value to return when skipping generation. Defaults to None.
+        probability (float, optional): The probability of generating a value.
+            Defaults to 1.0.
+        none_value (Any, optional): The value to return when skipping generation.
+            Defaults to None.
 
     Returns:
-        Union[float, int, None]: The generated random value, or none_value if generation is skipped.
+        Union[float, int, None]: The generated random value, or none_value
+            if generation is skipped.
     """
 
     """"""
@@ -173,7 +132,9 @@ class RangeRandomizer(Randomizer):
         none_value: Any = None,
     ) -> None:
         super().__init__(probability=probability)
-        assert type(min_val) is type(max_val)
+        assert type(min_val) is type(
+            max_val
+        ), f"min_val and max_val must be of the same type: {min_val}, {max_val}"
         self.is_float = type(min_val) is float
         self.min = min_val
         self.max = max_val
@@ -194,9 +155,16 @@ class DateRangeRandomizer(Randomizer):
 
     Args:
         min_dt (date): The minimum date of the range.
-        max_dt (Union[date, int]): The maximum date of the range. Pass an integer to specify the number of days from min_dt.
-        as_js_stamp (bool, optional): If True, return the date as a JavaScript timestamp. Defaults to True.
-        probability (float, optional): The probability of generating a value. Defaults to 1.0.
+        max_dt (Union[date, int]): The maximum date of the range.
+            Pass an integer to specify the number of days from min_dt.
+        as_js_stamp (bool, optional): If True, return the date as a JavaScript
+            timestamp. Defaults to True.
+        probability (float, optional): The probability of generating a value.
+            Defaults to 1.0.
+    Examples:
+        >>> DateRangeRandomizer(date(2020, 1, 1), date(2020, 12, 31)).generate()
+        datetime.date(2020, 3, 7)
+        >>> DateRangeRandomizer(date(2020, 1, 1), 365).generate()
     """
 
     def __init__(
@@ -208,12 +176,19 @@ class DateRangeRandomizer(Randomizer):
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
-        if type(max_dt) in (int, float):
+        assert type(min_dt) is date, f"min_dt must be a date: {min_dt}"
+        assert type(max_dt) in (date, int), f"max_dt must be a date or int: {max_dt}"
+
+        if type(max_dt) is int:
             self.delta_days = max_dt
-            max_dt = min_dt + self.delta_days
+            max_dt = min_dt + timedelta(days=self.delta_days)
         else:
             self.delta_days = (max_dt - min_dt).days
-        assert max_dt > min_dt
+
+        assert (
+            max_dt > min_dt
+        ), f"max_dt must be greater than min_dt: {min_dt}, {max_dt}"
+
         self.min = min_dt
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
@@ -276,11 +251,18 @@ class SampleRandomizer(Randomizer):
     ) -> None:
         super().__init__(probability=probability)
         self.sample_list = sample_list
+        # TODO: remove this when support for Python 3.8 is removed
+        if sys.version_info < (3, 9) and counts:
+            raise RuntimeError("counts argument requires Python 3.9 or later.")
+
         self.counts = counts
 
     def generate(self) -> Any:
         if self._skip_value():
             return
+        # TODO: remove this when support for Python 3.8 is removed
+        if sys.version_info < (3, 9) and not self.counts:
+            return random.sample(self.sample_list, 1)[0]
         return random.sample(self.sample_list, 1, counts=self.counts)[0]
 
 
@@ -301,10 +283,11 @@ class TextRandomizer(Randomizer):
 
     Args:
         template (str | list): A template string or list of strings.
-        probability (float, optional): The probability of generating a value. Defaults to 1.0.
+        probability (float, optional): The probability of generating a value.
+            Defaults to 1.0.
     """
 
-    def __init__(self, template: str | list, *, probability: float = 1.0) -> None:
+    def __init__(self, template: Union[str, list], *, probability: float = 1.0) -> None:
         super().__init__(probability=probability)
         if not fab:
             raise RuntimeError("Need fabulist installed to generate random text.")
@@ -324,22 +307,26 @@ class BlindTextRandomizer(Randomizer):
     text values.
 
     Args:
-        sentence_count (int | tuple, optional): The number of sentences to generate. Defaults to (2, 6).
+        sentence_count (int | tuple, optional): The number of sentences to generate.
+            Defaults to (2, 6).
         dialect (str, optional): The dialect of the text. Defaults to "ipsum".
         entropy (int, optional): The entropy of the text. Defaults to 2.
-        keep_first (bool, optional): If True, keep the first sentence. Defaults to False.
-        words_per_sentence (int | tuple, optional): The number of words per sentence. Defaults to (3, 15).
-        probability (float, optional): The probability of generating a value. Defaults to 1.0.
+        keep_first (bool, optional): If True, keep the first sentence.
+            Defaults to False.
+        words_per_sentence (int | tuple, optional): The number of words per sentence.
+            Defaults to (3, 15).
+        probability (float, optional): The probability of generating a value.
+            Defaults to 1.0.
     """
 
     def __init__(
         self,
         *,
-        sentence_count: int | tuple = (2, 6),
+        sentence_count: Union[int, tuple] = (2, 6),
         dialect: str = "ipsum",
         entropy: int = 2,
         keep_first: bool = False,
-        words_per_sentence: int | tuple = (3, 15),
+        words_per_sentence: Union[int, tuple] = (3, 15),
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
@@ -404,7 +391,7 @@ def _merge_specs(node_type: str, spec: dict, types: dict) -> dict:
 
 def _make_tree(
     *,
-    parent_node: TypedNode,
+    parent_node: Node,
     parent_type: str,
     types: dict,
     relations: dict,
@@ -423,10 +410,10 @@ def _make_tree(
             i += 1  # 1-based
             p = f"{prefix}.{i}" if prefix else f"{i}"
 
-            # Resolve `Randomizer` values and resolve `{prefix}` and `{i}` macros
+            # Resolve `Randomizer` values and expand `{idx}` and `{hier_idx}` macros
             data = spec.copy()
 
-            _resolve_random_dict(data, macros={"i": i, "prefix": p})
+            _resolve_random_dict(data, macros={"idx": i, "hier_idx": p})
 
             if callback:
                 callback(data)
@@ -451,18 +438,19 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class, structure_def: dict) -> TypedTree:
+def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTree":
     """
     Return a nutree.TypedTree with random data from a specification.
     """
+    structure_def = structure_def.copy()
+
     name = structure_def.pop("name", None)
-
-    tree = tree_class(name=name, shadow_attrs=True)
-
     types = structure_def.pop("types", {})
-    relations = structure_def.pop("relations")
+    relations = structure_def.pop("relations")  # mandatory
     assert not structure_def, f"found extra data: {structure_def}"
     assert "__root__" in relations, "missing '__root__' relation"
+
+    tree: TTree = tree_class(name=name, shadow_attrs=True)
 
     _make_tree(
         parent_node=tree.system_root,

@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Iterable, Iterator
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, Type
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -18,7 +18,6 @@ from nutree.mermaid import (
     MermaidFormatType,
     MermaidNodeMapperCallbackType,
 )
-from nutree.tree_generator import build_random_tree
 
 from .common import (
     FILE_FORMAT_VERSION,
@@ -43,6 +42,9 @@ from .common import (
 from .dot import tree_to_dotfile
 from .node import Node
 from .rdf import tree_to_rdf
+
+if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
+    from nutree.common import TTree
 
 _DELETED_TAG = "<deleted>"
 
@@ -844,9 +846,19 @@ class Tree:
         return True
 
     @classmethod
-    def build_random_tree(cls, structure_def: dict) -> Tree:
-        """Build a random tree for testing."""
-        tt = build_random_tree(cls, structure_def) 
+    def build_random_tree(cls: Type[TTree], structure_def: dict) -> TTree:
+        """Build a random tree for .
+
+        Returns a new :class:`Tree` instance with random nodes, as defined by
+        structure_def.
+        If called like ``TypedTree.build_random_tree(structure_def)``, this
+        method will return a :class:`~nutree.typed_tree.TypedTree` instance.
+
+        See :ref:`random-trees` for details.
+        """
+        from nutree.tree_generator import build_random_tree
+
+        tt = build_random_tree(tree_class=cls, structure_def=structure_def)
         return tt
 
 
