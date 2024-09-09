@@ -5,7 +5,7 @@ Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdfli
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Callable, Union
 
 from nutree.common import IterationControl
 
@@ -64,11 +64,11 @@ def _make_graph() -> Graph:
 
 def _add_child_node(
     graph: Graph,
-    parent_graph_node: Optional[IdentifiedNode],
+    parent_graph_node: IdentifiedNode | None,
     tree_node: TypedNode,
     index: int,
     node_mapper: RDFMapperCallbackType,
-) -> Union[IdentifiedNode, IterationControl, bool]:
+) -> IdentifiedNode | IterationControl | bool:
     """"""
     graph_node = Literal(tree_node.data_id)
 

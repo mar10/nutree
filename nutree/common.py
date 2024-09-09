@@ -13,18 +13,7 @@ import zipfile
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
@@ -176,7 +165,7 @@ def get_version() -> str:
     return __version__
 
 
-def check_python_version(min_version: Tuple[str]) -> bool:
+def check_python_version(min_version: tuple[str]) -> bool:
     """Check for deprecated Python version."""
     if sys.version_info < min_version:
         min_ver = ".".join([str(s) for s in min_version[:3]])
@@ -190,7 +179,7 @@ def check_python_version(min_version: Tuple[str]) -> bool:
     return True
 
 
-def call_mapper(fn: Optional[MapperCallbackType], node: Node, data: dict) -> Any:
+def call_mapper(fn: MapperCallbackType | None, node: Node, data: dict) -> Any:
     """Call the function and normalize result and exceptions.
 
     Handles `MapperCallbackType`:
@@ -264,13 +253,13 @@ def call_traversal_cb(fn: Callable, node: Node, memo: Any) -> False | None:
             RuntimeWarning,
             stacklevel=3,
         )
-        raise StopTraversal(e.value)
+        raise StopTraversal(e.value) from None
     return None
 
 
 @contextmanager
 def open_as_uncompressed_input_stream(
-    path: Union[str, Path],
+    path: str | Path,
     *,
     encoding: str = "utf8",
     auto_uncompress: bool = True,
@@ -303,7 +292,7 @@ def open_as_uncompressed_input_stream(
 
 @contextmanager
 def open_as_compressed_output_stream(
-    path: Union[str, Path],
+    path: str | Path,
     *,
     compression: bool | int = True,
     encoding: str = "utf8",

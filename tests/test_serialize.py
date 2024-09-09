@@ -622,6 +622,75 @@ class TestToDictList:
         assert tree_2._self_check()
 
 
+class TestFromDict:
+    def test_from_dict(self):
+        """Save/load a tree with to_dict_list and from_dict with objects."""
+        tree = fixture.create_tree()
+        tree_dict_list = tree.to_dict_list()
+        tree_2 = Tree.from_dict(tree_dict_list)
+
+        assert fixture.trees_equal(tree, tree_2)
+        assert type(tree_2.first_child().first_child().data) is type(
+            tree.first_child().first_child().data
+        )
+        assert tree.first_child() is not tree_2.first_child()
+        assert tree.first_child() == tree_2.first_child()
+        assert tree.count == tree_2.count
+
+        assert tree._self_check()
+        assert tree_2._self_check()
+
+    def test_from_dict_objects(self):
+        """Save/load an object tree with to_dict_list and from_dict"""
+
+        def _calc_id(tree, data):
+            # print("calc_id", data)
+            if isinstance(data, (fixture.Person, fixture.Department)):
+                return data.guid
+            return hash(data)
+
+        def serialize_mapper(node: Node, data: dict) -> dict:
+            if isinstance(node.data, fixture.Department):
+                # _calc_id() already makes sure that the 'data_id' is set to `guid`
+                # data["guid"] = node.data.guid
+                data["type"] = "dept"
+                data["name"] = node.data.name
+            elif isinstance(node.data, fixture.Person):
+                data["type"] = "person"
+                data["name"] = node.data.name
+                data["age"] = node.data.age
+            return data
+
+        def deserialize_mapper(parent, data):
+            node_type = data["type"]
+            # print("deserialize_mapper", data)
+            if node_type == "person":
+                data = fixture.Person(
+                    name=data["name"], age=data["age"], guid=data["data_id"]
+                )
+            elif node_type == "dept":
+                data = fixture.Department(name=data["name"], guid=data["data_id"])
+            # print(f"deserialize_mapper -> {data}")
+            return data
+
+        # Use a tree
+        tree = Tree(calc_data_id=_calc_id)
+        fixture.create_tree(style="objects", tree=tree)
+        tree_dict_list = tree.to_dict_list(mapper=serialize_mapper)
+        tree_2 = Tree.from_dict(tree_dict_list, mapper=deserialize_mapper)
+
+        assert fixture.trees_equal(tree, tree_2)
+        assert type(tree_2.first_child().first_child().data) is type(
+            tree.first_child().first_child().data
+        )
+        assert tree.first_child() is not tree_2.first_child()
+        assert tree.first_child().data.name == tree_2.first_child().data.name
+        assert tree.count == tree_2.count
+
+        assert tree._self_check()
+        assert tree_2._self_check()
+
+
 class TestDot:
     def test_serialize_dot(self):
         """Save/load as  object tree with clones."""
@@ -738,7 +807,7 @@ class TestMermaid:
             if KEEP_FILES:  # save to tests/temp/...
                 shutil.copy(
                     temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.png",
+                    Path(__file__).parent / "temp/test_serialize_1.md",
                 )
 
     def test_serialize_mermaid_typed(self):

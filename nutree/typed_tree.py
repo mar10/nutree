@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Optional, Union
+from typing import IO, Any, Iterator
 
 from nutree.common import (
     ROOT_ID,
@@ -61,7 +61,7 @@ class TypedNode(Node):
         parent: TypedNode,
         data_id=None,
         node_id=None,
-        meta: Dict = None,
+        meta: dict = None,
     ):
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
@@ -96,7 +96,7 @@ class TypedNode(Node):
         return p if p._parent else None
 
     @property
-    def children(self) -> List[TypedNode]:
+    def children(self) -> list[TypedNode]:
         """Return list of direct child nodes (list may be empty).
 
         Note that this property returns all children, independent of the kind.
@@ -105,7 +105,7 @@ class TypedNode(Node):
         c = self._children
         return [] if c is None else c
 
-    def get_children(self, kind: Union[str, ANY_KIND]) -> List[TypedNode]:
+    def get_children(self, kind: str | ANY_KIND) -> list[TypedNode]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -120,7 +120,7 @@ class TypedNode(Node):
     #     """Change node's `data` and/or `data_id` and update bookkeeping."""
     #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
-    def first_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+    def first_child(self, kind: str | ANY_KIND) -> TypedNode | None:
         """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -133,7 +133,7 @@ class TypedNode(Node):
                 return n
         return None
 
-    def last_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+    def last_child(self, kind: str | ANY_KIND) -> TypedNode | None:
         """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -147,13 +147,13 @@ class TypedNode(Node):
                 return n
         return None
 
-    def has_children(self, kind: Union[str, ANY_KIND]) -> bool:
+    def has_children(self, kind: str | ANY_KIND) -> bool:
         """Return true if this node has one or more children."""
         if kind is ANY_KIND:
             return bool(self._children)
         return len(self.get_children(kind)) > 1
 
-    def get_siblings(self, *, add_self=False, any_kind=False) -> List[TypedNode]:
+    def get_siblings(self, *, add_self=False, any_kind=False) -> list[TypedNode]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
             return super().get_siblings(add_self=add_self)
@@ -181,7 +181,7 @@ class TypedNode(Node):
                 return n
         raise AssertionError("Internal error")
 
-    def prev_sibling(self, *, any_kind=False) -> Union[TypedNode, None]:
+    def prev_sibling(self, *, any_kind=False) -> TypedNode | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""
         pc = self._parent._children
         own_idx = pc.index(self)
@@ -192,7 +192,7 @@ class TypedNode(Node):
                     return n
         return None
 
-    def next_sibling(self, *, any_kind=False) -> Union[TypedNode, None]:
+    def next_sibling(self, *, any_kind=False) -> TypedNode | None:
         """Return successor `of the same kind` or None if node is last sibling."""
         pc = self._parent._children
         pc_len = len(pc)
@@ -236,10 +236,10 @@ class TypedNode(Node):
 
     def add_child(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         kind: str = None,
-        before: Union[TypedNode, bool, int, None] = None,
+        before: TypedNode | bool | int | None = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
@@ -327,7 +327,7 @@ class TypedNode(Node):
 
     def append_child(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         kind: str = None,
         deep=None,
@@ -349,7 +349,7 @@ class TypedNode(Node):
 
     def prepend_child(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         kind: str = None,
         deep=None,
@@ -371,7 +371,7 @@ class TypedNode(Node):
 
     def prepend_sibling(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         deep=None,
         data_id=None,
@@ -387,7 +387,7 @@ class TypedNode(Node):
 
     def append_sibling(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         deep=None,
         data_id=None,
@@ -404,9 +404,9 @@ class TypedNode(Node):
 
     def move_to(
         self,
-        new_parent: Union[TypedNode, TypedTree],
+        new_parent: TypedNode | TypedTree,
         *,
-        before: Union[TypedNode, bool, int, None] = None,
+        before: TypedNode | bool | int | None = None,
     ):
         """Move this node before or after `new_parent`."""
         raise NotImplementedError
@@ -616,10 +616,10 @@ class TypedTree(Tree):
 
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         *,
-        factory: Optional[NodeFactoryType] = None,
-        calc_data_id: Optional[CalcIdCallbackType] = None,
+        factory: NodeFactoryType | None = None,
+        calc_data_id: CalcIdCallbackType | None = None,
         shadow_attrs: bool = False,
     ):
         if factory is None:
@@ -633,7 +633,7 @@ class TypedTree(Tree):
         return super().__getitem__(data)
 
     @staticmethod
-    def deserialize_mapper(parent: Node, data: dict) -> Union[str, object] | None:
+    def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a
@@ -645,10 +645,10 @@ class TypedTree(Tree):
 
     def add_child(
         self,
-        child: Union[TypedNode, TypedTree, Any],
+        child: TypedNode | TypedTree | Any,
         *,
         kind: str = None,
-        before: Union[TypedNode, bool, int, None] = None,
+        before: TypedNode | bool | int | None = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
@@ -669,15 +669,15 @@ class TypedTree(Tree):
     #: Alias for :meth:`add_child`
     add = add_child  # Must re-bind here
 
-    def first_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+    def first_child(self, kind: str | ANY_KIND) -> TypedNode | None:
         """Return the first toplevel node."""
         return self._root.first_child(kind=kind)
 
-    def last_child(self, kind: Union[str, ANY_KIND]) -> Union[TypedNode, None]:
+    def last_child(self, kind: str | ANY_KIND) -> TypedNode | None:
         """Return the last toplevel node."""
         return self._root.last_child(kind=kind)
 
-    def iter_by_type(self, kind: Union[str, ANY_KIND]) -> Iterator[TypedNode]:
+    def iter_by_type(self, kind: str | ANY_KIND) -> Iterator[TypedNode]:
         if kind == ANY_KIND:
             return self.iterator()
         for n in self.iterator():
@@ -687,12 +687,12 @@ class TypedTree(Tree):
 
     def save(
         self,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
-        mapper: Optional[SerializeMapperType] = None,
-        meta: Optional[dict] = None,
-        key_map: Union[KeyMapType, bool] = True,
-        value_map: Union[ValueMapType, bool] = True,
+        mapper: SerializeMapperType | None = None,
+        meta: dict | None = None,
+        key_map: KeyMapType | bool = True,
+        value_map: ValueMapType | bool = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
@@ -725,7 +725,7 @@ class TypedTree(Tree):
 
     @classmethod
     def _from_list(
-        cls, obj: List[Dict], *, mapper: Optional[DeserializeMapperType] = None
+        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
     ) -> TypedTree:
         tree = cls()
 
@@ -766,9 +766,9 @@ class TypedTree(Tree):
     @classmethod
     def load(
         cls,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
-        mapper: Optional[DeserializeMapperType] = None,
+        mapper: DeserializeMapperType | None = None,
         file_meta: dict = None,
     ) -> TypedTree:
         """Create a new :class:`TypedTree` instance from a JSON file stream.

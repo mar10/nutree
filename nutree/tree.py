@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Union
+from typing import IO, Any, Iterable, Iterator
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -86,10 +86,10 @@ class Tree:
 
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         *,
-        factory: Optional[NodeFactoryType] = None,
-        calc_data_id: Optional[CalcIdCallbackType] = None,
+        factory: NodeFactoryType | None = None,
+        calc_data_id: CalcIdCallbackType | None = None,
         shadow_attrs: bool = False,
     ):
         self._lock = threading.RLock()
@@ -227,12 +227,12 @@ class Tree:
         return
 
     @property
-    def children(self) -> List[Node]:
+    def children(self) -> list[Node]:
         """Return list of direct child nodes, i.e. toplevel nodes
         (list may be empty)."""
         return self._root.children
 
-    def get_toplevel_nodes(self) -> List[Node]:
+    def get_toplevel_nodes(self) -> list[Node]:
         """Return list of direct child nodes, i.e. toplevel nodes (may be
         empty, alias for :meth:`children`)."""
         return self._root.children
@@ -262,7 +262,7 @@ class Tree:
         return data
 
     @staticmethod
-    def deserialize_mapper(parent: Node, data: dict) -> Union[str, object] | None:
+    def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
@@ -338,7 +338,7 @@ class Tree:
         style=None,
         title=None,
         join: str = "\n",
-        file: Optional[IO[str]] = None,
+        file: IO[str] | None = None,
     ) -> None:
         """Convenience method that simply runs print(self. :meth:`format()`)."""
         print(
@@ -348,9 +348,9 @@ class Tree:
 
     def add_child(
         self,
-        child: Union[Node, Tree, Any],
+        child: Node | Tree | Any,
         *,
-        before: Union[Node, bool, int, None] = None,
+        before: Node | bool | int | None = None,
         deep: bool = None,
         data_id=None,
         node_id=None,
@@ -391,7 +391,7 @@ class Tree:
             new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
 
-    def copy_to(self, target: Union[Node, Tree], *, deep=True) -> None:
+    def copy_to(self, target: Node | Tree, *, deep=True) -> None:
         """Copy this tree's nodes to another target.
 
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
@@ -419,7 +419,7 @@ class Tree:
 
     def find_all(
         self, data=None, *, match=None, data_id=None, max_results: int = None
-    ) -> List[Node]:
+    ) -> list[Node]:
         """Return a list of matching nodes (list may be empty).
 
         See also Node's :meth:`~nutree.node.Node.find_all` method and
@@ -443,7 +443,7 @@ class Tree:
 
     def find_first(
         self, data=None, *, match=None, data_id=None, node_id=None
-    ) -> Union[Node, None]:
+    ) -> Node | None:
         """Return the one matching node or `None`.
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
@@ -478,9 +478,7 @@ class Tree:
         """
         self._root.sort_children(key=key, reverse=reverse, deep=deep)
 
-    def to_dict_list(
-        self, *, mapper: Optional[SerializeMapperType] = None
-    ) -> List[Dict]:
+    def to_dict_list(self, *, mapper: SerializeMapperType | None = None) -> list[dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         child nodes and return list of results."""
         res = []
@@ -490,7 +488,7 @@ class Tree:
         return res
 
     @classmethod
-    def from_dict(cls, obj: List[Dict], *, mapper=None) -> Tree:
+    def from_dict(cls, obj: list[dict], *, mapper=None) -> Tree:
         """Return a new :class:`Tree` instance from a list of dicts.
 
         See also :meth:`~nutree.tree.Tree.to_dict_list` and
@@ -504,10 +502,10 @@ class Tree:
     def to_list_iter(
         self,
         *,
-        mapper: Optional[SerializeMapperType] = None,
-        key_map: Optional[KeyMapType] = None,
-        value_map: Optional[ValueMapType] = None,
-    ) -> Iterator[Dict]:
+        mapper: SerializeMapperType | None = None,
+        key_map: KeyMapType | None = None,
+        value_map: ValueMapType | None = None,
+    ) -> Iterator[dict]:
         """Yield a parent-referencing list of child nodes."""
         return self._root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
@@ -515,13 +513,13 @@ class Tree:
 
     def save(
         self,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
         compression: bool | int = False,
-        mapper: Optional[SerializeMapperType] = None,
-        meta: Optional[dict] = None,
-        key_map: Union[KeyMapType, bool] = True,
-        value_map: Union[ValueMapType, bool] = True,
+        mapper: SerializeMapperType | None = None,
+        meta: dict | None = None,
+        key_map: KeyMapType | bool = True,
+        value_map: ValueMapType | bool = True,
     ) -> None:
         """Store tree in a compact JSON file stream.
 
@@ -608,7 +606,7 @@ class Tree:
 
     @classmethod
     def _from_list(
-        cls, obj: List[Dict], *, mapper: Optional[DeserializeMapperType] = None
+        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
     ) -> Tree:
         tree = cls()  # Tree or TypedTree
         node_idx_map = {0: tree._root}
@@ -638,9 +636,9 @@ class Tree:
     @classmethod
     def load(
         cls,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
-        mapper: Optional[DeserializeMapperType] = None,
+        mapper: DeserializeMapperType | None = None,
         file_meta: dict = None,
         auto_uncompress: bool = True,
     ) -> Tree:
@@ -718,7 +716,7 @@ class Tree:
 
     def to_dotfile(
         self,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
         format=None,
         add_root=True,
@@ -753,7 +751,7 @@ class Tree:
 
     def to_mermaid_flowchart(
         self,
-        target: Union[IO[str], str, Path],
+        target: IO[str] | str | Path,
         *,
         as_markdown: bool = True,
         direction: MermaidDirectionType = "TD",
@@ -763,8 +761,8 @@ class Tree:
         add_root: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: Optional[MermaidNodeMapperCallbackType] = None,
-        edge_mapper: Optional[MermaidEdgeMapperCallbackType] = None,
+        node_mapper: MermaidNodeMapperCallbackType | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Serialize a Mermaid flowchart representation.
 
