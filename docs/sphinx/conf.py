@@ -130,18 +130,24 @@ author = u'Martin Wendt'
 #version = '1.0'
 # The full version, including alpha/beta/rc tags.
 #release = '1.0'
-import pkg_resources
+import importlib
 
 try:
-    release = pkg_resources.get_distribution('nutree').version
-    # print( "release", release)
-    del pkg_resources
-except pkg_resources.DistributionNotFound:
-    print('To build the documentation, The distribution information')
-    print('Has to be available.  Either install the package into your')
+    # release = pkg_resources.get_distribution("nutree").version
+    release = importlib.metadata.version("nutree")
+except importlib.metadata.PackageNotFoundError:
+    print("To build the documentation, The distribution information")
+    print("has to be available. Either install the package into your")
     print('development environment or run "setup.py develop" to setup the')
-    print('metadata.  A virtualenv is recommended!')
+    print("metadata. A virtualenv is recommended!")
+
+    print(f"sys.path: {sys.path}")
+    print(f"package_root: {package_root}")
+    for fn in os.listdir(package_root):
+        print("-", fn)
     sys.exit(1)
+
+del importlib.metadata
 
 version = '.'.join(release.split('.')[:2])
 

@@ -854,7 +854,7 @@ class Tree:
         If called like ``TypedTree.build_random_tree(structure_def)``, this
         method will return a :class:`~nutree.typed_tree.TypedTree` instance.
 
-        See :ref:`random-trees` for details.
+        See :ref:`randomize` for details.
         """
         from nutree.tree_generator import build_random_tree
 

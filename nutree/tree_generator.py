@@ -3,6 +3,8 @@ Implements a generator that creates a random tree structure from a specification
 
 Returns a nutree.TypedTree with random data from a specification.
 
+See :ref:`randomize` for details.
+
 Example:
 
 ```py
@@ -441,6 +443,7 @@ def _make_tree(
 def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTree":
     """
     Return a nutree.TypedTree with random data from a specification.
+    See :ref:`randomize` for details.
     """
     structure_def = structure_def.copy()
 

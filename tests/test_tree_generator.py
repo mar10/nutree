@@ -16,6 +16,7 @@ from nutree.tree_generator import (
     SparseBoolRandomizer,
     TextRandomizer,
     ValueRandomizer,
+    fab,
 )
 from nutree.typed_tree import TypedTree
 
@@ -43,10 +44,12 @@ def test_simple():
                     "date": DateRangeRandomizer(
                         datetime.date(2020, 1, 1), datetime.date(2020, 12, 31)
                     ),
-                    "date2": DateRangeRandomizer(datetime.date(2020, 1, 1), 365),
+                    "date2": DateRangeRandomizer(
+                        datetime.date(2020, 1, 1), 365, probability=0.99
+                    ),
                     "value": ValueRandomizer("foo", probability=0.5),
                     "expanded": SparseBoolRandomizer(probability=0.5),
-                    "state": SampleRandomizer(["open", "closed"]),
+                    "state": SampleRandomizer(["open", "closed"], probability=0.99),
                 },
             },
             "function": {
@@ -57,7 +60,7 @@ def test_simple():
             },
             "failure": {
                 "cause": {
-                    ":count": RangeRandomizer(1, 3),
+                    ":count": RangeRandomizer(1, 3, probability=0.99),
                     "title": "Cause {hier_idx}",
                 },
                 "effect": {
@@ -78,8 +81,10 @@ def test_simple():
     assert tree2.calc_height() == 3
 
 
-@pytest.mark.xfail(reason="fabulist may not be installed")
 def test_fabulist():
+
+    if not fab:
+        pytest.skip("fabulist not installed")
 
     structure_def = {
         "name": "fmea",
@@ -101,7 +106,7 @@ def test_fabulist():
                 "function": {
                     ":count": 3,
                     "title": TextRandomizer(("{idx}: Provide $(Noun:plural)",)),
-                    "details": BlindTextRandomizer(dialect="lorem"),
+                    "details": BlindTextRandomizer(dialect="ipsum"),
                     "expanded": True,
                 },
             },
