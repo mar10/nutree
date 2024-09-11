@@ -50,3 +50,33 @@ ignore = [
 
 # [tool.ruff.pydocstyle]
 # convention = "google"
+
+# --- Coverage Settings --------------------------------------------------------
+[tool.pytest.ini_options]
+# addopts = "-ra -q --cov=nutree --cov-report=html"
+addopts = "-ra -q --cov=nutree"
+# addopts = "--cov=nutree --cov-report=html --cov-report=term-missing"
+
+[tool.coverage.run]
+# branch = true
+omit = [
+    "tests/*",
+    # nutree/leaves_cli.py
+    # nutree/cli_common.py
+    # nutree/monitor/*  
+]
+
+[tool.coverage.report]
+precision = 1
+# show_missing = true
+sort = "Name"
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.html]
+directory = "build/coverage"
+

@@ -453,7 +453,10 @@ def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTr
     assert not structure_def, f"found extra data: {structure_def}"
     assert "__root__" in relations, "missing '__root__' relation"
 
-    tree: TTree = tree_class(name=name, shadow_attrs=True)
+    tree: TTree = tree_class(
+        name=name,
+        shadow_attrs=True,
+    )
 
     _make_tree(
         parent_node=tree.system_root,

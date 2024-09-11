@@ -4,6 +4,10 @@ Search and Navigate
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree provides methods to search, navigate, and iterate tree structures.
+
 .. _navigate:
 
 Assuming we have a tree like this::
@@ -101,7 +105,7 @@ Examples::
     tree.add("A", data_id="123")
     assert tree.find("A") is None # not found
     assert tree.find("123") is None # not found
-    assert tree.find(data_id="123") is not None # works
+    assert tree.find(data_id="123") is not None # FOUND!
     
 
 .. _traversal:

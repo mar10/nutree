@@ -6,6 +6,10 @@ Generate Random Trees
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree can generate random tree structures from a structure definition.
+
 Nutree can generate random tree structures from a structure definition.
 This can be used to create hierarchical data for test, demo, or benchmarking of 
 *nutree* itself.
@@ -54,9 +58,6 @@ This definition is then passed to :meth:`tree.Tree.build_random_tree`::
         },
     }
     tree = Tree.build_random_tree(structure_def)
-    tree.print()
-    assert type(tree) is Tree
-    assert tree.calc_height() == 3
 
 Example::
 

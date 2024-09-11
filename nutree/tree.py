@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, Type
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -846,7 +846,7 @@ class Tree:
         return True
 
     @classmethod
-    def build_random_tree(cls: Type[TTree], structure_def: dict) -> TTree:
+    def build_random_tree(cls: type[TTree], structure_def: dict) -> TTree:
         """Build a random tree for .
 
         Returns a new :class:`Tree` instance with random nodes, as defined by

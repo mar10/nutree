@@ -6,6 +6,10 @@ Multiple Instances ('Clones')
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree allows to store multiple references to the same data object in a tree.
+
 Every :class:`~nutree.node.Node` instance is unique within the tree and
 also has a unique `node.node_id` value.
 

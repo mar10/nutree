@@ -175,39 +175,82 @@ class GenericNodeData:
 
     If the tree is serialized, the values are copied to the serialized data.
 
-    Examples:
+    Examples::
 
-    ```py
-    tree = Tree(shadow_attrs=True)
-    node = Node(GenericNodeData(a=1, b=2))
-    tree.add_child(node)
+        tree = Tree(shadow_attrs=True)
 
-    print(node.a)  # 1
-    print(node.data["b"])  # 2
-    ```
+        d = {"a": 1, "b": 2}
+        obj = GenericNodeData(d)
+        node = tree.add_child(obj)
 
-    Alternatively, the data can be initialized with a dictionary like this:
+        assert node.data.values is d, "stored as reference"
+        assert node.data.values["a"] == 1
 
-    ```py
-    d = {"a": 1, "b": 2}
-    node = Node(GenericNodeData(**d))
-    ```
+        assert node.data.a == 1, "accessible as data attribute"
+        assert node.data["a"] == 1, "accessible by index"
+
+        # Since we enabled shadow_attrs, this is also possible:
+        assert node.a == 1, "accessible as node attribute"
+
+
+    Alternatively, the data can be initialized with keyword args like this::
+
+        obj = GenericNodeData(a=1, b=2)
+
+    or with a dictionary like this. Note that in this case we unpack the dictionary
+    which creates a copy::
+
+        d = {"a": 1, "b": 2}
+        obj = GenericNodeData(**d)
 
     See :ref:`generic-node-data` for details.
     """
 
-    def __init__(self, **values) -> None:
-        self.values: dict = values
+    __slots__ = ("_dict",)
+
+    def __init__(self, dict_inst: dict | None = None, **values) -> None:
+        if dict_inst is not None:
+            # A dictionary was passed: store a reference to that instance
+            if not isinstance(dict_inst, dict):
+                self._dict = None
+                raise TypeError("dict_inst must be a dictionary or None")
+            if values:
+                self._dict = None
+                raise ValueError("Cannot pass both dict_inst and **values")
+            self._dict: dict = dict_inst
+        else:
+            # Single keyword arguments are passed (probably from unpacked dict):
+            # store them in a new dictionary
+            self._dict: dict = values
 
     def __repr__(self):
-        return f"{self.__class__.__name__}<{self.values}>"
+        return f"{self.__class__.__name__}<{self._dict}>"
 
     def __getitem__(self, key):
-        return self.values[key]
+        return self._dict[key]
+
+    def __getattr__(self, name: str) -> Any:
+        """Allow to access values as attributes.
+
+        Assuming the GenericNodeData instance is stored in a Node.data instance,
+        this allows to access the values like this::
+
+                node.data.NAME
+
+        If shadow_attrs is enabled, this also allows to access the values like this::
+
+                node.NAME
+
+        See :ref:`generic-node-data`.
+        """
+        try:
+            return self._dict[name]
+        except KeyError:
+            raise AttributeError(name) from None
 
     @staticmethod
     def serialize_mapper(nutree_node, data):
-        return nutree_node.data.values.copy()
+        return nutree_node.data._dict.copy()
 
 
 def get_version() -> str:

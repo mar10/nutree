@@ -5,6 +5,7 @@ name = "pypi"
 
 [dev-packages]
 black = { version = "~=24.3", extras = ["jupyter"] }
+# coverage = "*"
 fabulist="*"
 isort = "*"
 pytest = "*"

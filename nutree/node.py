@@ -150,7 +150,7 @@ class Node:
         See :ref:`shadow-attributes`.
         """
         if self._tree._shadow_attrs:
-            return getattr(self.data, name)
+            return getattr(self._data, name)
         raise AttributeError
 
     # def __iadd__(self, other) -> None:

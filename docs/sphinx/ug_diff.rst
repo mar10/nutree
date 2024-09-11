@@ -6,6 +6,10 @@ Diff and Merge
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree provides a `diff` method to compare two trees and calculate the differences.
+
 The :meth:`~nutree.tree.Tree.diff` method compares a tree (`T0`) against another 
 one (`T1`) and returns a merged, annotated copy.
 
