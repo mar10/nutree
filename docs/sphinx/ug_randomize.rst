@@ -41,22 +41,15 @@ This definition is then passed to :meth:`tree.Tree.build_random_tree`::
             },
             "TYPE_1": {  # Potential child nodes of TYPE_1
                 "TYPE_2": {
+                    # How many instances to create:
                     ":count": 3,
+                    # Attribute names and values for every instance:
                     "title": "This is a child node of TYPE_1",
-                },
-            },
-            "TYPE_2": {  # Potential child nodes of TYPE_2
-                "TYPE_3": {
-                    ":count": 3,
-                    "title": "This is a child node of TYPE_2",
-                },
-                "TYPE_4": {
-                    ":count": 3,
-                    "title": "This is a also child node of TYPE_2",
                 },
             },
         },
     }
+
     tree = Tree.build_random_tree(structure_def)
 
 Example::
@@ -158,6 +151,3 @@ Example::
     assert type(tree2) is TypedTree
     assert tree2.calc_height() == 3
 
-..  note:
-
-    The 

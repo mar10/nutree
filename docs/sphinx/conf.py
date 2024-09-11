@@ -119,7 +119,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'nutree'
-copyright = u'2021-2023, <a href="https://wwwendt.de">Martin Wendt</a>'
+copyright = u'2021-2024, <a href="https://wwwendt.de">Martin Wendt</a>'
 author = u'Martin Wendt'
 
 # The version info for the project you're documenting, acts as replacement for
