@@ -20,6 +20,7 @@ __version__ = "0.8.1-a1"
 
 from .common import (
     AmbiguousMatchError,
+    GenericNodeData,
     IterMethod,
     SelectBranch,
     SkipBranch,
@@ -39,6 +40,7 @@ __all__ = [
     AmbiguousMatchError,
     diff_node_formatter,
     DiffClassification,
+    GenericNodeData,
     IterMethod,
     load_tree_from_fs,
     SelectBranch,

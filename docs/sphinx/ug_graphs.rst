@@ -6,6 +6,15 @@ Graphs
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree implements conversion to `DOT <https://en.wikipedia.org/wiki/DOT_(graph_description_language)>`_
+    and `Mermaid <https://mermaid.js.org>`_ formats. |br|
+    This allows to visualize trees as graphs in various formats like `png`, `svg`, etc. |br|
+    The :class:`~nutree.typed_tree.TypedTree` class introduces the concept of
+    `typed nodes`, which allows to generate labelled edges in the graph representation.
+    
+
 .. note::
     :class:`~nutree.tree.Tree` (and :class:`~nutree.typed_tree.TypedTree` even 
     more so) has features that make mapping to a graph easy. 

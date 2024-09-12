@@ -108,4 +108,5 @@ kind (str, readonly):
     ug_serialize
     ug_diff
     ug_graphs
+    ug_randomize
     ug_advanced

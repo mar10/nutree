@@ -1,4 +1,4 @@
-# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 """
@@ -829,9 +829,11 @@ class TestMermaid:
                     Path(__file__).parent / "temp/test_serialize_2.md",
                 )
 
-    @pytest.mark.xfail(reason="mmdc may not be installed")
+    # @pytest.mark.xfail(reason="mmdc may not be installed")
     def test_serialize_mermaid_svg(self):
         """Save/load as typed object tree with clones."""
+        if not shutil.which("mmdc"):
+            raise pytest.skip("mmdc not installed")
         KEEP_FILES = not fixture.is_running_on_ci() and False
         tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
 

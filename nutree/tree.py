@@ -1,4 +1,4 @@
-# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 Declare the :class:`~nutree.tree.Tree` class.
@@ -9,7 +9,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, Any, Iterable, Iterator
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -42,6 +42,9 @@ from .common import (
 from .dot import tree_to_dotfile
 from .node import Node
 from .rdf import tree_to_rdf
+
+if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
+    from nutree.common import TTree
 
 _DELETED_TAG = "<deleted>"
 
@@ -841,6 +844,22 @@ class Tree:
                 assert node._data_id == data_id, node
         assert clone_count == len(node_list)
         return True
+
+    @classmethod
+    def build_random_tree(cls: type[TTree], structure_def: dict) -> TTree:
+        """Build a random tree for .
+
+        Returns a new :class:`Tree` instance with random nodes, as defined by
+        structure_def.
+        If called like ``TypedTree.build_random_tree(structure_def)``, this
+        method will return a :class:`~nutree.typed_tree.TypedTree` instance.
+
+        See :ref:`randomize` for details.
+        """
+        from nutree.tree_generator import build_random_tree
+
+        tt = build_random_tree(tree_class=cls, structure_def=structure_def)
+        return tt
 
 
 # ------------------------------------------------------------------------------

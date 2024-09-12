@@ -23,6 +23,7 @@ Nodes can be plain strings or objects <br>
 (De)Serialize to (compressed) JSON <br>
 Save as Mermaid flow diagram <br>
 Different traversal methods <br>
+Generate random trees <br>
 Fully type annotated <br>
 Convert to RDF graph <br>
 Typed child nodes <br>
