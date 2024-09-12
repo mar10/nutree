@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.9.0 (unreleased)
+## 0.9.1 (unreleased)
+
+## 0.9.0 (2024-09-12)
 
 - Add `Tree.build_random_tree()` (experimental).
 - Add `GenericNodeData` as wrapper for `dict` data.
