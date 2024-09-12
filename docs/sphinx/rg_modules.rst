@@ -42,3 +42,12 @@ nutree.common module
     :show-inheritance:
     :inherited-members:
 
+nutree.tree_generator module
+----------------------------
+
+.. automodule:: nutree.tree_generator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
+

@@ -131,3 +131,4 @@ def test_fabulist():
     tree = TypedTree.build_random_tree(structure_def)
     tree.print()
     assert type(tree) is TypedTree
+    # assert 0
