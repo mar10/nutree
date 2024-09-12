@@ -248,6 +248,9 @@ class TestGenericNodeData:
         with pytest.raises(FrozenInstanceError):
             item.count += 1
 
+        # We can also add by passing the data_id as keyword argument:
+        _ = tree.add(item, data_id="123-456")
+
         tree.print()
 
         assert isinstance(dict_node.data, FrozenItem)
@@ -255,3 +258,33 @@ class TestGenericNodeData:
         assert dict_node.price == 12.34, "should support attribute access via shadowing"
         with pytest.raises(AttributeError):
             _ = dict_node.foo
+
+    def test_callback(self):
+        from dataclasses import dataclass
+
+        d: dict = {"a": 1, "guid": "123-456"}
+
+        @dataclass
+        class Item:
+            a: int
+            guid: str
+
+        dc = Item(2, "234-567")
+
+        def _calc_id(tree, data):
+            if isinstance(data, Item):
+                return hash(data.guid)
+            elif isinstance(data, dict):
+                return hash(data["guid"])
+            return hash(data)
+
+        tree = Tree(calc_data_id=_calc_id, shadow_attrs=True)
+
+        n1 = tree.add(d)
+        n2 = tree.add(dc)
+
+        assert n1.data is d
+        assert n1.data["a"] == 1
+
+        assert n2.data is dc
+        assert n2.a == 2

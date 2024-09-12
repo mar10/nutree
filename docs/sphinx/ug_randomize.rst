@@ -10,6 +10,10 @@ Generate Random Trees
 
     Nutree can generate random tree structures from a structure definition.
 
+.. warning::
+
+    This feature is experimental and may change in future versions.
+
 Nutree can generate random tree structures from a structure definition.
 This can be used to create hierarchical data for test, demo, or benchmarking of 
 *nutree* itself.
@@ -55,99 +59,114 @@ This definition is then passed to :meth:`tree.Tree.build_random_tree`::
 Example::
 
     structure_def = {
-        #: Name of the new tree (str, optiona)
+        # Name of the generated tree (optional)
         "name": "fmea",
-        #: Types define the default properties of the nodes
+        # Types define the default properties of the gernated nodes
         "types": {
-            #: Default properties for all node types
-            "*": { ... },
-            #: Specific default properties for each node type (optional)
-            "TYPE_1": { ... },
-            "TYPE_2": { ... },
-            ...
-        },
-        #: Relations define the possible parent / child relationships between
-        #: node types and optionally override the default properties.
-        "relations": {
-            "__root__": {
-                "TYPE_1": {
-                    ":count": 10,
-                    "ATTR_1": "Function {hier_idx}",
-                    "expanded": True,
-                },
+            # '*' Defines default properties for all node types (optional)
+            "*": {
+                ":factory": GenericNodeData,  # Default node class (optional)
             },
-            "function": {
-                "failure": {
-                    ":count": RangeRandomizer(1, 3),
-                    "title": "Failure {hier_idx}",
-                },
-            },
-            "failure": {
-                "cause": {
-                    ":count": RangeRandomizer(1, 3),
-                    "title": "Cause {hier_idx}",
-                },
-                "effect": {
-                    ":count": RangeRandomizer(1, 3),
-                    "title": "Effect {hier_idx}",
-                },
-            },
+            # Specific default properties for each node type
+            "function": {"icon": "gear"},
+            "failure": {"icon": "exclamation"},
+            "cause": {"icon": "tools"},
+            "effect": {"icon": "lightning"},
         },
-    }
-    tree = Tree.build_random_tree(structure_def)
-    tree.print()
-    assert type(tree) is Tree
-    assert tree.calc_height() == 3
-
-Example::
-
-    structure_def = {
-        "name": "fmea",
-        #: Types define the default properties of the nodes
-        "types": {
-            #: Default properties for all node types
-            "*": {":factory": GenericNodeData},
-            #: Specific default properties for each node type
-            "function": {"icon": "bi bi-gear"},
-            "failure": {"icon": "bi bi-exclamation-triangle"},
-            "cause": {"icon": "bi bi-tools"},
-            "effect": {"icon": "bi bi-lightning"},
-        },
-        #: Relations define the possible parent / child relationships between
-        #: node types and optionally override the default properties.
+        # Relations define the possible parent / child relationships between
+        # node types and optionally override the default properties.
         "relations": {
             "__root__": {
                 "function": {
-                    ":count": 10,
-                    "title": "Function {hier_idx}",
+                    ":count": 3,
+                    "title": TextRandomizer(("{idx}: Provide $(Noun:plural)",)),
+                    "details": BlindTextRandomizer(dialect="ipsum"),
                     "expanded": True,
                 },
             },
             "function": {
                 "failure": {
                     ":count": RangeRandomizer(1, 3),
-                    "title": "Failure {hier_idx}",
+                    "title": TextRandomizer("$(Noun:plural) not provided"),
                 },
             },
             "failure": {
                 "cause": {
                     ":count": RangeRandomizer(1, 3),
-                    "title": "Cause {hier_idx}",
+                    "title": TextRandomizer("$(Noun:plural) not provided"),
                 },
                 "effect": {
                     ":count": RangeRandomizer(1, 3),
-                    "title": "Effect {hier_idx}",
+                    "title": TextRandomizer("$(Noun:plural) not provided"),
                 },
             },
         },
     }
-    tree = Tree.build_random_tree(structure_def)
-    tree.print()
-    assert type(tree) is Tree
+    
+    tree = TypedTree.build_random_tree(structure_def)
+    
+    assert type(tree) is TypedTree
     assert tree.calc_height() == 3
+    
+    tree.print()
 
-    tree2 = TypedTree.build_random_tree(structure_def)
-    tree2.print()
-    assert type(tree2) is TypedTree
-    assert tree2.calc_height() == 3
+May produce::
 
+    TypedTree<'fmea'>
+    ├── function → GenericNodeData<{'icon': 'gear', 'title': '1: Provide Seniors', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.', 'expanded': True}>
+    │   ├── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Streets not provided'}>
+    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Decisions not provided'}>
+    │   │   ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Spaces not provided'}>
+    │   │   ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Kings not provided'}>
+    │   ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Entertainments not provided'}>
+    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Programs not provided'}>
+    │       ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dirts not provided'}>
+    │       ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dimensions not provided'}>
+    ├── function → GenericNodeData<{'icon': 'gear', 'title': '2: Provide Shots', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum.', 'expanded': True}>
+    │   ├── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Trainers not provided'}>
+    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Girlfriends not provided'}>
+    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Noses not provided'}>
+    │   │   ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Closets not provided'}>
+    │   │   ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Potentials not provided'}>
+    │   ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Punches not provided'}>
+    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Inevitables not provided'}>
+    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Fronts not provided'}>
+    │       ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Worths not provided'}>
+    ╰── function → GenericNodeData<{'icon': 'gear', 'title': '3: Provide Shots', 'details': 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.', 'expanded': True}>
+        ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Recovers not provided'}>
+            ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Viruses not provided'}>
+            ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dirts not provided'}>
+            ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Readings not provided'}>    
+
+
+**A few things to note**
+
+- The generated tree contains nodes :class:`~common.GenericNodeData` as ``node.data``
+  value..
+
+- Every ``node.data`` contains items from the structure definition except for
+  the ones starting with a colon, for example ``":count"``. |br|
+  The node items are merged with the default properties defined in the `types` 
+  section.
+
+- Randomizers are used to generate random data for each instance.
+  They derive from the :class:`~tree_generator.Randomizer` base class.
+
+- The :class:`~tree_generator.TextRandomizer` and 
+  :class:`~tree_generator.BlindTextRandomizer` classes are used to generate 
+  random text using the `Fabulist <https://fabulist.readthedocs.io/>`_ library. 
+
+- :meth:`tree.Tree.build_random_tree` creates instances of :class:`~tree.Tree`, while
+  :meth:`typed_tree.TypedTree.build_random_tree` creates instances of 
+  :class:`~typed_tree.TypedTree`.
+
+- The generated tree contains instances of the :class:`~common.GenericNodeData` 
+  class by default, but can be overridden for each node type by adding a 
+  ``":factory": CLASS`` entry.
+
+.. note::
+
+    The random text generator is based on the `Fabulist <https://fabulist.readthedocs.io/>`_ 
+    library and can use any of its providers to generate random data. |br|
+    Make sure to install the `fabulist` package to use the text randomizers
+    :class:`~tree_generator.TextRandomizer` and :class:`~tree_generator.BlindTextRandomizer`.

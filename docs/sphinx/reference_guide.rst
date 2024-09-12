@@ -5,14 +5,14 @@ Reference Guide
 Class Overview
 ==============
 
-nutree classes
+Nutree Classes
 --------------
 
 .. inheritance-diagram:: nutree.tree nutree.node nutree.typed_tree nutree.common
    :parts: 2
    :private-bases:
 
-Random tree generator
+Random Tree Generator
 ---------------------
 
 .. inheritance-diagram:: nutree.tree_generator

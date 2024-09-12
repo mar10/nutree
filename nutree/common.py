@@ -166,42 +166,14 @@ CONNECTORS = {
 
 
 class GenericNodeData:
-    """Can be used as `node.data` instance for dict-like data.
+    """Wrap a Python dict so it can be added to the tree.
+
+    Makes the hashable and exposes the dict values as attributes.
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
     If the Tree is initialized with `shadow_attrs=True`, the values are also
     available as attributes of the node like `node.KEY`.
-
-    If the tree is serialized, the values are copied to the serialized data.
-
-    Examples::
-
-        tree = Tree(shadow_attrs=True)
-
-        d = {"a": 1, "b": 2}
-        obj = GenericNodeData(d)
-        node = tree.add_child(obj)
-
-        assert node.data.values is d, "stored as reference"
-        assert node.data.values["a"] == 1
-
-        assert node.data.a == 1, "accessible as data attribute"
-        assert node.data["a"] == 1, "accessible by index"
-
-        # Since we enabled shadow_attrs, this is also possible:
-        assert node.a == 1, "accessible as node attribute"
-
-
-    Alternatively, the data can be initialized with keyword args like this::
-
-        obj = GenericNodeData(a=1, b=2)
-
-    or with a dictionary like this. Note that in this case we unpack the dictionary
-    which creates a copy::
-
-        d = {"a": 1, "b": 2}
-        obj = GenericNodeData(**d)
 
     See :ref:`generic-node-data` for details.
     """

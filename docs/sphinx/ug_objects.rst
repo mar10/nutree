@@ -131,26 +131,47 @@ Dictionaries (GenericNodeData)
 
 Python 
 `dictionaries <https://docs.python.org/3/tutorial/datastructures.html#dictionaries>`_
-are unhashable and cannot be used as node data objects. |br|
-We can handle this in different ways:
+are unhashable and cannot be used as node data objects::
 
-1. Explicitly set the `data_id` when adding the dict: |br|
-   ``tree.add({"name": "Alice", "age": 23, "guid": "{123-456}"}, data_id="{123-456}")``
-2. Use a custom `calc_data_id` callback function that returns a unique key for 
-   the data object (see example above).
-3. Wrap the dict in :class:`~nutree.common.GenericNodeData`.
+    d = {"a": 1, "b": 2}
+    tree.add(d)  # ERROR: raises `TypeError: unhashable type: 'dict'`
 
-The :class:`~nutree.common.GenericNodeData` class is a simple wrapper around a 
-dictionary that 
+Adding Native Dictionaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- is hashable, so it can be used added to the tree as ``node.data``
+We can handle this by explicitly setting the `data_id` when adding the dict::
+    
+    node = tree.add({d, data_id="{123-456}")
+
+    assert node.data is d
+    assert node.data["a"] == 1
+
+Alternatively, we can implement a custom `calc_data_id` callback function that
+returns a unique key for the data object::
+
+    def _calc_id(tree, data):
+        if isinstance(data, dict):
+            return hash(data["guid"])
+        return hash(data)
+
+    tree = Tree(calc_data_id=_calc_id)
+
+    d = {"a": 1, "b": 2, "guid": "{123-456}"}
+    tree.add(d)
+
+Wrapping Dictionaries
+~~~~~~~~~~~~~~~~~~~~~
+
+Finally, we can use the :class:`~nutree.common.GenericNodeData` which is a simple 
+wrapper around a dictionary that 
+
+- is hashable, so it can be added to the tree as ``node.data``
 - stores a reference to the original dict internally as ``node.data._dict``
 - allows readonly access to dict keys as shadow attributes, i.e. 
   ``node.data._dict["name"]`` can be accessed as ``node.data.name``. |br|
   If ``shadow_attrs=True`` is passed to the tree constructor, it can also be
-  accessed as ``node.name``. |br|
-  Note that shadow attributes are readonly.
-- allows access to dict keys by index, i.e. ``node.data["name"]`` 
+  accessed as ``node.name``
+- allows readonly access to dict keys by index, i.e. ``node.data["name"]`` 
 
 Examples ::
 
@@ -160,10 +181,9 @@ Examples ::
 
     d = {"a": 1, "b": 2}
     obj = GenericNodeData(d)
-
-We can now add the wrapped `dict` to the tree::
-
     node = tree.add_child(obj)
+
+We can now access the dict keys as attributes::
 
     assert node.data._dict is d, "stored as reference"
     assert node.data._dict["a"] == 1
@@ -187,13 +207,22 @@ GenericNodeData can also be initialized with keyword args like this::
 
     obj = GenericNodeData(a=1, b=2)
 
+.. warning::
+    The :class:`~nutree.common.GenericNodeData` provides a hash value because
+    any class that is hashable, so it can be used as a data object. However, the 
+    hash value is NOT based on the internal dict but on the object itself. |br|
+    This means that two instances of GenericNodeData with the same dict content
+    will have different hash values.
+
+.. warning::
+    The `shadow_attrs` feature is readonly, so you cannot modify the dict
+    through the shadow attributes. You need to access the dict directly for that.
 
 Dataclasses
 -----------
 
 `Dataclasses <https://docs.python.org/3/library/dataclasses.html>`_ are a great way
-to define simple classes that hold data. However, they are not hashable by default. |br|
-We can handle this in different ways::
+to define simple classes that hold data. However, they are not hashable by default::
 
     from dataclasses import dataclass
 
@@ -205,32 +234,27 @@ We can handle this in different ways::
 
     alice = Person("Alice", age=23, guid="{123-456}")
 
-.. 1. Explicitly set the `data_id` when adding the dataclass instance.
-..    ``tree.add(, data_id="{123-456}")``
-.. 2. Use a custom `calc_data_id` function that returns a unique key for the data object.
-.. 3. Make the dataclass hashable by adding a `__hash__` method.
-.. 4. Make the dataclass ``frozen=True`` (or ``unsafe_hash=True``).
+    tree.add(alice)  # ERROR: raises `TypeError: unhashable type: 'dict'`
 
-Example: Explicitly set the `data_id` when adding the dataclass instance::
+We can handle this in different ways byexplicitly set the `data_id` when adding 
+the dataclass instance::
 
     tree.add(alice, data_id=alice.guid)
 
-Example: make the dataclass hashable by adding a `__hash__` method::
+Alternatively, we can implement a custom `calc_data_id` callback function that
+returns a unique key for the data object::
 
-    @dataclass
-    class Person:
-        name: str
-        age: int
-        guid: str = None
+    def _calc_id(tree, data):
+        if hasattr(data, "guid"):
+            return hash(data.guid)
+        return hash(data)
 
-        def __hash__(self):
-            return hash(self.guid)
-
-    alice = Person("Alice", age=23, guid="{123-456}")
+    tree = Tree(calc_data_id=_calc_id)
 
     tree.add(alice)
 
-Example: Use a frozen dataclass instead, which is immutable and hashable by default::
+Finally, we can use a frozen dataclass instead, which is immutable and hashable by
+default (or pass ``unsafe_hash=True``)::
 
     @dataclass(frozen=True)
     class Person:
