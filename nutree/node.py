@@ -1,4 +1,4 @@
-# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 Declare the :class:`~nutree.node.Node` class.
@@ -150,7 +150,7 @@ class Node:
         See :ref:`shadow-attributes`.
         """
         if self._tree._shadow_attrs:
-            return getattr(self.data, name)
+            return getattr(self._data, name)
         raise AttributeError
 
     # def __iadd__(self, other) -> None:

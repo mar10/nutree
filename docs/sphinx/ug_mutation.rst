@@ -6,6 +6,12 @@ Mutation
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree provides methods to modify the tree structure in-place. |br|
+    This includes adding, moving, and deleting nodes, as well as filtering and sorting.
+    
+
 Some in-place modifications are available::
 
     # Tree

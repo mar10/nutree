@@ -6,6 +6,11 @@
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree provides methods to serialize and deserialize tree structures as JSON.
+    Arbitrary objects can be stored and restored by implementing mappers. |br|
+    The native format supports compact formatting and optional zipping.
 
 Native Format
 -------------

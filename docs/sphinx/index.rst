@@ -28,8 +28,8 @@ nutree
 
    $ pip install nutree
 
-**Note:** Run ``pip install nutree[graph]`` instead, in order to install 
-additional graph support.
+**Note:** Run ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"`` 
+instead, in order to install additional graph support.
 
 ::
 
@@ -96,8 +96,9 @@ Nutree Facts
   * :ref:`(De)Serialize to (compressed) JSON <serialize>`
   * :ref:`Save as Mermaid flow diagram <save-mermaid>`
   * :ref:`Different traversal methods <traversal>`
-  * :ref:`Fully type annotated <api-reference>`
+  * :ref:`Generate random trees <randomize>`
   * :ref:`Convert to RDF graph <save-rdf>`
+  * :ref:`Fully type annotated <api-reference>`
   * :ref:`Typed child nodes <typed-tree>`
   * :ref:`Pretty print <pretty-print>`
   * :ref:`Navigation <navigate>`

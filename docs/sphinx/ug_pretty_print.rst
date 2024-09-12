@@ -6,6 +6,12 @@ Pretty Print
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree provides a `format` method to generate a pretty printed string 
+    representation of the tree structure.
+
+
 :meth:`~nutree.tree.Tree.format` produces a pretty formatted string
 representation::
 

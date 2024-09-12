@@ -16,10 +16,11 @@ NOTE:
 """
 
 # flake8: noqa
-__version__ = "0.8.1-a1"
+__version__ = "0.9.1-a1"
 
 from .common import (
     AmbiguousMatchError,
+    GenericNodeData,
     IterMethod,
     SelectBranch,
     SkipBranch,
@@ -39,6 +40,7 @@ __all__ = [
     AmbiguousMatchError,
     diff_node_formatter,
     DiffClassification,
+    GenericNodeData,
     IterMethod,
     load_tree_from_fs,
     SelectBranch,

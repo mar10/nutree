@@ -1,4 +1,4 @@
-# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 from typing import IO, Any, Iterator
 
-from nutree.common import (
+from .common import (
     ROOT_ID,
     CalcIdCallbackType,
     DeserializeMapperType,
@@ -23,7 +23,6 @@ from nutree.common import (
     ValueMapType,
     call_mapper,
 )
-
 from .node import Node
 from .tree import Tree
 
@@ -777,6 +776,12 @@ class TypedTree(Tree):
         :meth:`~nutree.tree.Tree.load()` methods.
         """
         return super().load(target, mapper=mapper, file_meta=file_meta)
+
+    # @classmethod
+    # def build_random_tree(cls, structure_def: dict) -> TypedTree:
+    #     """Build a random tree for testing."""
+    #     tt = build_random_tree(cls, structure_def)
+    #     return tt
 
 
 # ------------------------------------------------------------------------------

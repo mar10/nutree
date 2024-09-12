@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.8.1 (unreleased)
+## 0.9.1 (unreleased)
 
+## 0.9.0 (2024-09-12)
+
+- Add `Tree.build_random_tree()` (experimental).
+- Add `GenericNodeData` as wrapper for `dict` data.
 - Fixed #7 Tree.from_dict failing to recreate an arbitrary object tree with a mapper.
 
 ## 0.8.0 (2024-03-29)
@@ -9,9 +13,8 @@
 - BREAKING: Drop Python 3.7 support (EoL 2023-06-27).
 - `Tree.save()` accepts a `compression` argument that will enable compression.
   `Tree.load()` can detect if the input file has a compression header and will
-  decompress automatically.
-- New traversal methods `LEVEL_ORDER`, `LEVEL_ORDER_RTL`, `ZIGZAG`, `ZIGZAG_RTL`.
   decompress transparently.
+- New traversal methods `LEVEL_ORDER`, `LEVEL_ORDER_RTL`, `ZIGZAG`, `ZIGZAG_RTL`.
 - New compact connector styles `'lines32c'`, `'round43c'`, ...
 - Save as mermaid flow diagram.
 

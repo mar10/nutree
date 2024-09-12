@@ -6,6 +6,15 @@ Graphs
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree implements conversion to `DOT <https://en.wikipedia.org/wiki/DOT_(graph_description_language)>`_
+    and `Mermaid <https://mermaid.js.org>`_ formats. |br|
+    This allows to visualize trees as graphs in various formats like `png`, `svg`, etc. |br|
+    The :class:`~nutree.typed_tree.TypedTree` class introduces the concept of
+    `typed nodes`, which allows to generate labelled edges in the graph representation.
+    
+
 .. note::
     :class:`~nutree.tree.Tree` (and :class:`~nutree.typed_tree.TypedTree` even 
     more so) has features that make mapping to a graph easy. 
@@ -166,7 +175,7 @@ Let's visualize the result of the :ref:`diff-and-merge` example::
     of `pydot <https://github.com/pydot/pydot>`_ 
     and `Graphwiz <https://www.graphviz.org>`_. |br|
     Either install them separately or install nutree with extras: 
-    ``pip install nutree[graph]``.
+    ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"``.
 
 .. _save-mermaid:
 
@@ -452,5 +461,5 @@ This would be the 'turtle' formatted serialization::
 
 .. note::
     Converting to RDF requires an installation of `rdflib <https://rdflib.readthedocs.io/>`_ |br|
-    Either install it separately or install nutree with extras: 
-    ``pip install nutree[graph]``.
+    Either install them separately or install nutree with extras: 
+    ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"``.

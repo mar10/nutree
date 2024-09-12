@@ -4,6 +4,12 @@ Basics
 
 .. py:currentmodule:: nutree
 
+.. admonition:: TL;DR
+
+    Nutree is a Python library for managing hierarchical data structures.
+    It stores arbitrary data objects in nodes and provides methods for
+    navigation, searching, and iteration.
+
 
 Adding Nodes
 ------------
@@ -35,8 +41,8 @@ Nodes are usually created by adding a new data instance to a parent::
 
 .. seealso::
 
-    See :doc:`ug_objects` for details on how to manage arbitrary objects instead
-    of plain strings.
+    See :doc:`ug_objects` for details on how to manage arbitrary objects, dicts,
+    etc. instead of plain strings.
 
 
 Info and Navigation

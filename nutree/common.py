@@ -1,4 +1,4 @@
-# (c) 2021-2023 Martin Wendt; see https://github.com/mar10/nutree
+# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
@@ -13,11 +13,13 @@ import zipfile
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
+from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, TypeVar, Union
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
     from .tree import Tree
+
+    TTree = TypeVar("TTree", bound=Tree)
 
 #: Used as ID for the system root node
 ROOT_ID: str = "__root__"
@@ -158,6 +160,70 @@ CONNECTORS = {
     "round43c": ("  ", "│ ", "╰── ", "├── ", "╰─┬ ", "├─┬ "),
 }
 
+# ------------------------------------------------------------------------------
+# Generic data object to be used when nutree.Node instances
+# ------------------------------------------------------------------------------
+
+
+class GenericNodeData:
+    """Wrap a Python dict so it can be added to the tree.
+
+    Makes the hashable and exposes the dict values as attributes.
+
+    Initialized with a dictionary of values. The values can be accessed
+    via the `node.data` attribute like `node.data["KEY"]`.
+    If the Tree is initialized with `shadow_attrs=True`, the values are also
+    available as attributes of the node like `node.KEY`.
+
+    See :ref:`generic-node-data` for details.
+    """
+
+    __slots__ = ("_dict",)
+
+    def __init__(self, dict_inst: dict | None = None, **values) -> None:
+        if dict_inst is not None:
+            # A dictionary was passed: store a reference to that instance
+            if not isinstance(dict_inst, dict):
+                self._dict = None
+                raise TypeError("dict_inst must be a dictionary or None")
+            if values:
+                self._dict = None
+                raise ValueError("Cannot pass both dict_inst and **values")
+            self._dict: dict = dict_inst
+        else:
+            # Single keyword arguments are passed (probably from unpacked dict):
+            # store them in a new dictionary
+            self._dict: dict = values
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}<{self._dict}>"
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __getattr__(self, name: str) -> Any:
+        """Allow to access values as attributes.
+
+        Assuming the GenericNodeData instance is stored in a Node.data instance,
+        this allows to access the values like this::
+
+                node.data.NAME
+
+        If shadow_attrs is enabled, this also allows to access the values like this::
+
+                node.NAME
+
+        See :ref:`generic-node-data`.
+        """
+        try:
+            return self._dict[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+    @staticmethod
+    def serialize_mapper(nutree_node, data):
+        return nutree_node.data._dict.copy()
+
 
 def get_version() -> str:
     from nutree import __version__
@@ -263,7 +329,7 @@ def open_as_uncompressed_input_stream(
     *,
     encoding: str = "utf8",
     auto_uncompress: bool = True,
-) -> IO[str]:
+) -> IO[str]:  # type: ignore
     """Open a file for reading, decompressing if necessary.
 
     Decompression is done by checking for the magic header (independent of the
@@ -296,7 +362,7 @@ def open_as_compressed_output_stream(
     *,
     compression: bool | int = True,
     encoding: str = "utf8",
-) -> IO[str]:
+) -> IO[str]:  # type: ignore
     """Open a file for writing, ZIP-compressing if requested.
 
     Example::
