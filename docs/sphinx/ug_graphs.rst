@@ -175,7 +175,7 @@ Let's visualize the result of the :ref:`diff-and-merge` example::
     of `pydot <https://github.com/pydot/pydot>`_ 
     and `Graphwiz <https://www.graphviz.org>`_. |br|
     Either install them separately or install nutree with extras: 
-    ``pip install nutree[graph]``.
+    ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"``.
 
 .. _save-mermaid:
 
@@ -461,5 +461,5 @@ This would be the 'turtle' formatted serialization::
 
 .. note::
     Converting to RDF requires an installation of `rdflib <https://rdflib.readthedocs.io/>`_ |br|
-    Either install it separately or install nutree with extras: 
-    ``pip install nutree[graph]``.
+    Either install them separately or install nutree with extras: 
+    ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"``.

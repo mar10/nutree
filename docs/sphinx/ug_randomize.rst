@@ -170,3 +170,5 @@ May produce::
     library and can use any of its providers to generate random data. |br|
     Make sure to install the `fabulist` package to use the text randomizers
     :class:`~tree_generator.TextRandomizer` and :class:`~tree_generator.BlindTextRandomizer`.
+    Either install `fabulist` separately or install nutree with extras: 
+    ``pip install "nutree[random]"`` or ``pip install "nutree[all]"``.
