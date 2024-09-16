@@ -132,3 +132,4 @@ dmypy.json
 tests/test_dev_local*.py
 .DS_Store
 tests/temp/
+.ruff_cache/
