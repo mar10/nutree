@@ -3,6 +3,7 @@
 """
 Methods and classes to support file system related functionality.
 """
+
 from operator import attrgetter, itemgetter
 from pathlib import Path
 from typing import Union

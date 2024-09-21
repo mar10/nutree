@@ -4,6 +4,7 @@
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
 modules.
 """
+
 from __future__ import annotations
 
 import io

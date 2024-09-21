@@ -3,6 +3,7 @@
 """
 Declare the :class:`~nutree.tree.Tree` class.
 """
+
 from __future__ import annotations
 
 import json

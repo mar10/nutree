@@ -1,7 +1,6 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-"""
-"""
+""" """
 # ruff: noqa: T201, T203 `print` found
 
 import pytest
@@ -219,7 +218,6 @@ class TestGenericNodeData:
         assert node.a == 1, "GenericNodeData should support attribute access"
 
     def test_dataclass(self):
-
         from dataclasses import FrozenInstanceError, dataclass
 
         @dataclass

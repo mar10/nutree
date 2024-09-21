@@ -3,6 +3,7 @@
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union

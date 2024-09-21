@@ -82,7 +82,6 @@ def test_simple():
 
 
 def test_fabulist():
-
     if not fab:
         pytest.skip("fabulist not installed")
 

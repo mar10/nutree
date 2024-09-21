@@ -1,7 +1,7 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Functions and declarations to support 
+Functions and declarations to support
 `Mermaid <https://mermaid-js.github.io/mermaid/#/flowchart>`_ exports.
 """
 # ruff: noqa: E731 # do not assign a lambda expression, use a def

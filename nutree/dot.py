@@ -1,9 +1,10 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """
-Functions and declarations to support 
+Functions and declarations to support
 `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

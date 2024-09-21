@@ -3,6 +3,7 @@
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
 """
+
 from __future__ import annotations
 
 from collections import Counter
