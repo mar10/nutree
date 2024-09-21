@@ -4,7 +4,6 @@
 # ruff: noqa: T201, T203 `print` found
 
 import pytest
-
 from nutree import Tree
 from nutree.common import GenericNodeData
 

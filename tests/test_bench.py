@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from nutree import IterMethod
 
 from . import fixture

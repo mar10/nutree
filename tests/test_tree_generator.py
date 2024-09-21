@@ -5,7 +5,6 @@ Generic tree generator for test data.
 import datetime
 
 import pytest
-
 from nutree.common import GenericNodeData
 from nutree.tree import Tree
 from nutree.tree_generator import (

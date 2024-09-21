@@ -4,7 +4,6 @@
 # ruff: noqa: T201, T203 `print` found
 
 import pytest
-
 from nutree import AmbiguousMatchError, Node, Tree
 
 from . import fixture

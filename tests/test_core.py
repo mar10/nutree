@@ -8,7 +8,6 @@ import re
 from pathlib import Path
 
 import pytest
-
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
 from nutree.common import SkipBranch, StopTraversal
 from nutree.fs import load_tree_from_fs

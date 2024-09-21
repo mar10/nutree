@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Tuple
 
 import pytest
-
 from nutree import Node, Tree
 from nutree.common import FILE_FORMAT_VERSION
 from nutree.diff import DiffClassification, diff_node_formatter
