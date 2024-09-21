@@ -22,6 +22,7 @@ wheel = "*"
 yabs = "*"
 ipykernel = "*"
 notebook = "*"
+pre-commit = "*"
 nutree = {path = ".",editable = true}
 
 [packages]
