@@ -108,10 +108,6 @@ Nutree Facts
 `Read more <installation.html>`_ ...
 
 
-.. .. |travis_badge| image:: https://travis-ci.com/mar10/nutree.svg?branch=main
-..    :alt: Build Status
-..    :target: https://app.travis-ci.com/github/mar10/nutree
-
 .. |gha_badge| image:: https://github.com/mar10/nutree/actions/workflows/tests.yml/badge.svg
    :alt: Build Status
    :target: https://github.com/mar10/nutree/actions/workflows/tests.yml

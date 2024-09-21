@@ -46,7 +46,6 @@ sys.path.insert(0, os.path.abspath("_themes"))
 # ones.
 extensions = [
     'myst_parser',
-    # 'recommonmark',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
@@ -223,7 +222,7 @@ html_theme_options = {
     # "github_size": "small",
     "github_count": "true",
     # "travis_button": True,
-    # "codecov_button": True,
+    "codecov_button": True,
     "show_related": False,
     "note_bg": "#FFF59C",
 }

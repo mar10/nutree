@@ -37,6 +37,7 @@ select = [
   "E",  # pycodestyle
   "F",  # pyflakes
   "G",  # flake8-logging-format
+  "I",  # isort
   "UP", # pyupgrade
   "T",  # print, ...
   # "D",   # pydocstyle
