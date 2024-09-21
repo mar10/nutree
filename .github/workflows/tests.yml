@@ -45,6 +45,7 @@ jobs:
         run: |
           ruff -V
           ruff check  --output-format=github nutree tests setup.py
+          ruff format --check nutree tests setup.py
 
       - name: Test with pytest
         run: |
