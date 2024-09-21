@@ -1,28 +1,28 @@
-[tool.black]
-line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.tox
-  | \.venv
-  | \.eggs
-  | \.cache
-  | build
-  | __pycache__
-  | dist
-  | \.*
+# [tool.black]
+# line-length = 88
+# target-version = ['py38', 'py39', 'py310', 'py311']
+# include = '\.pyi?$'
+# exclude = '''
+# /(
+#     \.git
+#   | \.hg
+#   | \.tox
+#   | \.venv
+#   | \.eggs
+#   | \.cache
+#   | build
+#   | __pycache__
+#   | dist
+#   | \.*
 
-)/
-'''
+# )/
+# '''
 
 
-[tool.isort]
-# See https://black.readthedocs.io/en/stable/compatible_configs.html
-profile = "black"
-src_paths = ["nutree", "tests"]
+# [tool.isort]
+# # See https://black.readthedocs.io/en/stable/compatible_configs.html
+# profile = "black"
+# src_paths = ["nutree", "tests"]
 
 [tool.ruff]
 # Decrease the maximum line length to 79 characters.
@@ -47,6 +47,9 @@ ignore = [
   "UP007", # Use `X | Y` for type annotations (since Py310)
   "E721",  #  Do not compare types, use `isinstance()`
 ]
+
+[tool.ruff.lint.isort]
+# case-sensitive = true
 
 # [tool.ruff.pydocstyle]
 # convention = "google"
