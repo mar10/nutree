@@ -4,14 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-# black = { version = "~=24.3", extras = ["jupyter"] }
 fabulist="*"
-# isort = "*"
+ipykernel = "*"
+notebook = "*"
+pre-commit = "*"
 pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"
 rdflib = "*"
-recommonmark = "*"
 ruff = "*"
 setuptools = ">=42.0"
 Sphinx = "*"
@@ -20,9 +20,6 @@ tox = "*"
 twine = "*"
 wheel = "*"
 yabs = "*"
-ipykernel = "*"
-notebook = "*"
-pre-commit = "*"
 nutree = {path = ".",editable = true}
 
 [packages]
