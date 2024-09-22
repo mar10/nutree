@@ -207,6 +207,14 @@ GenericNodeData can also be initialized with keyword args like this::
 
     obj = GenericNodeData(a=1, b=2)
 
+Trees that contain GenericNodeData objects can be serialized and deserialized
+using the :meth:`~nutree.tree.Tree.save` and :meth:`~nutree.tree.Tree.load`
+methods::
+
+        tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+        ...
+        tree2 = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+
 .. warning::
     The :class:`~nutree.common.GenericNodeData` provides a hash value because
     any class that is hashable, so it can be used as a data object. However, the 

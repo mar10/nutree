@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
-from nutree.common import SkipBranch, StopTraversal
+from nutree.common import SkipBranch, StopTraversal, check_python_version
 from nutree.fs import load_tree_from_fs
 
 from . import fixture
@@ -21,6 +21,12 @@ def _make_tree_2():
     n.add("y1")
     n.add("y2")
     return t
+
+
+class TestCommon:
+    def test_check_python_version(self):
+        assert check_python_version((3, 7)) is True
+        assert check_python_version((99, 1)) is False
 
 
 class TestBasics:
@@ -354,7 +360,7 @@ class TestNavigate:
         )
         assert tree._self_check()
 
-    def test_search(self):
+    def test_find(self):
         tree = self.tree
 
         records = tree["Records"]
@@ -637,6 +643,20 @@ class TestTraversal:
         tree.visit(cb, method=IterMethod.LEVEL_ORDER)
         assert ",".join(res) == "A,B,a1,a2,b1,a11,a12,b11"
 
+    def test_visit_cb(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+
         res = []
 
         def cb(node, memo):
@@ -644,12 +664,72 @@ class TestTraversal:
             if node.name == "a1":
                 return SkipBranch
             if node.name == "b1":
+                return StopTraversal
+
+        res_2 = tree.visit(cb)
+
+        assert res_2 is None
+        assert ",".join(res) == "A,a1,a2,B,b1"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "a1":
+                raise SkipBranch(and_self=True)
+            if node.name == "b1":
                 raise StopTraversal("Found b1")
 
         res_2 = tree.visit(cb)
 
         assert res_2 == "Found b1"
+        # and_self does not skip self in this case
         assert ",".join(res) == "A,a1,a2,B,b1"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "a12":
+                raise StopIteration
+
+        res_2 = tree.visit(cb)
+
+        assert ",".join(res) == "A,a1,a11,a12"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "a12":
+                return StopIteration
+
+        res_2 = tree.visit(cb)
+
+        assert ",".join(res) == "A,a1,a11,a12"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "a12":
+                return False
+
+        res_2 = tree.visit(cb)
+
+        assert ",".join(res) == "A,a1,a11,a12"
+
+        res = []
+
+        def cb(node, memo):
+            res.append(node.name)
+            if node.name == "b1":
+                return 17
+
+        with pytest.raises(
+            ValueError, match="callback should not return values except for"
+        ):
+            res_2 = tree.visit(cb)
 
 
 class TestMutate:
@@ -983,6 +1063,17 @@ class TestCopy:
         )
 
     def test_filter(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
         tree = fixture.create_tree()
 
         def pred(node):
@@ -1005,6 +1096,17 @@ class TestCopy:
         )
 
     def test_filtered(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
         tree = fixture.create_tree()
 
         def pred(node):
@@ -1023,6 +1125,57 @@ class TestCopy:
                 │       ╰── a12
                 ╰── a2
                     ╰── a2
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a12":
+                raise SkipBranch
+            return "2" in node.name.lower()
+
+        tree_2 = tree.filtered(predicate=pred)
+
+        assert tree_2._self_check()
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            ╰── A
+                ╰── a2
+                    ╰── a2
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a12":
+                raise StopIteration
+            return "2" in node.name.lower()
+
+        tree_2 = tree.filtered(predicate=pred)
+
+        assert tree_2._self_check()
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            """,
+        )
+
+        tree_2 = tree.filtered(predicate=None)
+
+        assert tree_2._self_check()
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            ├── A
+            │   ├── a1
+            │   │   ├── a11
+            │   │   ╰── a12
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
             """,
         )
 

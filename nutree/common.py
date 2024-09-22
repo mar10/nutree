@@ -107,7 +107,7 @@ class StopTraversal(IterationControl):
     """Raised or returned by traversal callbacks to stop iteration.
 
     Optionally, a return value may be passed.
-    Note that if a callback returns ``False``, this will be converted to an
+    Note that if a callback returns ``False``, this will be converted to a
     ``StopTraversal(None)`` exception.
     """
 
@@ -115,9 +115,9 @@ class StopTraversal(IterationControl):
         self.value = value
 
 
-#:
+#: Generic callback for `tree.filter()`, `tree.copy()`, ...
 PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
-#:
+#: Generic callback for `tree.to_dot()`, ...
 MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
 #: Callback for `tree.save()`
 SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
@@ -221,9 +221,26 @@ class GenericNodeData:
         except KeyError:
             raise AttributeError(name) from None
 
-    @staticmethod
-    def serialize_mapper(nutree_node, data):
+    @classmethod
+    def serialize_mapper(cls, nutree_node: Node, data: dict) -> Union[None, dict]:
+        """Serialize the data object to a dictionary.
+
+        Example::
+
+            tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+
+        """
         return nutree_node.data._dict.copy()
+
+    @classmethod
+    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> Union[str, object]:
+        """Serialize the data object to a dictionary.
+
+        Example::
+
+            tree = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+        """
+        return cls(**data)
 
 
 def get_version() -> str:
@@ -323,7 +340,7 @@ def call_traversal_cb(fn: Callable, node: Node, memo: Any) -> False | None:
             RuntimeWarning,
             stacklevel=3,
         )
-        raise StopTraversal(e.value) from None
+        raise StopTraversal(e.value) from e
     return None
 
 

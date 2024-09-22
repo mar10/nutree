@@ -87,6 +87,15 @@ class TestSerialize:
         with fixture.WritableTempFile("r+t") as temp_file:
             tree.save(temp_file.name, compression=zipfile.ZIP_DEFLATED)
             tree_2 = Tree.load(temp_file.name)
+
+            with pytest.raises(UnicodeDecodeError):
+                _ = Tree.load(temp_file.name, auto_uncompress=False)
+
+        assert fixture.trees_equal(tree, tree_2)
+
+        with fixture.WritableTempFile("r+t") as temp_file:
+            tree.save(temp_file.name, compression=True)
+            tree_2 = Tree.load(temp_file.name)
         assert fixture.trees_equal(tree, tree_2)
 
         with fixture.WritableTempFile("r+t") as temp_file:
@@ -97,6 +106,17 @@ class TestSerialize:
         with fixture.WritableTempFile("r+t") as temp_file:
             tree.save(temp_file.name, compression=zipfile.ZIP_LZMA)
             tree_2 = Tree.load(temp_file.name)
+        assert fixture.trees_equal(tree, tree_2)
+
+    def test_serialize_uncompressed(self):
+        tree = fixture.create_tree()
+        tree.add_child("äöüß: \u00e4\u00f6\u00fc\u00df")
+        tree.add_child("emoji: 😀")
+
+        with fixture.WritableTempFile("r+t") as temp_file:
+            tree.save(temp_file.name, compression=False)
+            tree_2 = Tree.load(temp_file.name)
+
         assert fixture.trees_equal(tree, tree_2)
 
     def _test_serialize_objects(self, *, mode: str):
