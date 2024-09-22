@@ -79,7 +79,7 @@ for some examples.
 Since this takes some time, benchmarks are not run with the default test suite, 
 but has to be enabled like so::
 
-    $ pytest --benchmarks
+    $ tox -e benchmarks
 
 
 Code
