@@ -5,7 +5,7 @@ nutree
 ######
 
 |gha_badge| |nbsp| |pypi_badge| |nbsp| |lic_badge| |nbsp| |rtd_badge| |nbsp|
-|coverage_badge| |nbsp| |black_badge| |nbsp| |so_badge|
+|coverage_badge| |nbsp| |so_badge|
 
 *A Python library for tree data structures with an intuitive, yet powerful, API.*
 
@@ -124,13 +124,13 @@ Nutree Facts
    :target: https://nutree.readthedocs.io/
    :alt: Documentation Status
 
-.. |coverage_badge| image:: https://coveralls.io/repos/github/mar10/nutree/badge.svg?branch=main
-   :target: https://coveralls.io/github/mar10/nutree?branch=main
+.. |coverage_badge| image:: https://codecov.io/github/mar10/nutree/branch/main/graph/badge.svg?token=9xmAFm8Icl
+   :target: https://codecov.io/github/mar10/nutree
    :alt: Coverage Status
 
-.. |black_badge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/ambv/black
-   :alt: Code style: black
+.. .. |black_badge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+..    :target: https://github.com/ambv/black
+..    :alt: Code style: black
 
 .. |so_badge| image:: https://img.shields.io/badge/StackOverflow-nutree-blue.svg
    :target: https://stackoverflow.com/questions/tagged/nutree
