@@ -289,7 +289,11 @@ class TestCompress:
 class TestMemory:
     def test_bench_node_size(self, capsys):
         """ """
-        from pympler.asizeof import asized, asizeof
+
+        try:
+            from pympler.asizeof import asized, asizeof
+        except ImportError:
+            raise pytest.skip("pympler not installed") from None
 
         results = ["Memory results"]
         tree = fixture.generate_tree([10, 9])
