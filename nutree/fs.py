@@ -6,17 +6,29 @@ Methods and classes to support file system related functionality.
 
 from operator import attrgetter, itemgetter
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from nutree.tree import Node, Tree
 
 
 class FileSystemEntry:
-    def __init__(self, name, is_dir, size, mdate):
+    def __init__(
+        self,
+        name: str,
+        *,
+        is_dir: bool = False,
+        size: Optional[int] = None,
+        mdate: Optional[float] = None,
+    ):
         self.name = name
         self.is_dir = is_dir
+        if is_dir:
+            assert size is None
+            size = 0
+        else:
+            assert size is not None
         self.size = int(size)
-        self.mdate = float(mdate)
+        self.mdate = float(mdate) if mdate is not None else None
 
     def __repr__(self):
         if self.is_dir:
@@ -39,8 +51,8 @@ class FileSystemTree(Tree):
         """Callback for use with :meth:`~nutree.tree.Tree.load`."""
         v = data["v"]
         if "d" in v:
-            return FileSystemEntry(v["n"], True, 0)
-        return FileSystemEntry(v["n"], False, v["s"])
+            return FileSystemEntry(v["n"], is_dir=True, size=0)
+        return FileSystemEntry(v["n"], is_dir=False, size=v["s"])
 
 
 def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
@@ -51,7 +63,7 @@ def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
         Especially useful when comparing unit test fixtures.
     """
     path = Path(path)
-    tree = FileSystemTree(path)
+    tree = FileSystemTree(str(path))
 
     def visit(node: Node, pth: Path):
         if sort:
@@ -59,11 +71,11 @@ def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
             files = []
             for c in pth.iterdir():
                 if c.is_dir():
-                    o = FileSystemEntry(f"{c.name}", True, 0, 0)
+                    o = FileSystemEntry(f"{c.name}", is_dir=True)
                     dirs.append((c, o))
                 elif c.is_file():
                     stat = c.stat()
-                    o = FileSystemEntry(c.name, False, stat.st_size, stat.st_mtime)
+                    o = FileSystemEntry(c.name, size=stat.st_size, mdate=stat.st_mtime)
                     files.append(o)
             # Files first, sorted by name
             for o in sorted(files, key=attrgetter("name")):
@@ -76,12 +88,12 @@ def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
 
         for c in pth.iterdir():
             if c.is_dir():
-                o = FileSystemEntry(f"{c.name}", True, 0, 0)
+                o = FileSystemEntry(f"{c.name}", is_dir=True)
                 pn = node.add(o)
                 visit(pn, c)
             elif c.is_file():
                 stat = c.stat()
-                o = FileSystemEntry(c.name, False, stat.st_size, stat.st_mtime)
+                o = FileSystemEntry(c.name, size=stat.st_size, mdate=stat.st_mtime)
                 node.add(o)
 
     visit(tree._root, path)

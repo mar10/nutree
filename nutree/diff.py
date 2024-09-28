@@ -41,7 +41,7 @@ def _copy_children(source: Node, dest: Node, add_set: set, meta: tuple) -> None:
             n_dest.set_meta(*meta)
         if n._children:
             # meta is only set on top node
-            _copy_children(n, n_dest, add_set, meta=None)
+            _copy_children(n, n_dest, add_set, meta=None)  # type: ignore
     return
 
 
@@ -64,7 +64,7 @@ def diff_node_formatter(node):
             flags.append("Moved here")  # ←
         elif dc == DC.MOVED_TO:
             flags.append("Moved away")  # ×➡
-        elif type(dc) is tuple:  # == DC.SHIFTED:
+        elif isinstance(dc, tuple):  # == DC.SHIFTED:
             ofs = dc[1] - dc[0]
             flags.append(f"Order {ofs:+d}")  # ⇳ ⇵
             # flags.append("Shifted")  # ⇳ ⇵
@@ -94,7 +94,7 @@ def diff_tree(t0: Tree, t1: Tree, *, ordered=False, reduce=False) -> Tree:
         # `p0.children` always returns an (empty) array
         for i0, c0 in enumerate(p0.children):
             p0_data_ids.add(c0._data_id)
-            i1, c1 = _find_child(p1._children, c0)
+            i1, c1 = _find_child(p1.children, c0)
 
             c2 = p2.add(c0)
             if i0 == i1:

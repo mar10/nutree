@@ -2,10 +2,13 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportRedeclaration=false
+# pyright: reportOptionalMemberAccess=false
 
 import os
 import re
 from pathlib import Path
+from typing import Any, Union
 
 import pytest
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
@@ -43,9 +46,9 @@ class TestBasics:
 
         # Check read-only prperties
         with pytest.raises(AttributeError):
-            records.name = "not allowed"
+            records.name = "not allowed"  # type: ignore
         with pytest.raises(AttributeError):
-            records.parent = "not allowed"
+            records.parent = "not allowed"  # type: ignore
 
         records.add_child("Let It Be")
         records.add_child("Get Yer Ya-Ya's Out!")
@@ -65,14 +68,11 @@ class TestBasics:
             """,
         )
 
-        # for style in CONNECTORS.keys():
-        #     print(tree.format(repr="{node.data}", style=style))
-        # raise
-
-    def test_meta(aelf):
+    def test_meta(self):
         tree = fixture.create_tree()
         node = tree.first_child()
 
+        assert node
         assert node._meta is None
 
         node.set_meta("foo", 42)
@@ -119,7 +119,7 @@ class TestNavigate:
         n.add("The Little Prince")
 
     def teardown_method(self):
-        self.tree = None
+        self.tree = None  # type: ignore
 
     def test_basic(self):
         tree = self.tree
@@ -188,6 +188,7 @@ class TestNavigate:
             assert tree == tree  # __eq__ not implemented
 
         let_it_be = records.first_child()
+        assert let_it_be.name
         assert records.find("Let It Be") is let_it_be
         assert let_it_be.name == "Let It Be"
         assert let_it_be.depth() == 2
@@ -659,7 +660,7 @@ class TestTraversal:
 
         res = []
 
-        def cb(node, memo):
+        def cb(node: Node, memo: Any):
             res.append(node.name)
             if node.name == "a1":
                 return SkipBranch
@@ -699,7 +700,7 @@ class TestTraversal:
 
         res = []
 
-        def cb(node, memo):
+        def cb(node: Node, memo: Any):
             res.append(node.name)
             if node.name == "a12":
                 return StopIteration
@@ -710,7 +711,7 @@ class TestTraversal:
 
         res = []
 
-        def cb(node, memo):
+        def cb(node: Node, memo: Any):
             res.append(node.name)
             if node.name == "a12":
                 return False
@@ -721,7 +722,7 @@ class TestTraversal:
 
         res = []
 
-        def cb(node, memo):
+        def cb(node: Node, memo: Any):
             res.append(node.name)
             if node.name == "b1":
                 return 17
@@ -729,7 +730,7 @@ class TestTraversal:
         with pytest.raises(
             ValueError, match="callback should not return values except for"
         ):
-            res_2 = tree.visit(cb)
+            res_2 = tree.visit(cb)  # type: ignore
 
 
 class TestMutate:
@@ -909,16 +910,29 @@ class TestMutate:
             `- b1
                 `- b11
         """
-        tree = fixture.create_tree()
-        a11 = tree["a11"]
-        b1 = tree["b1"]
 
-        print(tree.format(repr="{node.data}"))
-        a11.move_to(b1)
+        def _tm(
+            *,
+            source: str,
+            target: str,
+            before: Union[Node, str, int, None],
+            result: str,
+        ):
+            tree = fixture.create_tree()
+            source_node = tree[source]
+            target_node = tree[target]
+            before = tree[before] if isinstance(before, str) else before
 
-        assert fixture.check_content(
-            tree,
-            """
+            source_node.move_to(target_node, before=before)
+
+            assert fixture.check_content(tree, result)
+            assert tree._self_check()
+
+        _tm(
+            source="a11",
+            target="b1",
+            before=None,
+            result="""
             Tree<'fixture'>
             +- A
             |  +- a1
@@ -928,9 +942,42 @@ class TestMutate:
                `- b1
                   +- b11
                   `- a11
-            """,
+           """,
         )
-        assert tree._self_check()
+
+        _tm(
+            source="b1",
+            target="a1",
+            before="a12",
+            result="""
+            Tree<'fixture'>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  +- b1
+            |  |  |  `- b11
+            |  |  `- a12
+            |  `- a2
+            `- B 
+           """,
+        )
+
+        _tm(
+            source="b1",
+            target="a1",
+            before=0,
+            result="""
+            Tree<'fixture'>
+            +- A
+            |  +- a1
+            |  |  +- b1
+            |  |  |  `- b11
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B 
+           """,
+        )
 
 
 class TestCopy:
@@ -1161,7 +1208,11 @@ class TestCopy:
             """,
         )
 
-        tree_2 = tree.filtered(predicate=None)
+        # Should use tree.copy() instead:
+        with pytest.raises(ValueError, match="predicate is required"):
+            tree_2 = tree.filtered(predicate=None)  # type: ignore
+
+        tree_2 = tree.copy()
 
         assert tree_2._self_check()
         assert fixture.check_content(

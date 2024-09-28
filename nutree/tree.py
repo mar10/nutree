@@ -10,7 +10,7 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, Literal, Optional, Union
 
 from nutree.diff import diff_tree
 from nutree.mermaid import (
@@ -22,16 +22,20 @@ from nutree.mermaid import (
 
 from .common import (
     FILE_FORMAT_VERSION,
-    ROOT_ID,
+    ROOT_DATA_ID,
+    ROOT_NODE_ID,
     AmbiguousMatchError,
     CalcIdCallbackType,
     DataIdType,
     DeserializeMapperType,
+    FlatJsonDictType,
     IterMethod,
     KeyMapType,
     NodeFactoryType,
     PredicateCallbackType,
+    ReprArgType,
     SerializeMapperType,
+    SortKeyType,
     TraversalCallbackType,
     ValueMapType,
     call_mapper,
@@ -98,16 +102,16 @@ class Tree:
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
-        self.name = str(id(self) if name is None else name)
-        self._node_factory = factory or Node
-        self._root = _SystemRootNode(self)
-        self._node_by_id = {}
-        self._nodes_by_data_id = {}
+        self.name: str = str(id(self) if name is None else name)
+        self._node_factory: NodeFactoryType = factory or Node
+        self._root: _SystemRootNode = _SystemRootNode(self)
+        self._node_by_id: dict[int, Node] = {}
+        self._nodes_by_data_id: dict[DataIdType, list[Node]] = {}
         # Optional callback that calculates data_ids from data objects
         # hash(data) is used by default
-        self._calc_data_id_hook = calc_data_id
+        self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
         # Enable aliasing when accessing Node instances.
-        self._shadow_attrs = shadow_attrs
+        self._shadow_attrs: bool = shadow_attrs
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -148,13 +152,13 @@ class Tree:
             raise ValueError(f"Expected data instance, data_id, or node_id: {data}")
 
         # Support node_id lookup
-        if type(data) is int:
+        if isinstance(data, int):
             res = self._node_by_id.get(data)
             if res is not None:
                 return res
 
         # Treat data as data_id
-        if type(data) in (int, str) and data in self._nodes_by_data_id:
+        if isinstance(data, (int, str)) and data in self._nodes_by_data_id:
             res = self.find_all(data_id=data)
         else:
             res = self.find_all(data)
@@ -220,12 +224,15 @@ class Tree:
         if not clones:
             del self._nodes_by_data_id[node._data_id]
 
-        node._tree = None
-        node._parent = None
+        # Note: nulling the main attributes is not strictly neccessary, but
+        # helps to detect bugs when accessing nodes after they were removed.
+        # (We accept a violation of the type declarations in this case.)
+        node._tree = None  # type: ignore
+        node._parent = None  # type: ignore
         if clear:
             node._data = _DELETED_TAG
-            node._data_id = None
-            node._node_id = None
+            node._data_id = None  # type: ignore
+            node._node_id = None  # type: ignore
             node._children = None
             node._meta = None
         return
@@ -318,7 +325,9 @@ class Tree:
     #: Implement ``for node in tree: ...`` syntax to iterate nodes depth-first.
     __iter__ = iterator
 
-    def format_iter(self, *, repr=None, style=None, title=None) -> Iterator[str]:
+    def format_iter(
+        self, *, repr: ReprArgType | None = None, style=None, title=None
+    ) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
         if title is None:
             title = False if style == "list" else True
@@ -327,7 +336,9 @@ class Tree:
         has_title = title is not False
         yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
 
-    def format(self, *, repr=None, style=None, title=None, join="\n") -> str:
+    def format(
+        self, *, repr: ReprArgType | None = None, style=None, title=None, join="\n"
+    ) -> str:
         """Return a pretty string representation of the tree hierarchy.
 
         See Node's :meth:`~nutree.node.Node.format` method for details.
@@ -338,7 +349,7 @@ class Tree:
     def print(
         self,
         *,
-        repr=None,
+        repr: ReprArgType | None = None,
         style=None,
         title=None,
         join: str = "\n",
@@ -354,8 +365,8 @@ class Tree:
         self,
         child: Node | Tree | Any,
         *,
-        before: Node | bool | int | None = None,
-        deep: bool = None,
+        before: Optional[Node | bool | int] = None,
+        deep: Optional[bool] = None,
         data_id=None,
         node_id=None,
     ) -> Node:
@@ -375,7 +386,10 @@ class Tree:
     add = add_child
 
     def copy(
-        self, *, name: str = None, predicate: PredicateCallbackType = None
+        self,
+        *,
+        name: Optional[str] = None,
+        predicate: Optional[PredicateCallbackType] = None,
     ) -> Tree:
         """Return a copy of this tree.
 
@@ -415,6 +429,8 @@ class Tree:
 
         See also :ref:`iteration-callbacks`.
         """
+        if not predicate:
+            raise ValueError("predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
     def clear(self) -> None:
@@ -422,7 +438,7 @@ class Tree:
         self._root.remove_children()
 
     def find_all(
-        self, data=None, *, match=None, data_id=None, max_results: int = None
+        self, data=None, *, match=None, data_id=None, max_results: Optional[int] = None
     ) -> list[Node]:
         """Return a list of matching nodes (list may be empty).
 
@@ -474,7 +490,9 @@ class Tree:
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort(self, *, key=None, reverse=False, deep=True) -> None:
+    def sort(
+        self, *, key: Optional[SortKeyType] = None, reverse=False, deep=True
+    ) -> None:
         """Sort toplevel nodes (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
@@ -487,7 +505,7 @@ class Tree:
         child nodes and return list of results."""
         res = []
         with self:
-            for n in self._root._children:
+            for n in self._root._children:  # pyright: ignore[reportOptionalIterable]
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -509,9 +527,9 @@ class Tree:
         mapper: SerializeMapperType | None = None,
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[tuple[int, Union[FlatJsonDictType, str]]]:
         """Yield a parent-referencing list of child nodes."""
-        return self._root.to_list_iter(
+        yield from self._root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
         )
 
@@ -562,7 +580,7 @@ class Tree:
         elif value_map is False:
             value_map = {}
 
-        header = {
+        header: dict[str, Any] = {
             "$generator": f"nutree/{get_version()}",
             "$format_version": FILE_FORMAT_VERSION,
         }
@@ -597,6 +615,7 @@ class Tree:
     ) -> None:
         # if isinstance(data, str):
         #     return
+        assert isinstance(data, dict), data
         for key, value in list(data.items()):
             if key in inverse_key_map:
                 long_key = inverse_key_map[key]
@@ -604,25 +623,28 @@ class Tree:
             else:
                 long_key = key
 
-            if type(value) is int and long_key in value_map:
+            if isinstance(value, int) and long_key in value_map:
                 data[long_key] = value_map[long_key][value]
         return
 
     @classmethod
     def _from_list(
-        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
+        cls,
+        obj: list[tuple[int, str | dict]],
+        *,
+        mapper: DeserializeMapperType | None = None,
     ) -> Tree:
         tree = cls()  # Tree or TypedTree
-        node_idx_map = {0: tree._root}
+        node_idx_map: dict[int, Node] = {0: tree._root}
         if mapper is None:
             mapper = cls.deserialize_mapper
 
         for idx, (parent_idx, data) in enumerate(obj, 1):
             parent = node_idx_map[parent_idx]
             # print(idx, parent_idx, data, parent)
-            if type(data) is str:
+            if isinstance(data, str):
                 n = parent.add(data)
-            elif type(data) is int:
+            elif isinstance(data, int):
                 first_clone = node_idx_map[data]
                 n = parent.add(first_clone, data_id=first_clone.data_id)
             else:
@@ -643,7 +665,7 @@ class Tree:
         target: IO[str] | str | Path,
         *,
         mapper: DeserializeMapperType | None = None,
-        file_meta: dict = None,
+        file_meta: dict | None = None,
         auto_uncompress: bool = True,
     ) -> Tree:
         """Create a new :class:`Tree` instance from a file path or JSON file stream.
@@ -767,13 +789,13 @@ class Tree:
         headers: Iterable[str] | None = None,
         node_mapper: MermaidNodeMapperCallbackType | None = None,
         edge_mapper: MermaidEdgeMapperCallbackType | None = None,
-    ) -> Iterator[str]:
+    ) -> None:
         """Serialize a Mermaid flowchart representation.
 
         Optionally convert to a Graphviz display formats.
         See :ref:`graphs` for details.
         """
-        res = self.system_root.to_mermaid_flowchart(
+        self.system_root.to_mermaid_flowchart(
             target=target,
             as_markdown=as_markdown,
             direction=direction,
@@ -786,7 +808,7 @@ class Tree:
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )
-        return res
+        return
 
     def to_rdf_graph(self):
         """Return an instance of ``rdflib.Graph``.
@@ -818,7 +840,7 @@ class Tree:
     # def on(self, event_name: str, callback):
     #     raise NotImplementedError
 
-    def _self_check(self) -> True:
+    def _self_check(self) -> Literal[True]:
         """Internal method to check data structure sanity.
 
         This is slow: only use for debugging, e.g. ``assert tree._self_check()``.
@@ -827,7 +849,7 @@ class Tree:
         for node in self:
             node_list.append(node)
             assert node._tree is self, node
-            assert node in node._parent._children, node
+            assert node in node._parent._children, node  # pyright: ignore[reportOperatorIssue]
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
@@ -871,8 +893,9 @@ class _SystemRootNode(Node):
 
     def __init__(self, tree: Tree) -> None:
         self._tree: Tree = tree
-        self._parent = None
-        self._node_id = self._data_id = ROOT_ID
+        self._parent = None  # type: ignore
+        self._node_id = ROOT_NODE_ID
+        self._data_id = ROOT_DATA_ID
         self._data = tree.name
         self._children = []
         self._meta = None

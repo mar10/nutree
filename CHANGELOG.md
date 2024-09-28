@@ -2,6 +2,9 @@
 
 ## 0.9.1 (unreleased)
 
+- Passes pyright 'basic' checks.
+- tree.to_rdf() is now available for Tree (not only TypedTree)
+
 ## 0.9.0 (2024-09-12)
 
 - Add `Tree.build_random_tree()` (experimental).

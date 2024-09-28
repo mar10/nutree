@@ -52,6 +52,7 @@ def node_to_dot(
         if mapper:
             if attr_def is None:
                 attr_def = {}
+            assert node, "node required for mapper"
             call_mapper(mapper, node, attr_def)
         if not attr_def:
             return ""

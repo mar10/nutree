@@ -12,9 +12,8 @@ from nutree.common import IterationControl
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
-
-    # from .tree import Tree
-    from .typed_tree import TypedNode, TypedTree
+    from .tree import Tree
+    # from .typed_tree import TypedNode, TypedTree
 
 # Export some common rdflib attributes, so they can be accessed as
 # `from nutree.rdf import Literal` without having to `import rdflib`
@@ -66,9 +65,9 @@ def _make_graph() -> Graph:
 def _add_child_node(
     graph: Graph,
     parent_graph_node: IdentifiedNode | None,
-    tree_node: TypedNode,
+    tree_node: Node,
     index: int,
-    node_mapper: RDFMapperCallbackType,
+    node_mapper: RDFMapperCallbackType | None,
 ) -> IdentifiedNode | IterationControl | bool:
     """"""
     graph_node = Literal(tree_node.data_id)
@@ -92,8 +91,8 @@ def _add_child_node(
         return False
 
     # Add standard attributes
-
-    graph.add((graph_node, NUTREE_NS.kind, Literal(tree_node.kind)))
+    if hasattr(tree_node, "kind"):
+        graph.add((graph_node, NUTREE_NS.kind, Literal(tree_node.kind)))
     graph.add((graph_node, NUTREE_NS.name, Literal(tree_node.name)))
     if index >= 0:
         graph.add((graph_node, NUTREE_NS.index, Literal(index, datatype=XSD.integer)))
@@ -107,8 +106,8 @@ def _add_child_node(
 def _add_child_nodes(
     graph: Graph,
     graph_node: IdentifiedNode,
-    tree_node: TypedNode,
-    node_mapper: RDFMapperCallbackType = None,
+    tree_node: Node,
+    node_mapper: RDFMapperCallbackType | None = None,
 ) -> None:
     """"""
     for index, child_tree_node in enumerate(tree_node._children or ()):
@@ -126,10 +125,10 @@ def _add_child_nodes(
 
 
 def node_to_rdf(
-    tree_node: TypedNode,
+    tree_node: Node,
     *,
     add_self: bool = True,
-    node_mapper: RDFMapperCallbackType = None,
+    node_mapper: RDFMapperCallbackType | None = None,
 ) -> Graph:
     """Generate DOT formatted output line-by-line."""
     graph = _make_graph()
@@ -156,9 +155,9 @@ def node_to_rdf(
 
 
 def tree_to_rdf(
-    tree: TypedTree,
+    tree: Tree,
     *,
-    node_mapper: RDFMapperCallbackType = None,
+    node_mapper: RDFMapperCallbackType | None = None,
 ) -> Graph:
     graph = _make_graph()
 

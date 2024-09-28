@@ -20,11 +20,18 @@ ignore = [
   "E721",  #  Do not compare types, use `isinstance()`
 ]
 
-[tool.ruff.lint.isort]
+# [tool.ruff.lint.isort]
 # case-sensitive = true
 
 # [tool.ruff.pydocstyle]
 # convention = "google"
+
+[tool.pyright]
+# typeCheckingMode = "off"
+typeCheckingMode = "basic"
+
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
+reportUnnecessaryTypeIgnoreComment = true
 
 # --- Coverage Settings --------------------------------------------------------
 [tool.pytest.ini_options]

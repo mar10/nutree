@@ -12,8 +12,9 @@ import time
 import timeit
 from random import randint
 from textwrap import dedent, indent
-from typing import List, Union
+from typing import List, Optional, Union
 
+from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
 from nutree.typed_tree import TypedNode, TypedTree
 
@@ -185,26 +186,23 @@ def create_typed_tree(
     return tree
 
 
-def generate_tree(level_defs: List, root=None) -> "Tree":
+def generate_tree(level_defs: List[int]) -> "Tree":
     """Generate a tree.
 
     Example:
         generate_tree([10, 100, 100])
     """
-    if root is None:
-        tree = Tree()
-        root = tree._root
-        name = "n"
-    else:
-        tree = None
-        name = root.name
-    level_def, *rest = level_defs
-    min_childs, max_childs = level_def, level_def
-    for i in range(randint(min_childs, max_childs)):
-        node = root.add(f"{name}.{i + 1}")
-        if rest:
-            generate_tree(rest, node)
+    tree = Tree()
 
+    def _generate_tree(levels, name: str, root: Node):
+        count, *rest = levels
+        min_childs, max_childs = count, count
+        for i in range(randint(min_childs, max_childs)):
+            node = root.add(f"{name}.{i + 1}")
+            if rest:
+                _generate_tree(rest, node.name, node)
+
+    _generate_tree(level_defs, "n", tree._root)
     return tree
 
 
@@ -220,7 +218,9 @@ def flatten_nodes(tree):
     return ",".join(res)
 
 
-def canonical_repr(obj: Union[str, Tree, Node], *, repr=None, style="ascii32") -> str:
+def canonical_repr(
+    obj: Union[str, Tree, Node], *, repr: Optional[ReprArgType] = None, style="ascii32"
+) -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
             repr = TypedNode.DEFAULT_RENDER_REPR  # "{node.kind} → {node.data}"
@@ -240,7 +240,12 @@ canonical_tree_header = "Tree<*>"
 
 
 def _check_content(
-    tree: Tree, expect_ascii, msg="", ignore_tree_name=True, repr=None, style=None
+    tree: Union[Tree, Node, str],
+    expect_ascii,
+    msg="",
+    ignore_tree_name=True,
+    repr: Optional[ReprArgType] = None,
+    style=None,
 ):
     if style is None:
         if "├── " in expect_ascii or "╰── " in expect_ascii:
@@ -261,7 +266,13 @@ def _check_content(
 
 
 def check_content(
-    tree: Tree, expect_ascii, *, msg="", ignore_tree_name=True, repr=None, style=None
+    tree: Union[Tree, Node, str],
+    expect_ascii,
+    *,
+    msg="",
+    ignore_tree_name=True,
+    repr: Optional[ReprArgType] = None,
+    style=None,
 ):
     err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)
     if err:
@@ -331,7 +342,7 @@ def run_timings(
     setup="pass",
     *,
     verbose=0,
-    repeat=timeit.default_repeat,
+    repeat=timeit.default_repeat,  # type: ignore
     number=0,
     globals=None,
     time_unit=None,
@@ -362,10 +373,10 @@ def run_timings(
 
     if number == 0:
         # determine number so that 0.2 <= total time < 2.0
-        callback = None
+        callback = None  # type: ignore
         if verbose:
 
-            def callback(number, time_taken):
+            def callback(number: int, time_taken: float):
                 msg = "{num} loop{s} -> {secs:.{prec}g} secs"
                 plural = number != 1
                 print(

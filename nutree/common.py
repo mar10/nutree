@@ -14,7 +14,19 @@ import zipfile
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, Dict, List, Type, TypeVar, Union
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Type,
+    TypeVar,
+    Union,
+)
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .node import Node
@@ -23,10 +35,14 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     TTree = TypeVar("TTree", bound=Tree)
 
 #: Used as ID for the system root node
-ROOT_ID: str = "__root__"
+ROOT_DATA_ID: str = "__root__"
+ROOT_NODE_ID: int = 0
 
 #: File format version used by `tree.save()` as `meta.$format_version`
 FILE_FORMAT_VERSION: str = "1.0"
+
+#: Currently used Python version as string
+PYTHON_VERSION = ".".join([str(s) for s in sys.version_info[:3]])
 
 #: Type of ``Node.data_id``
 DataIdType = Union[str, int]
@@ -34,17 +50,23 @@ DataIdType = Union[str, int]
 #: Type of ``Tree(..., calc_data_id)```
 CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 
+#: Type of ``format(..., repr=)```
+ReprArgType = Union[str, Callable[["Node"], str]]
+
 #: Type of ``Tree(..., factory)```
 NodeFactoryType = Type["Node"]
+
+#: A dict of scalar values
+FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
 
 #: Type of ``tree.save(..., key_map)``
 KeyMapType = Dict[str, str]
 
 #: Type of ``tree.save(..., value_map)``
+#: E.g. `{'t': ['person', 'dept']}`
 ValueMapType = Dict[str, List[str]]
-
-#: Currently used Python version as string
-PYTHON_VERSION = ".".join([str(s) for s in sys.version_info[:3]])
+#: E.g. `{'t': {'person': 0, 'dept': 1}}`
+ValueDictMapType = Dict[str, Dict[str, int]]
 
 
 class TreeError(RuntimeError):
@@ -115,18 +137,34 @@ class StopTraversal(IterationControl):
         self.value = value
 
 
-#: Generic callback for `tree.filter()`, `tree.copy()`, ...
-PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
 #: Generic callback for `tree.to_dot()`, ...
 MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
+
 #: Callback for `tree.save()`
 SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
+
 #: Callback for `tree.load()`
 DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
-# MatchCallbackType = Callable[["Node"], bool]
+
+#: Generic callback for `tree.filter()`, `tree.copy()`, ...
+PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
+
+#:
 TraversalCallbackType = Callable[
-    ["Node", Any], Union[None, bool, "StopTraversal", "SkipBranch"]
+    ["Node", Any],
+    Union[
+        None,
+        bool,
+        "SkipBranch",
+        "StopTraversal",
+        Type[SkipBranch],
+        Type[StopTraversal],
+        Type[StopIteration],
+    ],
 ]
+#: Callback for `tree.sort(key=...)`
+SortKeyType = Callable[["Node"], Any]
+# SortKeyType = Callable[[Node], SupportsLess]
 
 #: Node connector prefixes, for use with ``format(style=...)`` argument.
 CONNECTORS = {
@@ -185,10 +223,10 @@ class GenericNodeData:
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
             if not isinstance(dict_inst, dict):
-                self._dict = None
+                self._dict = None  # type: ignore
                 raise TypeError("dict_inst must be a dictionary or None")
             if values:
-                self._dict = None
+                self._dict = None  # type: ignore
                 raise ValueError("Cannot pass both dict_inst and **values")
             self._dict: dict = dict_inst
         else:
@@ -249,7 +287,7 @@ def get_version() -> str:
     return __version__
 
 
-def check_python_version(min_version: tuple[str]) -> bool:
+def check_python_version(min_version: tuple[Union[str, int], Union[str, int]]) -> bool:
     """Check for deprecated Python version."""
     if sys.version_info < min_version:
         min_ver = ".".join([str(s) for s in min_version[:3]])
@@ -296,7 +334,9 @@ def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
     return res
 
 
-def call_traversal_cb(fn: Callable, node: Node, memo: Any) -> False | None:
+def call_traversal_cb(
+    fn: TraversalCallbackType, node: Node, memo: Any
+) -> Literal[False] | None:
     """Call the function and handle result and exceptions.
 
     This method calls `fn(node, memo)` and converts all returned or raised
@@ -350,7 +390,7 @@ def open_as_uncompressed_input_stream(
     *,
     encoding: str = "utf8",
     auto_uncompress: bool = True,
-) -> IO[str]:  # type: ignore
+) -> Iterator[IO[str]]:
     """Open a file for reading, decompressing if necessary.
 
     Decompression is done by checking for the magic header (independent of the
@@ -383,7 +423,7 @@ def open_as_compressed_output_stream(
     *,
     compression: bool | int = True,
     encoding: str = "utf8",
-) -> IO[str]:  # type: ignore
+) -> Iterator[IO[str]]:
     """Open a file for writing, ZIP-compressing if requested.
 
     Example::

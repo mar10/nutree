@@ -105,7 +105,7 @@ Example::
     
     tree = TypedTree.build_random_tree(structure_def)
     
-    assert type(tree) is TypedTree
+    assert isinstance(tree, TypedTree)
     assert tree.calc_height() == 3
     
     tree.print()
