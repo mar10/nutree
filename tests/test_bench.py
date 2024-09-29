@@ -89,6 +89,24 @@ class TestBenchmarks:
         with capsys.disabled():
             print("\n  - ".join(results))
 
+    # def test_pybench_access_node_data_prop(self, benchmark):
+    #     tree = fixture.create_tree()
+    #     node = tree.first_child()
+
+    #     def func():
+    #         _ = node.data
+
+    #     benchmark(func)
+
+    # def test_pybench_access_node_data_attr(self, benchmark):
+    #     tree = fixture.create_tree()
+    #     node = tree.first_child()
+
+    #     def func():
+    #         _ = node._data
+
+    #     benchmark(func)
+
     def test_bench_iter(self, capsys):
         """ """
 
