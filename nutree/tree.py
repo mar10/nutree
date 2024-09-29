@@ -367,7 +367,7 @@ class Tree:
         *,
         before: Optional[Node | bool | int] = None,
         deep: Optional[bool] = None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ) -> Node:
         """Add a toplevel node.
@@ -438,7 +438,12 @@ class Tree:
         self._root.remove_children()
 
     def find_all(
-        self, data=None, *, match=None, data_id=None, max_results: Optional[int] = None
+        self,
+        data=None,
+        *,
+        match: PredicateCallbackType | None = None,
+        data_id: DataIdType | None = None,
+        max_results: Optional[int] = None,
     ) -> list[Node]:
         """Return a list of matching nodes (list may be empty).
 
@@ -462,7 +467,12 @@ class Tree:
         raise NotImplementedError
 
     def find_first(
-        self, data=None, *, match=None, data_id=None, node_id=None
+        self,
+        data=None,
+        *,
+        match: PredicateCallbackType | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ) -> Node | None:
         """Return the one matching node or `None`.
 
@@ -653,7 +663,7 @@ class Tree:
                 data = call_mapper(mapper, parent, data)
                 n = parent.add(data, data_id=data_id)
             # else:
-            #     raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
+            #     raise RuntimeError(f"Need mapper for {data}")
 
             node_idx_map[idx] = n
 

@@ -268,7 +268,11 @@ class Node:
         raise ValueError("Can only rename plain string nodes")
 
     def set_data(
-        self, data, *, data_id=None, with_clones: Optional[bool] = None
+        self,
+        data,
+        *,
+        data_id: DataIdType | None = None,
+        with_clones: Optional[bool] = None,
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         if not data and not data_id:
@@ -520,7 +524,7 @@ class Node:
         *,
         before: Optional[Node | bool | int] = None,
         deep: Optional[bool] = None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ) -> Node:
         """Append or insert a new subnode or branch as child.
@@ -641,7 +645,7 @@ class Node:
         child: Node | Tree | Any,
         *,
         deep=None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ):
         """Append a new subnode.
@@ -657,7 +661,7 @@ class Node:
         child: Node | Tree | Any,
         *,
         deep=None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ):
         """Prepend a new subnode.
@@ -677,7 +681,7 @@ class Node:
         child: Node | Tree | Any,
         *,
         deep=None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ) -> Node:
         """Add a new node before `self`.
@@ -693,7 +697,7 @@ class Node:
         child: Node | Tree | Any,
         *,
         deep=None,
-        data_id=None,
+        data_id: DataIdType | None = None,
         node_id=None,
     ) -> Node:
         """Add a new node after `self`.
@@ -1156,7 +1160,9 @@ class Node:
     #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
     __iter__ = iterator
 
-    def _search(self, match, *, max_results=None, add_self=False) -> Iterator[Node]:
+    def _search(
+        self, match, *, max_results: int | None = None, add_self=False
+    ) -> Iterator[Node]:
         if callable(match):
             cb_match = match
         elif isinstance(match, str):
@@ -1179,7 +1185,13 @@ class Node:
         return
 
     def find_all(
-        self, data=None, *, match=None, data_id=None, add_self=False, max_results=None
+        self,
+        data=None,
+        *,
+        match: PredicateCallbackType | None = None,
+        data_id: DataIdType | None = None,
+        add_self=False,
+        max_results: int | None = None,
     ) -> list[Node]:
         """Return a list of matching nodes (list may be empty).
 
@@ -1197,7 +1209,13 @@ class Node:
             n for n in self._search(match, add_self=add_self, max_results=max_results)
         ]
 
-    def find_first(self, data=None, *, match=None, data_id=None) -> Node | None:
+    def find_first(
+        self,
+        data=None,
+        *,
+        match: PredicateCallbackType | None = None,
+        data_id: DataIdType | None = None,
+    ) -> Node | None:
         """Return the first matching node or `None`.
 
         See also :ref:`iteration-callbacks`.

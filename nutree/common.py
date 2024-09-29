@@ -44,30 +44,6 @@ FILE_FORMAT_VERSION: str = "1.0"
 #: Currently used Python version as string
 PYTHON_VERSION = ".".join([str(s) for s in sys.version_info[:3]])
 
-#: Type of ``Node.data_id``
-DataIdType = Union[str, int]
-
-#: Type of ``Tree(..., calc_data_id)```
-CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
-
-#: Type of ``format(..., repr=)```
-ReprArgType = Union[str, Callable[["Node"], str]]
-
-#: Type of ``Tree(..., factory)```
-NodeFactoryType = Type["Node"]
-
-#: A dict of scalar values
-FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
-
-#: Type of ``tree.save(..., key_map)``
-KeyMapType = Dict[str, str]
-
-#: Type of ``tree.save(..., value_map)``
-#: E.g. `{'t': ['person', 'dept']}`
-ValueMapType = Dict[str, List[str]]
-#: E.g. `{'t': {'person': 0, 'dept': 1}}`
-ValueDictMapType = Dict[str, Dict[str, int]]
-
 
 class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
@@ -136,6 +112,31 @@ class StopTraversal(IterationControl):
     def __init__(self, value=None):
         self.value = value
 
+
+#: Type of ``Node.data_id``
+DataIdType = Union[str, int]
+
+#: Type of ``Tree(..., calc_data_id)```
+CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
+
+#: Type of ``format(..., repr=)```
+ReprArgType = Union[str, Callable[["Node"], str]]
+
+#: Type of ``Tree(..., factory)```
+NodeFactoryType = Type["Node"]
+
+#: A dict of scalar values
+FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
+
+#: Type of ``tree.save(..., key_map)``
+KeyMapType = Dict[str, str]
+
+#: Type of ``tree.save(..., value_map)``
+#: E.g. `{'t': ['person', 'dept']}`
+ValueMapType = Dict[str, List[str]]
+
+#: E.g. `{'t': {'person': 0, 'dept': 1}}`
+ValueDictMapType = Dict[str, Dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
 MapperCallbackType = Callable[["Node", dict], Union[None, Any]]

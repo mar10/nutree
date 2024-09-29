@@ -92,7 +92,7 @@ class TypedNode(Node):
         return self._kind
 
     @property
-    def parent(self) -> TypedNode:
+    def parent(self) -> TypedNode | None:
         """Return parent node or None for toplevel nodes."""
         p = self._parent
         return p if p._parent else None
@@ -736,7 +736,7 @@ class TypedTree(Tree):
             mapper = cls.deserialize_mapper
 
         # System root has index #0:
-        node_idx_map = {0: tree._root}
+        node_idx_map: dict[int, TypedNode] = {0: tree._root}
 
         # Start reading data lines starting at index #1:
         for idx, (parent_idx, data) in enumerate(obj, 1):
@@ -760,7 +760,7 @@ class TypedTree(Tree):
             #     # serialization mapper, for a TypedTree that has str nodes
             #     n = parent.add(data["str"], kind=data.get("kind"))
             # else:
-            #     raise RuntimeError(f"Need mapper for {data}")  # pragma: no cover
+            #     raise RuntimeError(f"Need mapper for {data}")
 
             node_idx_map[idx] = n
 
