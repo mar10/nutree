@@ -20,6 +20,12 @@ ignore = [
   "E721",  #  Do not compare types, use `isinstance()`
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = [  # Jupyter Notebooks
+  "T20",  # print statement
+  "E402",  # module level import not at top of file
+]
+
 # [tool.ruff.lint.isort]
 # case-sensitive = true
 
