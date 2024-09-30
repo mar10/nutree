@@ -430,7 +430,7 @@ class Tree:
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("predicate is required (use copy() instead)")
+            raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
     def clear(self) -> None:

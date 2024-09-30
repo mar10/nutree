@@ -68,6 +68,40 @@ class TestBasics:
             """,
         )
 
+    def test_chain(self):
+        tree = Tree("fixture")
+
+        tree.add("A").add("a1").add("a11").up().add("a12").up(2).add("a2").up(2).add(
+            "B"
+        )
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+           """,
+        )
+
+        a11 = tree.find("a11")
+        assert a11.up().name == "a1"
+        assert a11.up(1).name == "a1"
+        assert a11.up(2).name == "A"
+        assert a11.up(3).is_system_root()
+
+        with pytest.raises(ValueError, match="Cannot go up beyond system root node"):
+            a11.up(4)
+        with pytest.raises(ValueError, match="Cannot go up beyond system root node"):
+            a11.up(5)
+        with pytest.raises(ValueError, match="Level must be positive"):
+            a11.up(0)
+        with pytest.raises(ValueError, match="Level must be positive"):
+            a11.up(-1)
+
     def test_meta(self):
         tree = fixture.create_tree()
         node = tree.first_child()
@@ -1209,7 +1243,7 @@ class TestCopy:
         )
 
         # Should use tree.copy() instead:
-        with pytest.raises(ValueError, match="predicate is required"):
+        with pytest.raises(ValueError, match="Predicate is required"):
             tree_2 = tree.filtered(predicate=None)  # type: ignore
 
         tree_2 = tree.copy()

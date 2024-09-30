@@ -1,9 +1,10 @@
 # Changelog
 
-## 0.9.1 (unreleased)
+## 0.10.0 (unreleased)
 
 - Passes pyright 'basic' checks.
 - tree.to_rdf() is now available for Tree (not only TypedTree)
+- New method `node.up()` allows method chaining when adding nodes.
 
 ## 0.9.0 (2024-09-12)
 

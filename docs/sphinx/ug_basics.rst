@@ -39,6 +39,29 @@ Nodes are usually created by adding a new data instance to a parent::
    ╰── 'Books'
        ╰── 'The Little Prince'
 
+Chaining
+~~~~~~~~
+
+Since `node.add()` return a Node object we can chain calls. 
+The `node.up()` method allows to select an ancestor node and the `node.tree`
+return the Tree instance::
+
+    tree = Tree()
+    tree.add("A").add("a1").up().add("a2").up(2).add("B")
+    tree.print()
+
+::
+    
+        Tree<>
+        ├── 'A'
+        │   ├── 'a1'
+        │   ╰── 'a2'
+        ╰── 'B'
+
+or for friends of code golf::
+
+    Tree().add("A").add("a1").up().add("a2").up(2).add("B").tree.print()
+
 .. seealso::
 
     See :doc:`ug_objects` for details on how to manage arbitrary objects, dicts,

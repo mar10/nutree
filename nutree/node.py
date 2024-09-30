@@ -189,9 +189,32 @@ class Node:
 
     @property
     def parent(self) -> Node | None:
-        """Return parent node or None for toplevel nodes."""
+        """Return parent node or None for toplevel nodes.
+
+        See also :meth:`~nutree.node.Node.up`.
+        """
         p = self._parent
         return p if p._parent else None
+
+    def up(self, level: int = 1) -> Node:
+        """Return ancestor node.
+
+        Unlike :meth:`~nutree.node.Node.parent`, this method returns the
+        system root node for toplevel nodes.
+
+        One use case is method chaining when creating trees::
+
+            tree = Tree().add("n1").add("child1").up().add("child2").up(2).add("n2")
+        """
+        if level < 1:
+            raise ValueError("Level must be positive")
+        p = self
+        while level > 0:
+            p = p._parent
+            if p is None:
+                raise ValueError("Cannot go up beyond system root node")
+            level -= 1
+        return p
 
     @property
     def children(self) -> list[Node]:
@@ -827,7 +850,7 @@ class Node:
             return target.add_child(self, before=before, deep=deep)
         assert before is None
         if not self._children:
-            raise ValueError("need child nodes when `add_self=False`")
+            raise ValueError("Need child nodes when `add_self=False`")
         res = None
         for child in self.children:
             n = target.add_child(child, before=None, deep=deep)
@@ -917,7 +940,7 @@ class Node:
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("predicate is required (use copy() instead)")
+            raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(add_self=True, predicate=predicate)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
@@ -926,7 +949,7 @@ class Node:
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("predicate is required (use copy() instead)")
+            raise ValueError("Predicate is required (use copy() instead)")
 
         def _visit(parent: Node) -> bool:
             """Return True if any descendant returned True."""
