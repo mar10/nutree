@@ -113,6 +113,10 @@ access ``node.data.age`` as ``node.age`` for example::
     assert alice.data.name == "Alice"
     assert alice.name == "Person<Alice, 23>"
 
+.. note::
+    The `shadow_attrs` feature is readonly, so you cannot modify the object
+    through the shadow attributes. You need to access the object directly for that.
+
 .. warning::
 
     Aliasing only works for attribute names that are **not** part of the native 
@@ -121,7 +125,7 @@ access ``node.data.age`` as ``node.age`` for example::
     `children`, `data_id`, `data`, `kind`, `meta`, `node_id`, `parent`, `tree`, 
     and all other methods and properties.
 
-    Note also that forwarded attributes are readonly.
+    Note also that shadow attributes are readonly.
 
 
 .. _generic-node-data:
@@ -222,7 +226,7 @@ methods::
     This means that two instances of GenericNodeData with the same dict content
     will have different hash values.
 
-.. warning::
+.. info::
     The `forward_attrs` feature is readonly, so you cannot modify the dict
     through the forwarded attributes. You need to access the dict directly for 
     that.

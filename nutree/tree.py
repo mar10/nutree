@@ -78,7 +78,7 @@ class Tree:
 
     Set `forward_attrs` to true, to enable aliasing of node attributes,
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
-    See :ref:`forward-attributes`.
+    **Note:** Use with care, see also :ref:`forward-attributes`.
     """
 
     #: Default connector prefixes ``format(style=...)`` argument.

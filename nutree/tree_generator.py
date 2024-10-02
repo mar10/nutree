@@ -4,6 +4,8 @@ Implements a generator that creates a random tree structure from a specification
 See :ref:`randomize` for details.
 """
 
+from __future__ import annotations
+
 import random
 import sys
 from abc import ABC, abstractmethod
@@ -15,7 +17,7 @@ from nutree.node import Node
 from nutree.typed_tree import TypedNode
 
 try:
-    from fabulist import Fabulist  # type: ignore
+    from fabulist import Fabulist
 
     fab = Fabulist()
 except ImportError:
@@ -95,7 +97,7 @@ class RangeRandomizer(Randomizer):
             return self.none_value
         if self.is_float:
             return random.uniform(self.min, self.max)
-        return random.randrange(self.min, self.max)
+        return random.randrange(self.min, self.max)  # pyright: ignore[reportArgumentType]
 
 
 class DateRangeRandomizer(Randomizer):
@@ -144,7 +146,7 @@ class DateRangeRandomizer(Randomizer):
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
 
-    def generate(self) -> Union[date, None]:
+    def generate(self) -> Union[date, float, None]:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
             # print("SKIP")
@@ -247,7 +249,7 @@ class TextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_quote(self.template)
+        return fab.get_quote(self.template)  # pyright: ignore[reportOptionalMemberAccess]
 
 
 class BlindTextRandomizer(Randomizer):
@@ -293,7 +295,7 @@ class BlindTextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_lorem_paragraph(
+        return fab.get_lorem_paragraph(  # pyright: ignore[reportOptionalMemberAccess]
             sentence_count=self.sentence_count,
             dialect=self.dialect,
             entropy=self.entropy,
@@ -308,7 +310,7 @@ def _resolve_random(val: Any) -> Any:
     return val
 
 
-def _resolve_random_dict(d: dict, *, macros: dict = None) -> None:
+def _resolve_random_dict(d: dict, *, macros: dict | None = None) -> None:
     remove = []
     for key in d.keys():
         val = d[key]
@@ -389,7 +391,7 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTree":
+def build_random_tree(*, tree_class: Type[TTree], structure_def: dict) -> TTree:
     """
     Return a nutree.TypedTree with random data from a specification.
     See :ref:`randomize` for details.
