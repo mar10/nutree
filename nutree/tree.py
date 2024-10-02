@@ -76,9 +76,9 @@ class Tree:
     `calc_data_id` can be a callback function that calculates data IDs from data
     objects (by default ``hash(data)`` is used).
 
-    Set `shadow_attrs` to true, to enable aliasing of node attributes,
+    Set `forward_attrs` to true, to enable aliasing of node attributes,
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
-    See :ref:`shadow-attributes`.
+    See :ref:`forward-attributes`.
     """
 
     #: Default connector prefixes ``format(style=...)`` argument.
@@ -98,7 +98,7 @@ class Tree:
         *,
         factory: NodeFactoryType | None = None,
         calc_data_id: CalcIdCallbackType | None = None,
-        shadow_attrs: bool = False,
+        forward_attrs: bool = False,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
@@ -111,7 +111,7 @@ class Tree:
         # hash(data) is used by default
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
         # Enable aliasing when accessing Node instances.
-        self._shadow_attrs: bool = shadow_attrs
+        self._forward_attrs: bool = forward_attrs
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"

@@ -2,6 +2,8 @@
 
 ## 0.10.0 (unreleased)
 
+- BREAKING:
+  - Rename `shadow_attrs` argument to `forward_attrs`
 - Passes pyright 'basic' checks.
 - tree.to_rdf() is now available for Tree (not only TypedTree)
 - New method `node.up()` allows method chaining when adding nodes.

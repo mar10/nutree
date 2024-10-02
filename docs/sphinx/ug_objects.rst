@@ -10,7 +10,7 @@ Working with Objects
 
     Nutree allows to store arbitrary objects in its nodes without the
     need to modify them or derive from a common base class. |br|
-    It also supports shadow attributes for direct access to object attributes. |br|
+    It also supports attribute forwarding for direct access to object attributes. |br|
     Some objects like *dicts* or *dataclasses* are unhashable and require special
     handling. 
 
@@ -80,17 +80,17 @@ Lookup works by `data` object or `data_id` as expected::
     assert tree.find(data_id="{123-456}").data is alice
 
 
-.. _shadow-attributes:
+.. _forward-attributes:
 
-Shadow Attributes (Attribute Aliasing)
---------------------------------------
+Forward Attributes (Attribute Aliasing)
+---------------------------------------
 
 When storing arbitrary objects within a tree node, all its attributes must be 
 accessed through the ``node.data`` attribute. |br|
-This can be simplified by using the ``shadow_attrs`` argument, which allows to
+This can be simplified by using the ``forward_attrs`` argument, which allows to
 access ``node.data.age`` as ``node.age`` for example::
 
-    tree = Tree("Persons", shadow_attrs=True)
+    tree = Tree("Persons", forward_attrs=True)
     alice = Person("Alice", age=23, guid="{123-456}")
     alice_node = tree.add(alice)
 
@@ -99,17 +99,17 @@ access ``node.data.age`` as ``node.age`` for example::
     assert alice_node.data.guid == "{123-456}"
     assert alice_node.data.age == 23
 
-    # Direct access using shadowing:
+    # Direct access using attribute forwarding:
     assert alice_node.guid == "{123-456}"
     assert alice_node.age == 23
     
-    # Note also: shadow attributes are readonly:
+    # Note also: forwarded attributes are readonly:
     alice_node.age = 24       # ERROR: raises AttributeError
     
     # But we can still modify the data object directly:
     alice_node.data.age = 24  # OK!
 
-    # Note caveat: `node.name` is not shadowed, but a native property:
+    # Note caveat: `node.name` is not forwarded, because it is also a native property:
     assert alice.data.name == "Alice"
     assert alice.name == "Person<Alice, 23>"
 
@@ -121,7 +121,7 @@ access ``node.data.age`` as ``node.age`` for example::
     `children`, `data_id`, `data`, `kind`, `meta`, `node_id`, `parent`, `tree`, 
     and all other methods and properties.
 
-    Note also that shadow attributes are readonly.
+    Note also that forwarded attributes are readonly.
 
 
 .. _generic-node-data:
@@ -167,9 +167,9 @@ wrapper around a dictionary that
 
 - is hashable, so it can be added to the tree as ``node.data``
 - stores a reference to the original dict internally as ``node.data._dict``
-- allows readonly access to dict keys as shadow attributes, i.e. 
+- allows readonly access to dict keys as forward-attributes, i.e. 
   ``node.data._dict["name"]`` can be accessed as ``node.data.name``. |br|
-  If ``shadow_attrs=True`` is passed to the tree constructor, it can also be
+  If ``forward_attrs=True`` is passed to the tree constructor, it can also be
   accessed as ``node.name``
 - allows readonly access to dict keys by index, i.e. ``node.data["name"]`` 
 
@@ -177,7 +177,7 @@ Examples ::
 
     from nutree import Tree, GenericNodeData
 
-    tree = Tree(shadow_attrs=True)
+    tree = Tree(forward_attrs=True)
 
     d = {"a": 1, "b": 2}
     obj = GenericNodeData(d)
@@ -191,10 +191,10 @@ We can now access the dict keys as attributes::
     assert node.data.a == 1, "accessible as data attribute"
     assert node.data["a"] == 1, "accessible by index"
 
-    # Since we enabled shadow_attrs, this is also possible:
+    # Since we enabled forward_attrs, this is also possible:
     assert node.a == 1, "accessible as node attribute"
 
-    # Note: shadow attributes are readonly:
+    # Note: forward-attributes are readonly:
     node.a = 99          # ERROR: raises AttributeError
     node.data["a"] = 99  # ERROR: raises TypeError
 
@@ -223,8 +223,9 @@ methods::
     will have different hash values.
 
 .. warning::
-    The `shadow_attrs` feature is readonly, so you cannot modify the dict
-    through the shadow attributes. You need to access the dict directly for that.
+    The `forward_attrs` feature is readonly, so you cannot modify the dict
+    through the forwarded attributes. You need to access the dict directly for 
+    that.
 
 Dataclasses
 -----------

@@ -404,7 +404,7 @@ def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTr
 
     tree: TTree = tree_class(
         name=name,
-        shadow_attrs=True,
+        forward_attrs=True,
     )
 
     _make_tree(

@@ -152,9 +152,9 @@ class Node:
     def __getattr__(self, name: str) -> Any:
         """Implement ``node.NAME`` aliasing  to ``node.data.NAME``.
 
-        See :ref:`shadow-attributes`.
+        See :ref:`forward-attributes`.
         """
-        if self._tree._shadow_attrs:
+        if self._tree._forward_attrs:
             return getattr(self._data, name)
         raise AttributeError
 

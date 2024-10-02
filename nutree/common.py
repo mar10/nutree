@@ -212,7 +212,7 @@ class GenericNodeData:
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
-    If the Tree is initialized with `shadow_attrs=True`, the values are also
+    If the Tree is initialized with `forward_attrs=True`, the values are also
     available as attributes of the node like `node.KEY`.
 
     See :ref:`generic-node-data` for details.
@@ -249,7 +249,7 @@ class GenericNodeData:
 
                 node.data.NAME
 
-        If shadow_attrs is enabled, this also allows to access the values like this::
+        If forward_attrs is enabled, this also allows to access the values like this::
 
                 node.NAME
 

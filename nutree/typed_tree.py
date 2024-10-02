@@ -623,12 +623,15 @@ class TypedTree(Tree):
         *,
         factory: NodeFactoryType | None = None,
         calc_data_id: CalcIdCallbackType | None = None,
-        shadow_attrs: bool = False,
+        forward_attrs: bool = False,
     ):
         if factory is None:
             factory = TypedNode
         super().__init__(
-            name, factory=factory, calc_data_id=calc_data_id, shadow_attrs=shadow_attrs
+            name,
+            factory=factory,
+            calc_data_id=calc_data_id,
+            forward_attrs=forward_attrs,
         )
         self._root = _SystemRootTypedNode(self)
 
