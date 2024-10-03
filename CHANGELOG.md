@@ -4,9 +4,11 @@
 
 - BREAKING:
   - Rename `shadow_attrs` argument to `forward_attrs`
-- Passes pyright 'basic' checks.
+  - Enforce that the same object is not added multiple times to one parent
+  - Rename `GenericNodeData` to `DictWrapper` and remove support for attribut access.
 - tree.to_rdf() is now available for Tree (not only TypedTree)
 - New method `node.up()` allows method chaining when adding nodes.
+- Passes more pyright 'basic' checks.
 
 ## 0.9.0 (2024-09-12)
 

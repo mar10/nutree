@@ -37,6 +37,7 @@ from .common import (
     SerializeMapperType,
     SortKeyType,
     TraversalCallbackType,
+    UniqueConstraintError,
     ValueMapType,
     call_mapper,
     check_python_version,
@@ -203,7 +204,12 @@ class Tree:
         assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
         self._node_by_id[node._node_id] = node
         try:
-            self._nodes_by_data_id[node._data_id].append(node)
+            clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
+            for clone in clone_list:
+                if clone.parent is node.parent:
+                    del self._node_by_id[node._node_id]
+                    raise UniqueConstraintError("Node.data already exists in parent")
+            clone_list.append(node)
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
 

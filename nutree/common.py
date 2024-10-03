@@ -238,6 +238,15 @@ class GenericNodeData:
     def __repr__(self):
         return f"{self.__class__.__name__}<{self._dict}>"
 
+    def __hash__(self):
+        # We return the id of the dict object, which is unique and stable.
+        # Calculating a hash from the dict content is too expensive and would
+        # not work anyway, since the result is used as a key in a reference map
+        # and would not be adjusted, when the dict content changes.
+        # It is good enough however to detect if the same dict instance is added
+        # multiple times to the same tree.
+        return id(self._dict)
+
     def __getitem__(self, key):
         return self._dict[key]
 

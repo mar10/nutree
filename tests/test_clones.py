@@ -5,6 +5,7 @@
 
 import pytest
 from nutree import AmbiguousMatchError, Node, Tree
+from nutree.common import DictWrapper, UniqueConstraintError
 
 from . import fixture
 
@@ -29,8 +30,8 @@ class TestClones:
         assert tree.count_unique == 8
 
         # Not allowed to add two clones to same parent
-        # with pytest.raises(UniqueConstraintError):
-        #     tree["B"].add("a1")
+        with pytest.raises(UniqueConstraintError):
+            tree["B"].add("a1")
 
         # tree[data] expects single matches
         with pytest.raises(KeyError):
@@ -39,12 +40,13 @@ class TestClones:
             tree["a1"]
 
         # # Not allowed to add two clones to same parent
-        # with pytest.raises(UniqueConstraintError):
-        #     tree.add("A")
-        # with pytest.raises(UniqueConstraintError):
-        #     tree.add(tree["A"])
+        with pytest.raises(UniqueConstraintError):
+            tree.add("A")
+        with pytest.raises(UniqueConstraintError):
+            tree.add(tree["A"])
 
         res = tree.find("a1")
+        assert res
         assert res.data == "a1"
         assert res.is_clone()
         assert len(res.get_clones()) == 1
@@ -72,3 +74,38 @@ class TestClones:
         assert res == []
 
         assert tree._self_check()
+
+    def test_dict(self):
+        """ """
+        tree = fixture.create_tree()
+        d = {"a": 1, "b": 2}
+        # Add another 'a1' below 'B'
+        n1 = tree["A"].add(DictWrapper(d))
+
+        with pytest.raises(UniqueConstraintError):
+            # Not allowed to add two clones to same parent
+            tree["A"].add(DictWrapper(d))
+
+        n2 = tree["B"].add(DictWrapper(d))
+
+        tree.print(repr="{node}")
+
+        assert tree.count == 10
+        assert tree.count_unique == 9
+        assert n1.data._dict is d
+        assert n2.data._dict is d
+        n1.data["a"] = 42
+        assert n2.data["a"] == 42
+        with pytest.raises(TypeError, match="unhashable type: 'dict'"):
+            _ = tree.find(d)
+
+        n = tree.find(DictWrapper(d))
+        assert n
+        assert n is n1
+        assert n.is_clone()
+
+        assert len(tree.find_all(DictWrapper(d))) == 2
+        assert n1.get_clones() == [n2]
+        assert n1.get_clones(add_self=True) == [n1, n2]
+
+        tree._self_check()
