@@ -205,7 +205,7 @@ CONNECTORS = {
 # ------------------------------------------------------------------------------
 
 
-class GenericNodeData:
+class DictWrapper:
     """Wrap a Python dict so it can be added to the tree.
 
     Makes the hashable and exposes the dict values as attributes.
@@ -247,27 +247,45 @@ class GenericNodeData:
         # multiple times to the same tree.
         return id(self._dict)
 
+    def __eq__(self, other):
+        if not isinstance(other, DictWrapper):
+            return False
+        return self._dict is other._dict
+
+    def __setitem__(self, key, value):
+        """Allow to access values as items.
+
+        Example::
+
+            `node.data["foo"] = 1` instead of `node.data._dict["foo"] = 1`.
+        """
+        self._dict[key] = value
+
     def __getitem__(self, key):
+        """Allow to access values as items.
+
+        E.g. ``foo = node.data["foo"]`` instead of `` foo = node.data._dict["foo"]``.
+        """
         return self._dict[key]
 
-    def __getattr__(self, name: str) -> Any:
-        """Allow to access values as attributes.
+    # def __getattr__(self, name: str) -> Any:
+    #     """Allow to access values as attributes.
 
-        Assuming the GenericNodeData instance is stored in a Node.data instance,
-        this allows to access the values like this::
+    #     Assuming the DictWrapper instance is stored in a Node.data instance,
+    #     this allows to access the values like this::
 
-                node.data.NAME
+    #             node.data.NAME
 
-        If forward_attrs is enabled, this also allows to access the values like this::
+    #     If forward_attrs is enabled, this also allows to access the values like this::
 
-                node.NAME
+    #             node.NAME
 
-        See :ref:`generic-node-data`.
-        """
-        try:
-            return self._dict[name]
-        except KeyError:
-            raise AttributeError(name) from None
+    #     See :ref:`generic-node-data`.
+    #     """
+    #     try:
+    #         return self._dict[name]
+    #     except KeyError:
+    #         raise AttributeError(name) from None
 
     @classmethod
     def serialize_mapper(cls, nutree_node: Node, data: dict) -> Union[None, dict]:
@@ -275,7 +293,7 @@ class GenericNodeData:
 
         Example::
 
-            tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+            tree.save(file_path, mapper=DictWrapper.serialize_mapper)
 
         """
         return nutree_node.data._dict.copy()
@@ -286,7 +304,7 @@ class GenericNodeData:
 
         Example::
 
-            tree = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+            tree = Tree.load(file_path, mapper=DictWrapper.deserialize_mapper)
         """
         return cls(**data)
 

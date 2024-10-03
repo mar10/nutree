@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Sequence, Type, Union
 
-from nutree.common import GenericNodeData
+from nutree.common import DictWrapper
 from nutree.node import Node
 from nutree.typed_tree import TypedNode
 
@@ -357,7 +357,7 @@ def _make_tree(
         count = spec.pop(":count", 1)
         count = _resolve_random(count) or 0
         callback = spec.pop(":callback", None)
-        factory = spec.pop(":factory", GenericNodeData)
+        factory = spec.pop(":factory", DictWrapper)
 
         for i in range(count):
             i += 1  # 1-based

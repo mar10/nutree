@@ -65,7 +65,7 @@ Example::
         "types": {
             # '*' Defines default properties for all node types (optional)
             "*": {
-                ":factory": GenericNodeData,  # Default node class (optional)
+                ":factory": DictWrapper,  # Default node class (optional)
             },
             # Specific default properties for each node type
             "function": {"icon": "gear"},
@@ -113,35 +113,35 @@ Example::
 May produce::
 
     TypedTree<'fmea'>
-    ├── function → GenericNodeData<{'icon': 'gear', 'title': '1: Provide Seniors', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.', 'expanded': True}>
-    │   ├── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Streets not provided'}>
-    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Decisions not provided'}>
-    │   │   ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Spaces not provided'}>
-    │   │   ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Kings not provided'}>
-    │   ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Entertainments not provided'}>
-    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Programs not provided'}>
-    │       ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dirts not provided'}>
-    │       ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dimensions not provided'}>
-    ├── function → GenericNodeData<{'icon': 'gear', 'title': '2: Provide Shots', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum.', 'expanded': True}>
-    │   ├── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Trainers not provided'}>
-    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Girlfriends not provided'}>
-    │   │   ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Noses not provided'}>
-    │   │   ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Closets not provided'}>
-    │   │   ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Potentials not provided'}>
-    │   ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Punches not provided'}>
-    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Inevitables not provided'}>
-    │       ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Fronts not provided'}>
-    │       ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Worths not provided'}>
-    ╰── function → GenericNodeData<{'icon': 'gear', 'title': '3: Provide Shots', 'details': 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.', 'expanded': True}>
-        ╰── failure → GenericNodeData<{'icon': 'exclamation', 'title': 'Recovers not provided'}>
-            ├── cause → GenericNodeData<{'icon': 'tools', 'title': 'Viruses not provided'}>
-            ├── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Dirts not provided'}>
-            ╰── effect → GenericNodeData<{'icon': 'lightning', 'title': 'Readings not provided'}>    
+    ├── function → DictWrapper<{'icon': 'gear', 'title': '1: Provide Seniors', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.', 'expanded': True}>
+    │   ├── failure → DictWrapper<{'icon': 'exclamation', 'title': 'Streets not provided'}>
+    │   │   ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Decisions not provided'}>
+    │   │   ├── effect → DictWrapper<{'icon': 'lightning', 'title': 'Spaces not provided'}>
+    │   │   ╰── effect → DictWrapper<{'icon': 'lightning', 'title': 'Kings not provided'}>
+    │   ╰── failure → DictWrapper<{'icon': 'exclamation', 'title': 'Entertainments not provided'}>
+    │       ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Programs not provided'}>
+    │       ├── effect → DictWrapper<{'icon': 'lightning', 'title': 'Dirts not provided'}>
+    │       ╰── effect → DictWrapper<{'icon': 'lightning', 'title': 'Dimensions not provided'}>
+    ├── function → DictWrapper<{'icon': 'gear', 'title': '2: Provide Shots', 'details': 'Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum.', 'expanded': True}>
+    │   ├── failure → DictWrapper<{'icon': 'exclamation', 'title': 'Trainers not provided'}>
+    │   │   ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Girlfriends not provided'}>
+    │   │   ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Noses not provided'}>
+    │   │   ├── effect → DictWrapper<{'icon': 'lightning', 'title': 'Closets not provided'}>
+    │   │   ╰── effect → DictWrapper<{'icon': 'lightning', 'title': 'Potentials not provided'}>
+    │   ╰── failure → DictWrapper<{'icon': 'exclamation', 'title': 'Punches not provided'}>
+    │       ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Inevitables not provided'}>
+    │       ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Fronts not provided'}>
+    │       ╰── effect → DictWrapper<{'icon': 'lightning', 'title': 'Worths not provided'}>
+    ╰── function → DictWrapper<{'icon': 'gear', 'title': '3: Provide Shots', 'details': 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.', 'expanded': True}>
+        ╰── failure → DictWrapper<{'icon': 'exclamation', 'title': 'Recovers not provided'}>
+            ├── cause → DictWrapper<{'icon': 'tools', 'title': 'Viruses not provided'}>
+            ├── effect → DictWrapper<{'icon': 'lightning', 'title': 'Dirts not provided'}>
+            ╰── effect → DictWrapper<{'icon': 'lightning', 'title': 'Readings not provided'}>    
 
 
 **A few things to note**
 
-- The generated tree contains nodes :class:`~common.GenericNodeData` as ``node.data``
+- The generated tree contains nodes :class:`~common.DictWrapper` as ``node.data``
   value..
 
 - Every ``node.data`` contains items from the structure definition except for
@@ -160,7 +160,7 @@ May produce::
   :meth:`typed_tree.TypedTree.build_random_tree` creates instances of 
   :class:`~typed_tree.TypedTree`.
 
-- The generated tree contains instances of the :class:`~common.GenericNodeData` 
+- The generated tree contains instances of the :class:`~common.DictWrapper` 
   class by default, but can be overridden for each node type by adding a 
   ``":factory": CLASS`` entry.
 

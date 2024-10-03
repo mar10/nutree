@@ -5,7 +5,7 @@
 
 import pytest
 from nutree import Tree
-from nutree.common import GenericNodeData
+from nutree.common import DictWrapper, UniqueConstraintError
 
 
 class Item:
@@ -126,29 +126,30 @@ class TestGenericNodeData:
         d: dict = {"a": 1, "b": 2}
 
         with pytest.raises(TypeError, match="dict_inst must be a dictionary"):
-            _ = GenericNodeData("foo")
+            _ = DictWrapper("foo")
 
         with pytest.raises(TypeError):
-            _ = GenericNodeData("foo", **d)
+            _ = DictWrapper("foo", **d)
 
         with pytest.raises(TypeError):
-            _ = GenericNodeData("foo", d)
+            _ = DictWrapper("foo", d)
 
         with pytest.raises(ValueError):
-            _ = GenericNodeData(d, foo="bar")
+            _ = DictWrapper(d, foo="bar")
 
-        gnd = GenericNodeData(d)
+        gnd = DictWrapper(d)
         assert gnd._dict is d, "dict should be stored as reference"
 
-        assert gnd.a == 1, "GenericNodeData should support attribute access"
         with pytest.raises(AttributeError):
-            _ = gnd.foo
+            _ = gnd.a  # type: ignore
+        with pytest.raises(AttributeError):
+            _ = gnd.foo  # type: ignore
 
-        assert gnd["a"] == 1, "GenericNodeData should support item access"
+        assert gnd["a"] == 1, "DictWrapper should support item read access"
         with pytest.raises(KeyError):
             _ = gnd["foo"]
 
-        gnd = GenericNodeData(**d)
+        gnd = DictWrapper(**d)
         assert gnd._dict is not d, "unpacked dict should be stored as copy"
 
     def test_dict(self):
@@ -160,14 +161,19 @@ class TestGenericNodeData:
         with pytest.raises(TypeError, match="unhashable type: 'dict'"):
             _ = tree.add(d)
 
-        # But we can wrap it in a GenericNodeData instance
-        node = tree.add(GenericNodeData(d))
-
+        # But we can wrap it in a DictWrapper instance
+        node = tree.add(DictWrapper(d))
+        with pytest.raises(UniqueConstraintError):
+            _ = tree.add(DictWrapper(d))
+        tree.print(repr="{node}")
+        # raise
         # The dict is stored as reference
 
-        assert isinstance(node.data, GenericNodeData)
+        assert isinstance(node.data, DictWrapper)
         assert node.data._dict is d, "dict should be stored as reference"
-        assert node.a == 1, "should support attribute access via forwarding"
+
+        with pytest.raises(AttributeError):
+            _ = node.a  # should not support attribute access via forwarding
 
         with pytest.raises(AttributeError):
             # should not allow access to non-existing attributes
@@ -175,13 +181,15 @@ class TestGenericNodeData:
 
         with pytest.raises(TypeError, match="'Node' object is not subscriptable"):
             # should NOT support item access via indexing
-            _ = node["a"]
+            _ = node["a"]  # type: ignore
 
-        assert node.data.a == 1, "should support attribute access via data"
+        with pytest.raises(AttributeError):
+            # should not support attribute access via data
+            _ = node.data.a  # type: ignore
 
         with pytest.raises(AttributeError):
             # should not allow access to non-existing attributes
-            _ = node.data.foo
+            _ = node.data.foo  # type: ignore
 
         assert node.data["a"] == 1, "should support item access via data"
 
@@ -189,32 +197,30 @@ class TestGenericNodeData:
             # Forwarding is read-only
             _ = node.data.a = 99  # type: ignore
 
-        with pytest.raises(
-            TypeError, match="'GenericNodeData' object does not support item assignment"
-        ):
-            # Index access is read-only
-            _ = node.data["a"] = 99  # type: ignore
+        # Index access is writable
+        node.data["a"] = 99
+        assert node.data._dict["a"] == 99, "should reflect changes in dict"
+        assert node.data["a"] == 99, "should reflect changes in dict via item access"
 
-        with pytest.raises(
-            TypeError, match="'GenericNodeData' object does not support item assignment"
-        ):
-            _ = node.data["foo"] = 99  # type: ignore
+        node.data["foo"] = "bar"
+        assert node.data._dict["foo"] == "bar"
 
-        # We need to access the dict directly to modify it
-        node.data._dict["a"] = 99
-        assert node.a == 99, "should reflect changes in dict"
+        tree._self_check()
 
-    def test_generic_node_data_unpacked(self):
+    def test_wrapped_dict_unpacked(self):
         tree = Tree(forward_attrs=True)
 
         d: dict = {"a": 1, "b": 2}
 
         # We can also unpack the dict
-        node = tree.add(GenericNodeData(**d))
+        node = tree.add(DictWrapper(**d))
 
         assert node.data._dict is not d, "unpacked dict should be stored as copy"
         assert node.data._dict == {"a": 1, "b": 2}
-        assert node.a == 1, "GenericNodeData should support attribute access"
+        with pytest.raises(AttributeError):
+            _ = node.a
+        assert node.data._dict["a"] == 1
+        assert node.data["a"] == 1
 
     def test_dataclass(self):
         from dataclasses import FrozenInstanceError, dataclass

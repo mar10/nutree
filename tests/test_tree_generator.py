@@ -5,7 +5,7 @@ Generic tree generator for test data.
 import datetime
 
 import pytest
-from nutree.common import GenericNodeData
+from nutree.common import DictWrapper
 from nutree.tree import Tree
 from nutree.tree_generator import (
     BlindTextRandomizer,
@@ -29,7 +29,7 @@ class TestBase:
             #: Types define the default properties of the nodes
             "types": {
                 #: Default properties for all node types
-                "*": {":factory": GenericNodeData},
+                "*": {":factory": DictWrapper},
                 #: Specific default properties for each node type
                 "function": {"icon": "bi bi-gear"},
                 "failure": {"icon": "bi bi-exclamation-triangle"},
@@ -82,14 +82,14 @@ class TestBase:
         assert type(tree2) is TypedTree
         assert tree2.calc_height() == 3
 
-        # Save and load with GenericNodeData mappers
+        # Save and load with DictWrapper mappers
         with fixture.WritableTempFile("r+t") as temp_file:
             tree.save(
                 temp_file.name,
                 compression=True,
-                mapper=GenericNodeData.serialize_mapper,
+                mapper=DictWrapper.serialize_mapper,
             )
-            tree3 = Tree.load(temp_file.name, mapper=GenericNodeData.deserialize_mapper)
+            tree3 = Tree.load(temp_file.name, mapper=DictWrapper.deserialize_mapper)
         tree3.print()
         assert fixture.trees_equal(tree, tree3)
 
@@ -102,8 +102,8 @@ class TestBase:
             #: Types define the default properties of the nodes
             "types": {
                 #: Default properties for all node types (optional, default
-                #: is GenericNodeData)
-                "*": {":factory": GenericNodeData},
+                #: is DictWrapper)
+                "*": {":factory": DictWrapper},
                 #: Specific default properties for each node type
                 "function": {"icon": "bi bi-gear"},
                 "failure": {"icon": "bi bi-exclamation-triangle"},

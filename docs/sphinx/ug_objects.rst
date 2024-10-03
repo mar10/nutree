@@ -130,7 +130,7 @@ access ``node.data.age`` as ``node.age`` for example::
 
 .. _generic-node-data:
 
-Dictionaries (GenericNodeData)
+Dictionaries (DictWrapper)
 ------------------------------
 
 Python 
@@ -166,7 +166,7 @@ returns a unique key for the data object::
 Wrapping Dictionaries
 ~~~~~~~~~~~~~~~~~~~~~
 
-Finally, we can use the :class:`~nutree.common.GenericNodeData` which is a simple 
+Finally, we can use the :class:`~nutree.common.DictWrapper` which is a simple 
 wrapper around a dictionary that 
 
 - is hashable, so it can be added to the tree as ``node.data``
@@ -179,12 +179,12 @@ wrapper around a dictionary that
 
 Examples ::
 
-    from nutree import Tree, GenericNodeData
+    from nutree import Tree, DictWrapper
 
     tree = Tree(forward_attrs=True)
 
     d = {"a": 1, "b": 2}
-    obj = GenericNodeData(d)
+    obj = DictWrapper(d)
     node = tree.add_child(obj)
 
 We can now access the dict keys as attributes::
@@ -207,23 +207,23 @@ We can now access the dict keys as attributes::
     assert node.a == 99, "should reflect changes in dict"
 
 
-GenericNodeData can also be initialized with keyword args like this::
+DictWrapper can also be initialized with keyword args like this::
 
-    obj = GenericNodeData(a=1, b=2)
+    obj = DictWrapper(a=1, b=2)
 
-Trees that contain GenericNodeData objects can be serialized and deserialized
+Trees that contain DictWrapper objects can be serialized and deserialized
 using the :meth:`~nutree.tree.Tree.save` and :meth:`~nutree.tree.Tree.load`
 methods::
 
-        tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+        tree.save(file_path, mapper=DictWrapper.serialize_mapper)
         ...
-        tree2 = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+        tree2 = Tree.load(file_path, mapper=DictWrapper.deserialize_mapper)
 
 .. warning::
-    The :class:`~nutree.common.GenericNodeData` provides a hash value because
+    The :class:`~nutree.common.DictWrapper` provides a hash value because
     any class that is hashable, so it can be used as a data object. However, the 
     hash value is NOT based on the internal dict but on the object itself. |br|
-    This means that two instances of GenericNodeData with the same dict content
+    This means that two instances of DictWrapper with the same dict content
     will have different hash values.
 
 .. info::
