@@ -274,12 +274,13 @@ class Tree:
         """
         return len(self._nodes_by_data_id)
 
-    def serialize_mapper(self, node: Node, data: dict) -> dict | None:
+    @classmethod
+    def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
         """Used as default `mapper` argument for :meth:`save`."""
         return data
 
-    @staticmethod
-    def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
+    @classmethod
+    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."

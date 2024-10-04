@@ -171,7 +171,7 @@ class TypedNode(Node):
         for n in pc:
             if n._kind == self._kind:
                 return n
-        raise AssertionError("Internal error")
+        raise AssertionError("Internal error")  # pragma: no cover
 
     def last_sibling(self, *, any_kind=False) -> TypedNode:
         """Return last sibling `of the same kind` (may be self)."""
@@ -181,7 +181,7 @@ class TypedNode(Node):
         for n in reversed(pc):
             if n._kind == self._kind:
                 return n
-        raise AssertionError("Internal error")
+        raise AssertionError("Internal error")  # pragma: no cover
 
     def prev_sibling(self, *, any_kind=False) -> TypedNode | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""

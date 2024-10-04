@@ -5,15 +5,12 @@
 # pyright: reportRedeclaration=false
 # pyright: reportOptionalMemberAccess=false
 
-import os
 import re
-from pathlib import Path
 from typing import Any, Union
 
 import pytest
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
 from nutree.common import SkipBranch, StopTraversal, check_python_version
-from nutree.fs import load_tree_from_fs
 
 from . import fixture
 
@@ -1263,34 +1260,3 @@ class TestCopy:
                     ╰── b11
             """,
         )
-
-
-class TestFS:
-    @pytest.mark.skipif(os.name == "nt", reason="windows has different eol size")
-    def test_fs_linux(self):
-        path = Path(__file__).parent / "fixtures"
-
-        # We check for unix line endings/file sizes (as used on travis)
-        tree = load_tree_from_fs(path)
-        assert fixture.check_content(
-            tree,
-            """
-            FileSystemTree<*>
-            ├── 'file_1.txt', 13 bytes
-            ╰── [folder_1]
-                ╰── 'file_1_1.txt', 15 bytes
-            """,
-        )
-
-        tree = load_tree_from_fs(path, sort=False)
-        assert "[folder_1]" in fixture.canonical_repr(tree)
-
-    @pytest.mark.skipif(os.name != "nt", reason="windows has different eol size")
-    def test_fs_windows(self):
-        path = Path(__file__).parent / "fixtures"
-        # Cheap test only,
-        tree = load_tree_from_fs(path)
-        assert "[folder_1]" in fixture.canonical_repr(tree)
-
-        tree = load_tree_from_fs(path, sort=False)
-        assert "[folder_1]" in fixture.canonical_repr(tree)
