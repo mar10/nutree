@@ -214,6 +214,7 @@ class TestNavigate:
         # assert tree.last_child() is tree["The Little Prince"]
 
         assert len(records.children) == 2
+        assert records.children == records.get_children()
         assert records.depth() == 1
         with pytest.raises(NotImplementedError):
             assert tree == tree  # __eq__ not implemented
@@ -300,97 +301,6 @@ class TestNavigate:
 
         assert tree["a11"].get_index() == 0
         assert tree["a12"].get_index() == 1
-
-    def test_data_id(self):
-        """
-        Tree<'fixture'>
-        ├── A
-        │   ├── a1
-        │   │   ├── a11
-        │   │   ╰── a12
-        │   ╰── a2
-        ╰── B
-            ├── a1  <-- Clone
-            ╰── b1
-                ╰── b11
-        """
-        tree = fixture.create_tree()
-        tree["B"].prepend_child("a1")
-
-        print(tree.format(repr="{node.data}"))
-
-        tree["A"].rename("new_A")
-
-        assert fixture.check_content(
-            tree,
-            """
-            Tree<'fixture'>
-            +- new_A
-            |  +- a1
-            |  |  +- a11
-            |  |  `- a12
-            |  `- a2
-            `- B
-               +- a1
-               `- b1
-                  `- b11
-            """,
-        )
-        assert tree._self_check()
-
-        # Reset tree
-        tree = fixture.create_tree()
-        tree["B"].prepend_child("a1")
-
-        with pytest.raises(AmbiguousMatchError):  # not allowed for clones
-            tree.find_first("a1").rename("new_a1")
-
-        with pytest.raises(ValueError):  # missing args
-            tree.find_first("a1").set_data(None)
-
-        # Only rename first occurrence:
-        tree.find_first("a1").set_data("new_a1", with_clones=False)
-
-        assert fixture.check_content(
-            tree,
-            """
-            Tree<'fixture'>
-            +- A
-            |  +- new_a1
-            |  |  +- a11
-            |  |  `- a12
-            |  `- a2
-            `- B
-               +- a1
-               `- b1
-                  `- b11
-            """,
-        )
-        assert tree._self_check()
-
-        # Reset tree
-        tree = fixture.create_tree()
-        tree["B"].prepend_child("a1")
-
-        # Rename all occurences:
-        tree.find_first("a1").set_data("new_a1", with_clones=True)
-
-        assert fixture.check_content(
-            tree,
-            """
-            Tree<'fixture'>
-            +- A
-            |  +- new_a1
-            |  |  +- a11
-            |  |  `- a12
-            |  `- a2
-            `- B
-               +- new_a1
-               `- b1
-                  `- b11
-            """,
-        )
-        assert tree._self_check()
 
     def test_find(self):
         tree = self.tree
@@ -771,6 +681,7 @@ class TestMutate:
         b = tree["B"]
         a11 = tree["a11"]
         b.prepend_child(a11)
+        b.add("pre_b", before=True)
 
         a1 = tree["a1"]
         a1.prepend_sibling("pre_a1")
@@ -792,11 +703,142 @@ class TestMutate:
             |  +- post_a1
             |  `- a2
             `- B
+               +- pre_b
                +- a11
                `- b1
                   `- b11
             """,
         )
+
+    def test_add_tree(self):
+        tree = fixture.create_tree()
+
+        subtree = Tree()
+        subtree.add("x").add("x1").up(2).add("y").add("y1")
+
+        tree.add(subtree, before=1)
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            +- x
+            |  `- x1
+            +- y
+            |  `- y1
+            `- B
+               `- b1
+                  `- b11
+            """,
+        )
+
+    def test_set_data(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ├── a1  <-- Clone
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        print(tree.format(repr="{node.data}"))
+
+        tree["A"].rename("new_A")
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- new_A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- a1
+               `- b1
+                  `- b11
+            """,
+        )
+        assert tree._self_check()
+
+        # Reset tree
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        with pytest.raises(AmbiguousMatchError):  # not allowed for clones
+            tree.find_first("a1").rename("new_a1")
+
+        with pytest.raises(ValueError):  # missing args
+            tree.find_first("a1").set_data(None)
+
+        # Only rename first occurrence:
+        tree.find_first("a1").set_data("new_a1", with_clones=False)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- A
+            |  +- new_a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- a1
+               `- b1
+                  `- b11
+            """,
+        )
+        assert tree._self_check()
+
+        # Reset tree
+        tree = fixture.create_tree()
+        tree["B"].prepend_child("a1")
+
+        # Rename all occurences:
+        tree.find_first("a1").set_data("new_a1", with_clones=True)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<'fixture'>
+            +- A
+            |  +- new_a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B
+               +- new_a1
+               `- b1
+                  `- b11
+            """,
+        )
+
+        assert tree["a2"].data_id == hash("a2")
+        tree.find("a2").set_data(data=None, data_id=123, with_clones=True)
+        with pytest.raises(KeyError):
+            _ = tree["a2"].data_id
+        assert tree.find(data_id=123)
+
+        tree.find(data_id=123).set_data(data="a2_new", data_id=123, with_clones=True)
+        assert tree.find(data_id=123)
+
+        tree.find(data_id=123).set_data(data="a2_new2", data_id=123, with_clones=False)
+        assert tree.find(data_id=123)
+
+        assert tree._self_check()
 
     def test_copy_branch(self):
         # Copy a node
@@ -1010,6 +1052,45 @@ class TestMutate:
            """,
         )
 
+        _tm(
+            source="b1",
+            target="a1",
+            before=True,
+            result="""
+            Tree<'fixture'>
+            +- A
+            |  +- a1
+            |  |  +- b1
+            |  |  |  `- b11
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            `- B 
+           """,
+        )
+
+        tree = fixture.create_tree()
+        tree["b1"].move_to(tree)
+
+        assert fixture.check_content(
+            tree,
+            """
+            Tree<*>
+            +- A
+            |  +- a1
+            |  |  +- a11
+            |  |  `- a12
+            |  `- a2
+            +- B
+            `- b1
+               `- b11
+            """,
+        )
+
+        target_tree = Tree()
+        with pytest.raises(NotImplementedError):
+            tree["b1"].move_to(target_tree)
+
 
 class TestCopy:
     def test_node_copy(self):
@@ -1154,6 +1235,11 @@ class TestCopy:
         """
         tree = fixture.create_tree()
 
+        with pytest.raises(ValueError, match="Predicate is required"):
+            tree.filter(predicate=None)  # type: ignore
+        with pytest.raises(ValueError, match="Predicate is required"):
+            tree.system_root.filter(predicate=None)  # type: ignore
+
         def pred(node):
             return "2" not in node.name.lower()
 
@@ -1242,6 +1328,8 @@ class TestCopy:
         # Should use tree.copy() instead:
         with pytest.raises(ValueError, match="Predicate is required"):
             tree_2 = tree.filtered(predicate=None)  # type: ignore
+        with pytest.raises(ValueError, match="Predicate is required"):
+            tree_2 = tree.system_root.filtered(predicate=None)  # type: ignore
 
         tree_2 = tree.copy()
 

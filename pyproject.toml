@@ -49,6 +49,7 @@ addopts = "-ra -q --cov=nutree"
 # branch = true
 omit = [
     "tests/*",
+    "setup.py",
     # nutree/leaves_cli.py
     # nutree/cli_common.py
     # nutree/monitor/*  

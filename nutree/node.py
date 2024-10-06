@@ -636,12 +636,13 @@ class Node:
         else:
             node = factory(child, parent=self, data_id=data_id, node_id=node_id)
 
+        if before is True:
+            before = 0  # prepend
+
         children = self._children
         if children is None:
             assert before in (None, True, int, False)
             self._children = [node]
-        elif before is True:  # prepend
-            children.insert(0, node)
         elif isinstance(before, int):
             children.insert(before, node)
         elif before:
@@ -744,11 +745,9 @@ class Node:
         See :meth:`add_child` for a description of `before`.
         """
         assert new_parent is not None
-        # if new_parent is None:
-        #     new_parent = self._tree._root
-        # elif
         if not isinstance(new_parent, Node):
             # it's a Tree
+            assert isinstance(new_parent, self.tree.__class__)
             new_parent = new_parent._root
 
         if new_parent._tree is not self._tree:
@@ -759,12 +758,13 @@ class Node:
             self._parent._children = None
         self._parent = new_parent
 
+        if before is True:
+            before = 0  # prepend
+
         target_siblings = new_parent._children
         if target_siblings is None:
             assert before in (None, True, False, 0), before
             new_parent._children = [self]  # type: ignore
-        elif before is True:  # prepend
-            target_siblings.insert(0, self)
         elif isinstance(before, Node):
             assert before._parent is new_parent, before
             idx = target_siblings.index(before)  # raise ValueError if not found

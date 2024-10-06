@@ -1,93 +1,83 @@
-# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
-# Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-""" """
 # ruff: noqa: T201, T203 `print` found
 
-from typing import Generic, Iterator, TypeVar
+from __future__ import annotations
 
 import pytest
 
-pytest.skip(allow_module_level=True)
+# pytest.skip(allow_module_level=True)
 
 try:
-    from typing import Self
-except ImportError:
+    from typing import Any, Generic, List, Self, TypeVar, cast
+except ImportError as e:
+    print(f"ImportError: {e}")
     # from typing_extensions import Self
     typing_extensions = pytest.importorskip("typing_extensions")
     Self = typing_extensions.Self
 
 
-ElementType = TypeVar("ElementType", bound="Element")
+# TData = TypeVar("TData")
+TNode = TypeVar("TNode", bound="Node")
 
 
-class Element:
-    def __init__(self, parent: Self, name: str):
-        self.name = name
-        self.children: list[ElementType] = []
+class Node:
+    def __init__(self, data: Any, parent: Node):
+        self.data: Any = data
+        self.parent: Node = parent
+        self.children: List[Node] = []
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.name})"
-
-    def get_pred(self) -> Self:
-        return self.parent.children[0]
-
-
-class AgedElement(Element):
-    def __init__(self, parent: Self, name: str, age: int):
-        super().__init__(parent, name)
-        self.age = age
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.name}, {self.age})"
-
-    def is_adult(self) -> bool:
-        return self.age >= 18
+    def add(self, data: Any) -> Node:
+        node = Node(data, self)
+        self.children.append(node)
+        return node
 
 
-class Container(Generic[ElementType]):
-    def __init__(self, name: str):
-        # root = Element(None, "__root__")
-        self.name = name
-        self.children: ElementType = []
+class Tree(Generic[TNode]):
+    def __init__(self):
+        self.root: Node = Node("__root__", cast(TNode, None))
 
-    def add(self, name: ElementType) -> ElementType:
-        self.children.append(ElementType(self, name))
+    def add(self, data: Any) -> Node:
+        node = self.root.add(data)
+        return node
 
-    def __iter__(self) -> Iterator[ElementType]:
-        return iter(self.children)
-
-    def __repr__(self):
-        return f"{self.__clas__.__name__}({self.name})"
+    def first(self) -> TNode:
+        return self.root.children[0]
 
 
-class AgedContainer(Container[AgedElement]):
-    def __init__(self, name: str):
-        self.name = name
-        self.children: ElementType = []
-
-    def add(self, name: str, age: int) -> AgedElement:
-        self.children.append(AgedElement)
-
-    def __iter__(self) -> Iterator[ElementType]:
-        return iter(self.children)
+# ----------------------------
+# ----------------------------
 
 
-class TestConcept:
-    def test_concept(self):
-        root = Container[Element]("SimpleContainer")
-        root.add("a")
-        root.add(Element("b"))
-        root.add(Element("c"))
-        root.add(AgedElement("d", 4))
+class TypedNode(Node):
+    def __init__(self, data: Any, kind: str, parent: TypedNode):
+        super().__init__(data, parent)
+        self.kind: str = kind
+        # self.children: List[TypedNode] = []
 
-        for child in root:
-            print(child)
+    def add(self, data: Any, kind: str) -> TypedNode:
+        node = TypedNode(data, kind, self)
+        self.children.append(node)
+        return node
 
-        root2 = Container[AgedElement]("")
-        root2.add(AgedElement("a", 1))
-        root2.add(AgedElement("b", 2))
-        root2.add(AgedElement("c", 3))
-        root2.add(Element("d"))
 
-        for child in root2:
-            print(child)
+class TypedTree(Tree[TypedNode]):
+    def __init__(self):
+        self.root: TypedNode = TypedNode("__root__", "__root__", cast(TypedNode, None))
+
+    def add(self, data: Any, kind: str) -> TNode:
+        node = self.root.add(data, kind)
+        return node
+
+
+class TestTypingSelf:
+    def test_tree(self):
+        tree = Tree()
+        n = tree.add("top")
+        n.add("child")
+        tree.first().add("child2")
+
+    def test_typed_tree(self):
+        tree = TypedTree()
+        tree.add("child", kind="child")
+        tree.add("child2", kind="child")
+
+        tree.first().add("child3", kind="child")
