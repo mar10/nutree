@@ -2,40 +2,40 @@
 
 from __future__ import annotations
 
-import pytest
-
-# pytest.skip(allow_module_level=True)
+from typing import Any, Generic, List, Type, TypeVar, cast
 
 try:
-    from typing import Any, Generic, List, Self, TypeVar, cast
+    from typing import Self
 except ImportError as e:
     print(f"ImportError: {e}")
+    from typing_extensions import Self
+    # _ = pytest.importorskip("typing_extensions")
     # from typing_extensions import Self
-    typing_extensions = pytest.importorskip("typing_extensions")
-    Self = typing_extensions.Self
 
 
 # TData = TypeVar("TData")
 TNode = TypeVar("TNode", bound="Node")
 
 
-class Node:
-    def __init__(self, data: Any, parent: Node):
+class Node(Generic[TNode]):
+    def __init__(self, data: Any, parent: Self):
         self.data: Any = data
-        self.parent: Node = parent
-        self.children: List[Node] = []
+        self.parent: Self = parent
+        self.children: List[Self] = []
 
-    def add(self, data: Any) -> Node:
-        node = Node(data, self)
+    def add(self, data: Any) -> Self:
+        node = self.__class__(data, self)
         self.children.append(node)
         return node
 
 
 class Tree(Generic[TNode]):
-    def __init__(self):
-        self.root: Node = Node("__root__", cast(TNode, None))
+    node_class: Type[TNode] = Node
 
-    def add(self, data: Any) -> Node:
+    def __init__(self):
+        self.root: TNode = self.node_class("__root__", cast(TNode, None))
+
+    def add(self, data: Any) -> TNode:
         node = self.root.add(data)
         return node
 
@@ -44,26 +44,27 @@ class Tree(Generic[TNode]):
 
 
 # ----------------------------
-# ----------------------------
 
 
 class TypedNode(Node):
-    def __init__(self, data: Any, kind: str, parent: TypedNode):
+    def __init__(self, data: Any, kind: str, parent: Self):
         super().__init__(data, parent)
         self.kind: str = kind
         # self.children: List[TypedNode] = []
 
-    def add(self, data: Any, kind: str) -> TypedNode:
-        node = TypedNode(data, kind, self)
+    def add(self, data: Any, kind: str) -> Self:
+        node = self.__class__(data, kind, self)
         self.children.append(node)
         return node
 
 
 class TypedTree(Tree[TypedNode]):
+    node_class = TypedNode
+
     def __init__(self):
         self.root: TypedNode = TypedNode("__root__", "__root__", cast(TypedNode, None))
 
-    def add(self, data: Any, kind: str) -> TNode:
+    def add(self, data: Any, kind: str) -> TypedNode:
         node = self.root.add(data, kind)
         return node
 
