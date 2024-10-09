@@ -1052,8 +1052,8 @@ class Node:
         callback: TraversalCallbackType,
         *,
         add_self=False,
-        method=IterMethod.PRE_ORDER,
-        memo=None,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        memo: Any = None,
     ) -> None | Any:
         """Call `callback(node, memo)` for all subnodes.
 
@@ -1162,7 +1162,7 @@ class Node:
         return self._iter_level(revert=True, toggle=True)
 
     def iterator(
-        self, method=IterMethod.PRE_ORDER, *, add_self=False
+        self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
     ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         try:

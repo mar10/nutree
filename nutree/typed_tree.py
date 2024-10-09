@@ -443,7 +443,7 @@ class TypedNode(Node):
         return super().filtered(predicate=predicate)
 
     def iterator(
-        self, method=IterMethod.PRE_ORDER, *, add_self=False
+        self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
     ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         return super().iterator(method=method, add_self=add_self)

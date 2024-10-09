@@ -307,7 +307,11 @@ class Tree:
         return self._root.calc_height()
 
     def visit(
-        self, callback: TraversalCallbackType, *, method=IterMethod.PRE_ORDER, memo=None
+        self,
+        callback: TraversalCallbackType,
+        *,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        memo: Any = None,
     ) -> Any | None:
         """Call `callback(node, memo)` for all nodes.
 

@@ -226,7 +226,7 @@ methods::
     This means that two instances of DictWrapper with the same dict content
     will have different hash values.
 
-.. info::
+.. note::
     The `forward_attrs` feature is readonly, so you cannot modify the dict
     through the forwarded attributes. You need to access the dict directly for 
     that.

@@ -139,6 +139,8 @@ Different traversal methods are supported. ::
     # to materialize:
     res = list(node.iterator(add_self=True))
 
+.. _iteration-methods:
+
 Available iteration methods (`IterMethod.MODE`)::
     
     PRE_ORDER       # Depth-first, pre-order
