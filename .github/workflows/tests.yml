@@ -25,10 +25,12 @@ jobs:
         # Python 3.11 # EOL 2027-10-24
         # Python 3.12 # EOL 2028-10-02
         # Python 3.13 # EOL
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
     steps:
+
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -40,6 +42,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pydot pytest pytest-cov pytest-html rdflib ruff
           # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python -m pip install -e .
+          python -m pip list
 
       - name: Lint with ruff
         run: |
