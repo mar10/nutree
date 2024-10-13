@@ -1,3 +1,4 @@
 furo
 myst-parser[linkify]
+sphinxcontrib-googleanalytics
 sphinxcontrib-mermaid
