@@ -253,6 +253,9 @@ def _check_content(
         else:
             style = "ascii32"
 
+    if isinstance(tree, Tree):
+        assert tree._self_check()
+
     s1 = indent(canonical_repr(tree, repr=repr, style=style), "    ")
     s2 = indent(canonical_repr(expect_ascii, repr=repr, style=style), "    ")
     if ignore_tree_name:
@@ -281,6 +284,9 @@ def check_content(
 
 
 def trees_equal(tree_1, tree_2, ignore_tree_name=True) -> bool:
+    assert tree_1 is not tree_2
+    if not tree_1 or not tree_2 or (len(tree_1) != len(tree_2)):
+        return False
     return check_content(tree_1, tree_2, ignore_tree_name=ignore_tree_name)
 
 

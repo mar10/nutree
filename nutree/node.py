@@ -906,7 +906,14 @@ class Node:
                 parent_stack.append((False, n))
 
                 res = call_predicate(predicate, n)
-                if isinstance(res, SkipBranch):
+
+                if res is None or res is False:  # Add only if has a `true` descendant
+                    _visit(n)
+                elif res is True:  # Add this node (and also check children)
+                    p = _create_parents()
+                    # p.add_child(n)
+                    _visit(n)
+                elif isinstance(res, SkipBranch):
                     if res.and_self is False:
                         # Add the node itself if user explicitly returned
                         # `SkipBranch(and_self=False)`
@@ -918,12 +925,8 @@ class Node:
                     # Unconditionally copy whole branch: no need to visit children
                     p = _create_parents()
                     p._add_from(n)
-                elif res in (None, False):  # Add only if has a `true` descendant
-                    _visit(n)
-                elif res is True:  # Add this node (and also check children)
-                    p = _create_parents()
-                    p.add_child(n)
-                    _visit(n)
+                else:
+                    raise ValueError(f"Invalid predicate return value: {res}")
 
                 parent_stack.pop()
             return
@@ -958,7 +961,7 @@ class Node:
 
             for n in parent.children:
                 res = call_predicate(predicate, n)
-                if res in (None, False):  # Keep only if has a `true` descendant
+                if res is None or res is False:  # Keep only if has a `true` descendant
                     if _visit(n):
                         must_keep = True
                     else:

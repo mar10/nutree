@@ -1125,7 +1125,6 @@ class TestCopy:
                `- a12
             """,
         )
-        assert subtree._self_check()
 
         subtree = tree["A"].copy(add_self=False)
         assert fixture.check_content(
@@ -1138,7 +1137,26 @@ class TestCopy:
             `- a2
             """,
         )
-        assert subtree._self_check()
+
+    def test_node_copy_predicate(self):
+        tree = fixture.create_tree()
+
+        tree_2 = tree.copy()
+        assert fixture.trees_equal(tree, tree_2)
+
+        tree_3 = tree.copy(predicate=lambda n: "2" not in n.name.lower())
+        assert fixture.check_content(
+            tree_3,
+            """
+            Tree<'fixture'>
+            ├── A
+            │   ╰── a1
+            │       ╰── a11
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
 
     def test_node_copy_to(self):
         tree_1 = fixture.create_tree()
@@ -1278,7 +1296,6 @@ class TestCopy:
 
         tree_2 = tree.filtered(predicate=pred)
 
-        assert tree_2._self_check()
         assert fixture.check_content(
             tree_2,
             """
@@ -1286,9 +1303,7 @@ class TestCopy:
             ╰── A
                 ├── a1
                 │   ╰── a12
-                │       ╰── a12
                 ╰── a2
-                    ╰── a2
             """,
         )
 
@@ -1299,14 +1314,12 @@ class TestCopy:
 
         tree_2 = tree.filtered(predicate=pred)
 
-        assert tree_2._self_check()
         assert fixture.check_content(
             tree_2,
             """
             Tree<*>
             ╰── A
                 ╰── a2
-                    ╰── a2
             """,
         )
 
