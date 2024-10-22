@@ -27,4 +27,7 @@ Now  the ``nutree`` package can be used in Python code::
    See :doc:`development` for directions for contributors.
 
 
-Now read the :doc:`user_guide`.
+Now :doc:`take_the_tour`...
+
+.. Now read the :doc:`user_guide`.
+.. `Take the Tour <take_the_tour.html>`_ ...

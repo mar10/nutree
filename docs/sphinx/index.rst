@@ -106,9 +106,9 @@ Nutree Facts
   * :ref:`Filtering <mutation>`
 
 
-.. `Read more <installation.html>`_ ...
 
-`Take the Tour <take_the_tour.html>`_ ...
+Now read about :doc:`installation` and :doc:`take_the_tour` ...
+
 
 
 .. |gha_badge| image:: https://github.com/mar10/nutree/actions/workflows/tests.yml/badge.svg

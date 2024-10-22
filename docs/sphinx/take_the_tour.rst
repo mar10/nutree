@@ -1,10 +1,8 @@
 Take the Tour
 =============
 
-   Note: This tour was gerneated from a jupyter notebook. `It is
-   available
-   here <https://github.com/mar10/nutree/blob/main/docs/jupyter/ug_tour.ipynb>`__
-   and can be used for interactive experiments.
+*(The tour is auto-generated from*\ `this jupyter
+notebook <https://github.com/mar10/nutree/blob/main/docs/jupyter/take_the_tour.ipynb>`__\ *.)*
 
 Nutree organizes arbitrary object instances in an unobtrusive way. That
 means, we can add existing objects without having to derive from a
@@ -74,8 +72,7 @@ and create some instances
     dave = Person("Dave", 55)
 
 Now that we have a bunch of instances, let’s organize these objects in a
-hierarchical structure using
-`nutree <https://nutree.readthedocs.io/>`__:
+hierarchical structure using *nutree*:
 
 .. code:: ipython3
 
@@ -98,13 +95,13 @@ hierarchical structure using
 .. parsed-literal::
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x105815340>
-    │   ├── <__main__.Department object at 0x1074caf30>
-    │   │   ╰── <__main__.Person object at 0x1074cb0e0>
-    │   ╰── <__main__.Person object at 0x1074cb050>
-    ├── <__main__.Department object at 0x1074c9910>
-    │   ╰── <__main__.Person object at 0x1074cacc0>
-    ╰── <__main__.Person object at 0x1074caed0>
+    ├── <__main__.Department object at 0x109247ad0>
+    │   ├── <__main__.Department object at 0x1091cede0>
+    │   │   ╰── <__main__.Person object at 0x109247770>
+    │   ╰── <__main__.Person object at 0x109247b00>
+    ├── <__main__.Department object at 0x109245820>
+    │   ╰── <__main__.Person object at 0x109247e00>
+    ╰── <__main__.Person object at 0x1092477a0>
 
 
 Tree nodes store a reference to the object in the ``node.data``
@@ -113,7 +110,8 @@ attribute.
 The nodes are formatted for display by the object’s ``__repr__``
 implementation by default. We can overide this by passing an
 `f-string <https://docs.python.org/3/tutorial/inputoutput.html#formatted-string-literals>`__
-as ``repr`` argument:
+as ``repr`` argument. For example ``"{node.data}"`` will use the data
+instances ``__str__`` method instead:
 
 .. code:: ipython3
 
@@ -147,7 +145,7 @@ object:
 
 .. parsed-literal::
 
-    Node<'Person<Alice (25)>', data_id=276089581>
+    Node<'Person<Alice (25)>', data_id=278022010>
 
 
 
@@ -204,8 +202,63 @@ There are multiple methods to iterate the tree.
     Claire
 
 
+The above traversal methods are also available for single nodes:
+
+.. code:: ipython3
+
+    res = [node.data.name for node in dev_node]
+    print(res)
+
+
+.. parsed-literal::
+
+    ['Test', 'Claire', 'Bob']
+
+
+Filter
+------
+
+.. code:: ipython3
+
+    tree_2 = tree.copy(predicate=lambda node: isinstance(node.data, Department))
+    tree_2.print(repr="{node}")
+
+
+.. parsed-literal::
+
+    Tree<"Copy of Tree<'Organization'>">
+    ├── Node<'Department<Development>', data_id=278022061>
+    │   ├── Node<'Department<Development>', data_id=278022061>
+    │   ╰── Node<'Department<Test>', data_id=277991134>
+    │       ╰── Node<'Department<Test>', data_id=277991134>
+    ╰── Node<'Department<Marketing>', data_id=278021506>
+        ╰── Node<'Department<Marketing>', data_id=278021506>
+
+
 Mutation
 --------
+
+.. code:: ipython3
+
+    bob_node = tree[bob]
+    # bob_node.move_to(marketing_dep_node)
+    tree.print()
+
+
+::
+
+
+    ---------------------------------------------------------------------------
+
+    AttributeError                            Traceback (most recent call last)
+
+    Cell In[120], line 1
+    ----> 1 bob.move_to()
+          2 tree.print()
+
+
+    AttributeError: 'Person' object has no attribute 'move_to'
+
 
 Data IDs and Clones
 -------------------
@@ -217,64 +270,13 @@ Data IDs and Clones
 
 .. parsed-literal::
 
-    Node<'Department<Development>', data_id=274208052>
-    ├── Node<'Department<Test>', data_id=276089587>
-    │   ╰── Node<'Person<Claire (45)>', data_id=276089614>
-    ╰── Node<'Person<Bob (35)>', data_id=276089605>
-    Node<'Department<Marketing>', data_id=276089233>
-    ╰── Node<'Person<Dave (55)>', data_id=276089548>
-    Node<'Person<Alice (25)>', data_id=276089581>
-
-
-Serialization
--------------
-
-.. code:: ipython3
-
-    tree.to_dict_list()
-
-
-
-
-.. parsed-literal::
-
-    [{'data': 'Department<Development>',
-      'children': [{'data': 'Department<Test>',
-        'children': [{'data': 'Person<Claire (45)>'}]},
-       {'data': 'Person<Bob (35)>'}]},
-     {'data': 'Department<Marketing>',
-      'children': [{'data': 'Person<Dave (55)>'}]},
-     {'data': 'Person<Alice (25)>'}]
-
-
-
-.. code:: ipython3
-
-    list(tree.to_list_iter())
-
-
-
-
-.. parsed-literal::
-
-    [(0, {}), (1, {}), (2, {}), (1, {}), (0, {}), (5, {}), (0, {})]
-
-
-
-.. code:: ipython3
-
-    t = Tree._from_list([(0, "A"), (0, "B"), (1, "C"), (0, "D"), (3, "E")])
-    print(t.format())
-
-
-.. parsed-literal::
-
-    Tree<'4388275936'>
-    ├── 'A'
-    │   ╰── 'C'
-    │       ╰── 'E'
-    ├── 'B'
-    ╰── 'D'
+    Node<'Department<Development>', data_id=278005278>
+    ├── Node<'Department<Test>', data_id=278005584>
+    │   ╰── Node<'Person<Claire (45)>', data_id=278021425>
+    ╰── Node<'Person<Bob (35)>', data_id=278021428>
+    Node<'Department<Marketing>', data_id=277460240>
+    ╰── Node<'Person<Dave (55)>', data_id=278021167>
+    Node<'Person<Alice (25)>', data_id=277460774>
 
 
 Special Data Types
@@ -297,7 +299,7 @@ We can add simple string objects the same way as any other object
 
 .. parsed-literal::
 
-    Tree<'4417436128'>
+    Tree<'4448341168'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -327,12 +329,70 @@ inside ``DictWrapper`` objects:
 
 .. parsed-literal::
 
-    Tree<'4417684064'>
-    ├── Node<'A', data_id=7672938551128061313>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4417631232>
-    ╰── Node<'B', data_id=-5231886843176280035>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4417631232>
+    Tree<'4448343424'>
+    ├── Node<'A', data_id=-8659698137174932031>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4448332800>
+    ╰── Node<'B', data_id=-1229858467403030929>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4448332800>
 
+
+Serialization
+-------------
+
+.. code:: ipython3
+
+    tree.to_dict_list()
+    # tree.to_dict_list(mapper=lambda node, data: node.data.name)
+
+
+
+
+.. parsed-literal::
+
+    [{'data': 'A',
+      'children': [{'data': "DictWrapper<{'title': 'foo', 'id': 1}>"}]},
+     {'data': 'B',
+      'children': [{'data': "DictWrapper<{'title': 'foo', 'id': 1}>"}]}]
+
+
+
+.. code:: ipython3
+
+    list(tree.to_list_iter())
+
+
+
+
+.. parsed-literal::
+
+    [(0, 'A'), (1, {}), (0, 'B'), (3, 2)]
+
+
+
+.. code:: ipython3
+
+    t = Tree._from_list([(0, "A"), (0, "B"), (1, "C"), (0, "D"), (3, "E")])
+    print(t.format())
+
+
+.. parsed-literal::
+
+    Tree<'4448342032'>
+    ├── 'A'
+    │   ╰── 'C'
+    │       ╰── 'E'
+    ├── 'B'
+    ╰── 'D'
+
+
+.. code:: mermaid
+
+   graph LR;
+       A--> B & C & D;
+       B--> A & E;
+       C--> A & E;
+       D--> A & E;
+       E--> B & C & D;
 
 Advanced
 --------
@@ -345,15 +405,14 @@ for a more compact code and avoids some temporary variables:
 
 .. code:: ipython3
 
-    Tree().add("A").add("a1").up().add("a2").up(2).add("B").tree.print()
+    Tree().add("A").add("a1").up().add("a2").up(2).add("B").tree.print(title=False)
 
 
 .. parsed-literal::
 
-    Tree<'4417684208'>
-    ├── 'A'
-    │   ├── 'a1'
-    │   ╰── 'a2'
-    ╰── 'B'
+    'A'
+    ├── 'a1'
+    ╰── 'a2'
+    'B'
 
 
