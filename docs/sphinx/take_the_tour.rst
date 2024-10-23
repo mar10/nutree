@@ -95,13 +95,13 @@ hierarchical structure using *nutree*:
 .. parsed-literal::
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x109247ad0>
-    │   ├── <__main__.Department object at 0x1091cede0>
-    │   │   ╰── <__main__.Person object at 0x109247770>
-    │   ╰── <__main__.Person object at 0x109247b00>
-    ├── <__main__.Department object at 0x109245820>
-    │   ╰── <__main__.Person object at 0x109247e00>
-    ╰── <__main__.Person object at 0x1092477a0>
+    ├── <__main__.Department object at 0x1056fd100>
+    │   ├── <__main__.Department object at 0x106249130>
+    │   │   ╰── <__main__.Person object at 0x1062cf560>
+    │   ╰── <__main__.Person object at 0x1062cf830>
+    ├── <__main__.Department object at 0x1062cfce0>
+    │   ╰── <__main__.Person object at 0x105d2b770>
+    ╰── <__main__.Person object at 0x1062cffe0>
 
 
 Tree nodes store a reference to the object in the ``node.data``
@@ -145,7 +145,7 @@ object:
 
 .. parsed-literal::
 
-    Node<'Person<Alice (25)>', data_id=278022010>
+    Node<'Person<Alice (25)>', data_id=274911230>
 
 
 
@@ -227,12 +227,9 @@ Filter
 .. parsed-literal::
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=278022061>
-    │   ├── Node<'Department<Development>', data_id=278022061>
-    │   ╰── Node<'Department<Test>', data_id=277991134>
-    │       ╰── Node<'Department<Test>', data_id=277991134>
-    ╰── Node<'Department<Marketing>', data_id=278021506>
-        ╰── Node<'Department<Marketing>', data_id=278021506>
+    ├── Node<'Department<Development>', data_id=274136336>
+    │   ╰── Node<'Department<Test>', data_id=274876691>
+    ╰── Node<'Department<Marketing>', data_id=274911182>
 
 
 Mutation
@@ -245,19 +242,16 @@ Mutation
     tree.print()
 
 
-::
+.. parsed-literal::
 
-
-    ---------------------------------------------------------------------------
-
-    AttributeError                            Traceback (most recent call last)
-
-    Cell In[120], line 1
-    ----> 1 bob.move_to()
-          2 tree.print()
-
-
-    AttributeError: 'Person' object has no attribute 'move_to'
+    Tree<'Organization'>
+    ├── <__main__.Department object at 0x1056fd100>
+    │   ├── <__main__.Department object at 0x106249130>
+    │   │   ╰── <__main__.Person object at 0x1062cf560>
+    │   ╰── <__main__.Person object at 0x1062cf830>
+    ├── <__main__.Department object at 0x1062cfce0>
+    │   ╰── <__main__.Person object at 0x105d2b770>
+    ╰── <__main__.Person object at 0x1062cffe0>
 
 
 Data IDs and Clones
@@ -270,13 +264,13 @@ Data IDs and Clones
 
 .. parsed-literal::
 
-    Node<'Department<Development>', data_id=278005278>
-    ├── Node<'Department<Test>', data_id=278005584>
-    │   ╰── Node<'Person<Claire (45)>', data_id=278021425>
-    ╰── Node<'Person<Bob (35)>', data_id=278021428>
-    Node<'Department<Marketing>', data_id=277460240>
-    ╰── Node<'Person<Dave (55)>', data_id=278021167>
-    Node<'Person<Alice (25)>', data_id=277460774>
+    Node<'Department<Development>', data_id=274136336>
+    ├── Node<'Department<Test>', data_id=274876691>
+    │   ╰── Node<'Person<Claire (45)>', data_id=274911062>
+    ╰── Node<'Person<Bob (35)>', data_id=274911107>
+    Node<'Department<Marketing>', data_id=274911182>
+    ╰── Node<'Person<Dave (55)>', data_id=274541431>
+    Node<'Person<Alice (25)>', data_id=274911230>
 
 
 Special Data Types
@@ -299,7 +293,7 @@ We can add simple string objects the same way as any other object
 
 .. parsed-literal::
 
-    Tree<'4448341168'>
+    Tree<'4398779184'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -329,11 +323,11 @@ inside ``DictWrapper`` objects:
 
 .. parsed-literal::
 
-    Tree<'4448343424'>
-    ├── Node<'A', data_id=-8659698137174932031>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4448332800>
-    ╰── Node<'B', data_id=-1229858467403030929>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4448332800>
+    Tree<'4392651376'>
+    ├── Node<'A', data_id=-9112120580527591933>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4398795776>
+    ╰── Node<'B', data_id=-7701919551774722043>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4398795776>
 
 
 Serialization
@@ -377,7 +371,7 @@ Serialization
 
 .. parsed-literal::
 
-    Tree<'4448342032'>
+    Tree<'4398778896'>
     ├── 'A'
     │   ╰── 'C'
     │       ╰── 'E'

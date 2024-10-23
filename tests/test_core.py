@@ -10,7 +10,13 @@ from typing import Any, Union
 
 import pytest
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
-from nutree.common import SkipBranch, StopTraversal, check_python_version
+from nutree.common import (
+    PredicateCallbackType,
+    SelectBranch,
+    SkipBranch,
+    StopTraversal,
+    check_python_version,
+)
 
 from . import fixture
 
@@ -999,7 +1005,6 @@ class TestMutate:
             source_node.move_to(target_node, before=before)
 
             assert fixture.check_content(tree, result)
-            assert tree._self_check()
 
         _tm(
             source="a11",
@@ -1139,14 +1144,25 @@ class TestCopy:
         )
 
     def test_node_copy_predicate(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
         tree = fixture.create_tree()
 
         tree_2 = tree.copy()
         assert fixture.trees_equal(tree, tree_2)
 
-        tree_3 = tree.copy(predicate=lambda n: "2" not in n.name.lower())
+        tree_2 = tree.copy(predicate=lambda n: "2" not in n.name)
         assert fixture.check_content(
-            tree_3,
+            tree_2,
             """
             Tree<'fixture'>
             ├── A
@@ -1155,6 +1171,56 @@ class TestCopy:
             ╰── B
                 ╰── b1
                     ╰── b11
+            """,
+        )
+
+        def pred(node):
+            if "1" in node.name:
+                return SkipBranch
+            return True
+
+        tree_2 = tree.copy(predicate=pred)
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<'fixture'>
+            ├── A
+            │   ╰── a2
+            ╰── B
+            """,
+        )
+
+        def pred(node):
+            if "1" in node.name:
+                raise SkipBranch(and_self=False)
+            return True
+
+        tree_2 = tree.copy(predicate=pred)
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<'fixture'>
+            ├── A
+            │   ├── a1
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a1":
+                raise SelectBranch
+
+        tree_2 = tree.copy(predicate=pred)
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<'fixture'>
+            ╰── A
+                ╰── a1
+                    ├── a11
+                    ╰── a12
             """,
         )
 
@@ -1258,19 +1324,90 @@ class TestCopy:
         with pytest.raises(ValueError, match="Predicate is required"):
             tree.system_root.filter(predicate=None)  # type: ignore
 
+        def _tf(
+            *,
+            predicate: PredicateCallbackType,
+            result: str,
+        ):
+            tree = fixture.create_tree()
+            tree.filter(predicate=predicate)
+            assert fixture.check_content(tree, result)
+
         def pred(node):
-            return "2" not in node.name.lower()
+            return "2" not in node.name
 
-        tree.filter(predicate=pred)
-
-        assert tree._self_check()
-        assert fixture.check_content(
-            tree,
-            """
+        _tf(
+            predicate=pred,
+            result="""
             Tree<'fixture'>
             ├── A
             │   ╰── a1
             │       ╰── a11
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a1":
+                return SelectBranch
+
+        _tf(
+            predicate=pred,
+            result="""
+            Tree<'fixture'>
+            ╰── A
+                ╰── a1
+                    ├── a11
+                    ╰── a12
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a1":
+                raise SkipBranch(and_self=False)
+            return True
+
+        _tf(
+            predicate=pred,
+            result="""
+            Tree<'fixture'>
+            ├── A
+            │   ├── a1
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
+
+        def pred(node):
+            if node.name == "a1":
+                return SkipBranch
+            return True
+
+        _tf(
+            predicate=pred,
+            result="""
+            Tree<'fixture'>
+            ├── A
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
+            """,
+        )
+
+        def pred(node):
+            if node.name == "B":
+                raise StopTraversal
+            return False
+
+        _tf(
+            predicate=pred,
+            result="""
+            Tree<'fixture'>
             ╰── B
                 ╰── b1
                     ╰── b11
@@ -1330,7 +1467,6 @@ class TestCopy:
 
         tree_2 = tree.filtered(predicate=pred)
 
-        assert tree_2._self_check()
         assert fixture.check_content(
             tree_2,
             """
@@ -1338,15 +1474,31 @@ class TestCopy:
             """,
         )
 
+        def pred(node):
+            if node.name == "a12":
+                return True
+
+        tree_2 = tree["A"].filtered(predicate=pred)
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            ╰── A
+                ╰── a1
+                    ╰── a12
+            """,
+        )
+
         # Should use tree.copy() instead:
         with pytest.raises(ValueError, match="Predicate is required"):
             tree_2 = tree.filtered(predicate=None)  # type: ignore
+
         with pytest.raises(ValueError, match="Predicate is required"):
             tree_2 = tree.system_root.filtered(predicate=None)  # type: ignore
 
         tree_2 = tree.copy()
 
-        assert tree_2._self_check()
         assert fixture.check_content(
             tree_2,
             """

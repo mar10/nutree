@@ -148,7 +148,9 @@ SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
 DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
-PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
+PredicateCallbackType = Callable[
+    ["Node"], Union[None, bool, IterationControl, Type[IterationControl]]
+]
 
 #:
 TraversalCallbackType = Callable[
@@ -156,8 +158,8 @@ TraversalCallbackType = Callable[
     Union[
         None,
         bool,
-        "SkipBranch",
-        "StopTraversal",
+        SkipBranch,
+        StopTraversal,
         Type[SkipBranch],
         Type[StopTraversal],
         Type[StopIteration],
@@ -355,6 +357,8 @@ def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
         return None
     try:
         res = fn(node)
+        if res in (SkipBranch, SelectBranch, StopTraversal):
+            return res()
     except IterationControl as e:
         return e  # SkipBranch, SelectBranch, StopTraversal
     except StopIteration as e:  # Also accept this builtin exception

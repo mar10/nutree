@@ -918,7 +918,7 @@ class Node:
                         # Add the node itself if user explicitly returned
                         # `SkipBranch(and_self=False)`
                         p = _create_parents()
-                        p.add_child(n)
+                        # p.add_child(n)
                 elif isinstance(res, StopTraversal):
                     raise res
                 elif isinstance(res, SelectBranch):
@@ -974,10 +974,13 @@ class Node:
                     must_keep = True
                 elif isinstance(res, SkipBranch):
                     if res.and_self is False:
-                        remove_nodes = n.children
+                        must_keep = True
+                        remove_nodes = n.children.copy()
                     else:
                         remove_nodes.append(n)
                 elif isinstance(res, StopTraversal):
+                    for n in remove_nodes:
+                        n.remove()
                     raise res
 
             for n in remove_nodes:
