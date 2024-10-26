@@ -9,7 +9,16 @@ from __future__ import annotations
 import re
 from operator import attrgetter
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, Optional, TypeVar
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    Iterator,
+    Optional,
+    TypeVar,
+    cast,
+)
 
 from nutree.mermaid import (
     MermaidDirectionType,
@@ -118,7 +127,7 @@ class Node:
         self._parent: Self = parent
 
         tree = parent._tree
-        self._tree: Tree = tree
+        self._tree: Tree[Self] = tree
         self._children: list[Self] | None = None
 
         if data_id is None:
@@ -613,10 +622,10 @@ class Node:
                 topnodes.reverse()
             for n in topnodes:
                 self.add_child(n, before=before, deep=deep)
-            return n  # need to return a node
+            return cast(Self, n)  # need to return a node
 
         source_node = None
-        factory = self._tree.node_factory
+        # factory: Type[Self] = self._tree.node_factory
         if isinstance(child, Node):
             if deep is None:
                 deep = False
@@ -635,13 +644,13 @@ class Node:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             # If creating an inherited node, use the parent class as constructor
-            child_class = child.__class__
+            # child_class = child.__class__
 
-            node = child_class(
+            node = self.__class__(
                 source_node.data, parent=self, data_id=data_id, node_id=node_id
             )
         else:
-            node = factory(child, parent=self, data_id=data_id, node_id=node_id)
+            node = self.__class__(child, parent=self, data_id=data_id, node_id=node_id)
 
         if before is True:
             before = 0  # prepend
@@ -664,7 +673,7 @@ class Node:
             children.append(node)
 
         if deep and source_node:
-            node._add_from(source_node)
+            node._add_from(source_node)  # pyright: ignore[reportArgumentType]
 
         return node
 
@@ -742,7 +751,7 @@ class Node:
 
     def move_to(
         self,
-        new_parent: Self | Tree,
+        new_parent: Self | Tree[Self],
         *,
         before: Optional[Self | bool | int] = None,
     ):
@@ -771,7 +780,7 @@ class Node:
         target_siblings = new_parent._children
         if target_siblings is None:
             assert before in (None, True, False, 0), before
-            new_parent._children = [self]  # type: ignore
+            new_parent._children = [self]
         elif isinstance(before, Node):
             assert before._parent is new_parent, before
             idx = target_siblings.index(before)  # raise ValueError if not found
