@@ -16,10 +16,9 @@ from nutree.common import (
     CalcIdCallbackType,
     DataIdType,
     DeserializeMapperType,
-    IterMethod,
     KeyMapType,
     MapperCallbackType,
-    PredicateCallbackType,
+    Self,
     SerializeMapperType,
     UniqueConstraintError,
     ValueMapType,
@@ -59,7 +58,7 @@ class TypedNode(Node):
         kind: str,
         data,
         *,
-        parent: TypedNode,
+        parent: Self,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
         meta: dict | None = None,
@@ -90,23 +89,23 @@ class TypedNode(Node):
     def kind(self) -> str:
         return self._kind
 
-    @property
-    def parent(self) -> TypedNode | None:
-        """Return parent node or None for toplevel nodes."""
-        p = self._parent
-        return p if p._parent else None
+    # @property
+    # def parent(self) -> TypedNode | None:
+    #     """Return parent node or None for toplevel nodes."""
+    #     p = self._parent
+    #     return p if p._parent else None
 
-    @property
-    def children(self) -> list[TypedNode]:
-        """Return list of direct child nodes (list may be empty).
+    # @property
+    # def children(self) -> list[TypedNode]:
+    #     """Return list of direct child nodes (list may be empty).
 
-        Note that this property returns all children, independent of the kind.
-        See also :meth:`get_children`.
-        """
-        c = self._children
-        return [] if c is None else c
+    #     Note that this property returns all children, independent of the kind.
+    #     See also :meth:`get_children`.
+    #     """
+    #     c = self._children
+    #     return [] if c is None else c
 
-    def get_children(self, kind: str | ANY_KIND) -> list[TypedNode]:
+    def get_children(self, kind: str | ANY_KIND) -> list[Self]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -121,7 +120,7 @@ class TypedNode(Node):
     #     """Change node's `data` and/or `data_id` and update bookkeeping."""
     #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
-    def first_child(self, kind: str | ANY_KIND) -> TypedNode | None:
+    def first_child(self, kind: str | ANY_KIND) -> Self | None:
         """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -134,7 +133,7 @@ class TypedNode(Node):
                 return n
         return None
 
-    def last_child(self, kind: str | ANY_KIND) -> TypedNode | None:
+    def last_child(self, kind: str | ANY_KIND) -> Self | None:
         """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -154,7 +153,7 @@ class TypedNode(Node):
             return bool(self._children)
         return len(self.get_children(kind)) > 1
 
-    def get_siblings(self, *, add_self=False, any_kind=False) -> list[TypedNode]:
+    def get_siblings(self, *, add_self=False, any_kind=False) -> list[Self]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
             return super().get_siblings(add_self=add_self)
@@ -162,7 +161,7 @@ class TypedNode(Node):
         rel = self.kind
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
 
-    def first_sibling(self, *, any_kind=False) -> TypedNode:
+    def first_sibling(self, *, any_kind=False) -> Self:
         """Return first sibling `of the same kind` (may be self)."""
         pc = self._parent._children
         if any_kind:
@@ -172,7 +171,7 @@ class TypedNode(Node):
                 return n
         raise AssertionError("Internal error")  # pragma: no cover
 
-    def last_sibling(self, *, any_kind=False) -> TypedNode:
+    def last_sibling(self, *, any_kind=False) -> Self:
         """Return last sibling `of the same kind` (may be self)."""
         pc = self._parent._children
         if any_kind:
@@ -182,7 +181,7 @@ class TypedNode(Node):
                 return n
         raise AssertionError("Internal error")  # pragma: no cover
 
-    def prev_sibling(self, *, any_kind=False) -> TypedNode | None:
+    def prev_sibling(self, *, any_kind=False) -> Self | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""
         pc = self._parent._children
         own_idx = pc.index(self)
@@ -193,7 +192,7 @@ class TypedNode(Node):
                     return n
         return None
 
-    def next_sibling(self, *, any_kind=False) -> TypedNode | None:
+    def next_sibling(self, *, any_kind=False) -> Self | None:
         """Return successor `of the same kind` or None if node is last sibling."""
         pc = self._parent._children
         pc_len = len(pc)
@@ -205,13 +204,6 @@ class TypedNode(Node):
                 if any_kind or n._kind == self._kind:
                     return n
         return None
-
-    # def get_clones(self, *, add_self=False) -> List[TypedNode]:
-    #     """Return a list of all nodes that reference the same data if any."""
-    #     clones = self._tree._nodes_by_data_id[self._data_id]
-    #     if add_self:
-    #         return clones.copy()
-    #     return [n for n in clones if n is not self]
 
     def get_index(self, *, any_kind=False) -> int:
         """Return index in sibling list."""
@@ -237,14 +229,14 @@ class TypedNode(Node):
 
     def add_child(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: Self | TypedTree | Any,
         *,
         kind: str | None = None,
-        before: TypedNode | bool | int | None = None,
+        before: Self | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ) -> TypedNode:
+    ) -> Self:
         """See ..."""
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
         # TODO: kind is optional if child is a TypedNode
@@ -328,7 +320,7 @@ class TypedNode(Node):
 
     def append_child(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: Self | TypedTree | Any,
         *,
         kind: str | None = None,
         deep: bool | None = None,
@@ -350,7 +342,7 @@ class TypedNode(Node):
 
     def prepend_child(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: Self | TypedTree | Any,
         *,
         kind: str | None = None,
         deep: bool | None = None,
@@ -372,181 +364,79 @@ class TypedNode(Node):
 
     def prepend_sibling(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: Self | TypedTree | Any,
         *,
+        kind: str | None = None,
         deep=None,
         data_id=None,
         node_id=None,
-    ) -> TypedNode:
+    ) -> Self:
         """Add a new node **of same kind** before `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
         return self._parent.add_child(
-            child, before=self, deep=deep, data_id=data_id, node_id=node_id
+            child, kind=kind, before=self, deep=deep, data_id=data_id, node_id=node_id
         )
 
     def append_sibling(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: Self | TypedTree | Any,
         *,
+        kind: str | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ) -> TypedNode:
+    ) -> Self:
         """Add a new node **of same kind** after `self`.
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
         next_node = self.next_sibling
         return self._parent.add_child(
-            child, before=next_node, deep=deep, data_id=data_id, node_id=node_id
+            child,
+            kind=kind,
+            before=next_node,
+            deep=deep,
+            data_id=data_id,
+            node_id=node_id,
         )
 
-    def move_to(
-        self,
-        new_parent: TypedNode | TypedTree,
-        *,
-        before: TypedNode | bool | int | None = None,
-    ):
-        """Move this node before or after `new_parent`."""
-        raise NotImplementedError
-
-    # def remove(self, *, keep_children=False, with_clones=False) -> None:
-    #     """Remove this node.
-
-    #     If `keep_children` is true, all children will be moved one level up,
-    #     so they become siblings, before this node is removed.
-
-    #     If `with_clones` is true, all nodes that reference the same data
-    #     instance are removed as well.
-    #     """
+    # def move_to(
+    #     self,
+    #     new_parent: TypedNode | TypedTree,
+    #     *,
+    #     before: TypedNode | bool | int | None = None,
+    # ):
+    #     """Move this node before or after `new_parent`."""
     #     raise NotImplementedError
 
-    # def remove_children(self, kind: Union[str, ANY_KIND]):
-    #     """Remove all children of this node, making it a leaf node."""
-    #     raise NotImplementedError
+    # def copy(self, *, add_self=True, predicate=None) -> TypedTree:
+    #     """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this
+    #  branch.
 
-    def copy(self, *, add_self=True, predicate=None) -> TypedTree:
-        """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
-
-        See also :meth:`_add_from` and :ref:`iteration-callbacks`.
-        """
-        return super().copy(add_self=add_self, predicate=predicate)
-
-    def filtered(self, predicate: PredicateCallbackType) -> TypedTree:
-        """Return a filtered copy of this node and descendants as tree.
-
-        See also :ref:`iteration-callbacks`.
-        """
-        return super().filtered(predicate=predicate)
-
-    def iterator(
-        self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
-    ) -> Iterator[Node]:
-        """Generator that walks the hierarchy."""
-        return super().iterator(method=method, add_self=add_self)
-
-    #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
-    __iter__ = iterator
-
-    # def sort_children(self, *, key=None, reverse=False, deep=False):
-    #     """Sort child nodes.
-
-    #     `key` defaults to ``attrgetter("name")``, so children are sorted by
-    #     their string representation.
+    #     See also :meth:`_add_from` and :ref:`iteration-callbacks`.
     #     """
-    #     cl = self._children
-    #     if not cl or len(cl) == 1 and not deep:
-    #         return
-    #     if key is None:
-    #         key = attrgetter("name")
-    #     cl.sort(key=key, reverse=reverse)
-    #     if deep:
-    #         for c in cl:
-    #             c.sort_children(key=key, reverse=reverse, deep=True)
-    #     return
+    #     return super().copy(add_self=add_self, predicate=predicate)
 
-    # def _get_prefix(self, style, lstrip):
-    #     s0, s1, s2, s3 = style
+    # def filtered(self, predicate: PredicateCallbackType) -> TypedTree:
+    #     """Return a filtered copy of this node and descendants as tree.
 
-    #     parts = []
-    #     depth = 0
-    #     for p in self.get_parent_list():
-    #         depth += 1
-    #         if depth <= lstrip:
-    #             continue
-    #         if p.is_last_sibling():
-    #             parts.append(s0)  # "    "
-    #         else:
-    #             parts.append(s1)  # " |  "
+    #     See also :ref:`iteration-callbacks`.
+    #     """
+    #     return super().filtered(predicate=predicate)
 
-    #     if depth >= lstrip:
-    #         if self.is_last_sibling():
-    #             parts.append(s2)  # " ╰─ "
-    #         else:
-    #             parts.append(s3)  # " ├─ "
+    # def iterator(
+    #     self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
+    # ) -> Iterator[Node]:
+    #     """Generator that walks the hierarchy."""
+    #     return super().iterator(method=method, add_self=add_self)
 
-    #     return "".join(parts)
-
-    # def _render_lines(self, *, repr: ReprCallbackType=None,
-    #   style=None, add_self=True):
-    #     if type(style) not in (list, tuple):
-    #         try:
-    #             style = CONNECTORS[style or self.tree.DEFAULT_CONNECTOR_STYLE]
-    #         except KeyError:
-    #             raise ValueError(
-    #                 f"Invalid style '{style}'. "
-    #                 f"Expected: {'|'.join(CONNECTORS.keys())}"
-    #             )
-
-    #     if repr is None:
-    #         repr = DEFAULT_NAME_REPR
-
-    #     # Find out if we need to strip some of the leftmost prefixes.
-    #     # If this was called for a normal node, we strip all parent levels
-    #     # (and also the own prefix when `add_self` is false).
-    #     # If this was called for the system root node, we do the same, but we
-    #     # never render self, because the the title is rendered by the caller.
-    #     lstrip = self.depth()
-    #     if not add_self:
-    #         lstrip += 1
-    #     if not self._parent:
-    #         add_self = False
-
-    #     for n in self.iterator(add_self=add_self):
-    #         prefix = n._get_prefix(style, lstrip)
-
-    #         if callable(repr):
-    #             s = repr(n)
-    #         else:
-    #             s = repr.format(node=n)
-
-    #         yield prefix + s
-
-    #     return
-
-    # def to_dict(self, *, mapper: MapperCallbackType = None) -> Dict:
-    #     """Return a nested dict of this node and its children."""
-    #     res = {
-    #         "data": str(self.data),
-    #     }
-    #     # Add custom data_id if any
-    #     # data_id = hash(self._data)
-    #     data_id = self._tree.calc_data_id(self._data)
-    #     if data_id != self._data_id:
-    #         res["data_id"] = data_id
-    #     res = call_mapper(mapper, self, res)
-    #     # if mapper:
-    #     #     res = mapper(self, res)
-    #     if self._children:
-    #         res["children"] = cl = []
-    #         for n in self._children:
-    #             cl.append(n.to_dict(mapper=mapper))
-    #     return res
+    # #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
+    # __iter__ = iterator
 
     @classmethod
-    def _make_list_entry(cls, node: TypedNode) -> dict:
+    def _make_list_entry(cls, node: Self) -> dict:
         node_data = node._data
         # is_custom_id = node._data_id != hash(node_data)
 
@@ -645,7 +535,7 @@ class TypedTree(Tree):
 
     def add_child(
         self,
-        child: TypedNode | TypedTree | Any,
+        child: TypedNode | Self | Any,
         *,
         kind: str = None,
         before: TypedNode | bool | int | None = None,
@@ -726,7 +616,7 @@ class TypedTree(Tree):
     @classmethod
     def _from_list(
         cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
-    ) -> TypedTree:
+    ) -> Self:
         tree = cls()
 
         if mapper is None:
@@ -770,7 +660,7 @@ class TypedTree(Tree):
         *,
         mapper: DeserializeMapperType | None = None,
         file_meta: dict = None,
-    ) -> TypedTree:
+    ) -> Self:
         """Create a new :class:`TypedTree` instance from a JSON file stream.
 
         See also Tree's :meth:`~nutree.tree.Tree.save()` and
@@ -779,7 +669,7 @@ class TypedTree(Tree):
         return super().load(target, mapper=mapper, file_meta=file_meta)
 
     # @classmethod
-    # def build_random_tree(cls, structure_def: dict) -> TypedTree:
+    # def build_random_tree(cls, structure_def: dict) -> Self:
     #     """Build a random tree for testing."""
     #     tt = build_random_tree(cls, structure_def)
     #     return tt
