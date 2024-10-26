@@ -18,7 +18,7 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 
 try:
     import pydot  # type: ignore
-except ImportError:
+except ImportError:  # pragma: no cover
     pydot = None
 
 
@@ -27,11 +27,11 @@ def node_to_dot(
     *,
     add_self=False,
     unique_nodes=True,
-    graph_attrs=None,
-    node_attrs=None,
-    edge_attrs=None,
-    node_mapper=None,
-    edge_mapper=None,
+    graph_attrs: dict | None = None,
+    node_attrs: dict | None = None,
+    edge_attrs: dict | None = None,
+    node_mapper: MapperCallbackType | None = None,
+    edge_mapper: MapperCallbackType | None = None,
 ) -> Iterator[str]:
     """Generate DOT formatted output line-by-line.
 
@@ -50,8 +50,9 @@ def node_to_dot(
 
     def _attr_str(attr_def: dict, mapper=None, node=None):
         if mapper:
-            if attr_def is None:
-                attr_def = {}
+            assert isinstance(attr_def, dict), "attr_def must be a dict"
+            # if attr_def is None:
+            #     attr_def = {}
             assert node, "node required for mapper"
             call_mapper(mapper, node, attr_def)
         if not attr_def:
@@ -116,9 +117,9 @@ def tree_to_dotfile(
     format=None,
     add_root=True,
     unique_nodes=True,
-    graph_attrs=None,
-    node_attrs=None,
-    edge_attrs=None,
+    graph_attrs: dict | None = None,
+    node_attrs: dict | None = None,
+    edge_attrs: dict | None = None,
     node_mapper: MapperCallbackType | None = None,
     edge_mapper: MapperCallbackType | None = None,
 ) -> None:
@@ -146,14 +147,14 @@ def tree_to_dotfile(
             )
 
         if format:
-            if not pydot:
+            if not pydot:  # pragma: no cover
                 raise RuntimeError("Need pydot installed to convert DOT output.")
             # print("convert", dot_path, format, target)
             pydot.call_graphviz(
                 "dot",
                 [
                     "-o",
-                    target,
+                    target.with_suffix(f".{format}"),
                     f"-T{format}",
                     dot_path,
                 ],
@@ -170,7 +171,7 @@ def tree_to_dotfile(
         return
 
     # `target` is suppoesed to be an open, writable filelike
-    if format:
+    if format:  # pragma: no cover
         raise RuntimeError("Need a filepath to convert DOT output.")
 
     with tree:

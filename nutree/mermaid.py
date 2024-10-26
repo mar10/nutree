@@ -53,7 +53,7 @@ def _node_to_mermaid_flowchart_iter(
     headers: Iterable[str] | None = None,
     root_shape: str | None = None,
     node_mapper: MermaidNodeMapperCallbackType | str | None = None,
-    edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,  # pyright: ignore[reportRedeclaration]
+    edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,  # type: ignore[reportRedeclaration]
 ) -> Iterator[str]:
     """Generate Mermaid formatted output line-by-line.
 
@@ -99,9 +99,8 @@ def _node_to_mermaid_flowchart_iter(
                 to_node=to_node,
                 kind=kind,
             )
-
-    else:
-        assert callable(edge_mapper), "edge_mapper must be str or callable"
+    elif not callable(edge_mapper):  # pragma: no cover
+        raise ValueError("edge_mapper must be str or callable")
 
     if as_markdown:
         yield "```mermaid"
@@ -143,7 +142,7 @@ def _node_to_mermaid_flowchart_iter(
     yield "%% Edges:"
     for n in node:
         if not add_root and n._parent is node:
-            continue
+            continue  # Skip root edges
         parent_key = _id(n._parent)
         key = _id(n)
 
@@ -236,5 +235,4 @@ def node_to_mermaid_flowchart(
     elif format:
         raise RuntimeError("Need a filepath to convert Mermaid output.")
 
-    _write(target)
-    return
+    raise AssertionError  # pragma: no cover

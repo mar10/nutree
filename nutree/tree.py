@@ -31,6 +31,7 @@ from .common import (
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
+    MapperCallbackType,
     NodeFactoryType,
     PredicateCallbackType,
     ReprArgType,
@@ -526,7 +527,7 @@ class Tree:
         child nodes and return list of results."""
         res = []
         with self:
-            for n in self._root._children:  # pyright: ignore[reportOptionalIterable]
+            for n in self._root._children:  # type: ignore[reportOptionalIterable]
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -741,11 +742,11 @@ class Tree:
         *,
         add_root=True,
         unique_nodes=True,
-        graph_attrs=None,
-        node_attrs=None,
-        edge_attrs=None,
-        node_mapper=None,
-        edge_mapper=None,
+        graph_attrs: dict | None = None,
+        node_attrs: dict | None = None,
+        edge_attrs: dict | None = None,
+        node_mapper: MapperCallbackType | None = None,
+        edge_mapper: MapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -872,7 +873,7 @@ class Tree:
         for node in self:
             node_list.append(node)
             assert node._tree is self, node
-            assert node in node._parent._children, node  # pyright: ignore[reportOperatorIssue]
+            assert node in node._parent._children, node  # type: ignore[reportOperatorIssue]
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
