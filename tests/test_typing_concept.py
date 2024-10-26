@@ -8,16 +8,13 @@ try:
     from typing import Self
 except ImportError as e:
     print(f"ImportError: {e}")
-    from typing_extensions import Self
-    # _ = pytest.importorskip("typing_extensions")
-    # from typing_extensions import Self
+    from typing_extensions import Self  # noqa: F401
 
 
-# TData = TypeVar("TData")
 TNode = TypeVar("TNode", bound="Node")
 
 
-class Node(Generic[TNode]):
+class Node:
     def __init__(self, data: Any, parent: Self):
         self.data: Any = data
         self.parent: Self = parent
@@ -30,10 +27,10 @@ class Node(Generic[TNode]):
 
 
 class Tree(Generic[TNode]):
-    node_class: Type[TNode] = Node
+    node_factory: Type[TNode] = cast(Type[TNode], Node)
 
     def __init__(self):
-        self.root: TNode = self.node_class("__root__", cast(TNode, None))
+        self.root: TNode = self.node_factory("__root__", cast(TNode, None))
 
     def add(self, data: Any) -> TNode:
         node = self.root.add(data)
@@ -59,10 +56,12 @@ class TypedNode(Node):
 
 
 class TypedTree(Tree[TypedNode]):
-    node_class = TypedNode
+    node_factory = TypedNode
 
     def __init__(self):
-        self.root: TypedNode = TypedNode("__root__", "__root__", cast(TypedNode, None))
+        self.root: TypedNode = self.node_factory(
+            "__root__", "__root__", cast(TypedNode, None)
+        )
 
     def add(self, data: Any, kind: str) -> TypedNode:
         node = self.root.add(data, kind)
@@ -71,14 +70,16 @@ class TypedTree(Tree[TypedNode]):
 
 class TestTypingSelf:
     def test_tree(self):
-        tree = Tree()
+        tree = Tree[Node]()
         n = tree.add("top")
         n.add("child")
         tree.first().add("child2")
 
     def test_typed_tree(self):
         tree = TypedTree()
+
         tree.add("child", kind="child")
         tree.add("child2", kind="child")
 
+        # tree.first().children
         tree.first().add("child3", kind="child")
