@@ -19,7 +19,6 @@ from nutree.common import (
     IterMethod,
     KeyMapType,
     MapperCallbackType,
-    NodeFactoryType,
     PredicateCallbackType,
     SerializeMapperType,
     UniqueConstraintError,
@@ -270,7 +269,7 @@ class TypedNode(Node):
             return
 
         source_node = None
-        factory = self._tree._node_factory
+        factory = self._tree.node_factory
         if isinstance(child, Node):  # TypedNode):
             if deep is None:
                 deep = False
@@ -610,6 +609,8 @@ class TypedTree(Tree):
     See :ref:`typed-tree` for details.
     """
 
+    node_factory = TypedNode
+
     #: Default value for ``key_map`` argument when saving
     DEFAULT_KEY_MAP = {"data_id": "i", "str": "s", "kind": "k"}
     #: Default value for ``value_map`` argument when saving
@@ -621,25 +622,18 @@ class TypedTree(Tree):
         self,
         name: str | None = None,
         *,
-        factory: NodeFactoryType | None = None,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
     ):
-        if factory is None:
-            factory = TypedNode
         super().__init__(
             name,
-            factory=factory,
             calc_data_id=calc_data_id,
             forward_attrs=forward_attrs,
         )
         self._root = _SystemRootTypedNode(self)
 
-    def __getitem__(self, data: object) -> TypedNode:
-        return super().__getitem__(data)
-
     @staticmethod
-    def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
+    def deserialize_mapper(parent: TypedNode, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a

@@ -129,9 +129,6 @@ CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 #: Type of ``format(..., repr=)```
 ReprArgType = Union[str, Callable[["Node"], str]]
 
-#: Type of ``Tree(..., factory)```
-NodeFactoryType = Type["Node"]
-
 #: A dict of scalar values
 FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
 

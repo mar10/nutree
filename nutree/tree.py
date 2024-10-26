@@ -10,7 +10,19 @@ import json
 import random
 import threading
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, Literal, Optional, Union
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Iterable,
+    Iterator,
+    Literal,
+    Optional,
+    Type,
+    Union,
+    cast,
+)
 
 from nutree.common import (
     FILE_FORMAT_VERSION,
@@ -24,9 +36,9 @@ from nutree.common import (
     IterMethod,
     KeyMapType,
     MapperCallbackType,
-    NodeFactoryType,
     PredicateCallbackType,
     ReprArgType,
+    Self,
     SerializeMapperType,
     SortKeyType,
     TraversalCallbackType,
@@ -46,7 +58,7 @@ from nutree.mermaid import (
     MermaidFormatType,
     MermaidNodeMapperCallbackType,
 )
-from nutree.node import Node
+from nutree.node import Node, TNode
 from nutree.rdf import tree_to_rdf
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
@@ -63,16 +75,13 @@ check_python_version(MIN_PYTHON_VERSION_INFO)
 # ------------------------------------------------------------------------------
 # - Tree
 # ------------------------------------------------------------------------------
-class Tree:
+class Tree(Generic[TNode]):
     """
     A Tree object is a shallow wrapper around a single, invisible system root node.
     All visible toplevel nodes are direct children of this root node.
     Trees expose methods to iterate, search, copy, filter, serialize, etc.
 
     A `name` string can be passed for enhanced printing.
-
-    If a `factory` is passed, it must be a class that is derived from :class:`Node`
-    and will be used to instantiate node instances.
 
     `calc_data_id` can be a callback function that calculates data IDs from data
     objects (by default ``hash(data)`` is used).
@@ -81,6 +90,8 @@ class Tree:
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
     """
+
+    node_factory: Type[TNode] = cast(Type[TNode], Node)
 
     #: Default connector prefixes ``format(style=...)`` argument.
     DEFAULT_CONNECTOR_STYLE = "round43"
@@ -97,17 +108,15 @@ class Tree:
         self,
         name: str | None = None,
         *,
-        factory: NodeFactoryType | None = None,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
-        self._node_factory: NodeFactoryType = factory or Node
-        self._root: _SystemRootNode = _SystemRootNode(self)
+        self._root: TNode = cast(TNode, _SystemRootNode(self))
         self._node_by_id: dict[int, Node] = {}
-        self._nodes_by_data_id: dict[DataIdType, list[Node]] = {}
+        self._nodes_by_data_id: dict[DataIdType, list[Self]] = {}
         # Optional callback that calculates data_ids from data objects
         # hash(data) is used by default
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id

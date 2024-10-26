@@ -616,7 +616,7 @@ class Node:
             return n  # need to return a node
 
         source_node = None
-        factory = self._tree._node_factory
+        factory = self._tree.node_factory
         if isinstance(child, Node):
             if deep is None:
                 deep = False
