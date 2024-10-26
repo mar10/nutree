@@ -11,9 +11,8 @@ from typing import TYPE_CHECKING, Callable, Union
 from nutree.common import IterationControl
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
-    # from .typed_tree import TypedNode, TypedTree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
 # Export some common rdflib attributes, so they can be accessed as
 # `from nutree.rdf import Literal` without having to `import rdflib`

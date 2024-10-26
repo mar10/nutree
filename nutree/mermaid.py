@@ -12,10 +12,10 @@ from pathlib import Path
 from subprocess import CalledProcessError, check_output
 from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, Literal
 
-from .common import DataIdType
+from nutree.common import DataIdType
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
+    from nutree.node import Node
 
 MermaidDirectionType = Literal["LR", "RL", "TB", "TD", "BT"]
 MermaidFormatType = Literal["svg", "pdf", "png"]

@@ -19,13 +19,14 @@ class Item:
 
 
 class TestObjects:
-    def setup_method(self):
+    def setup_method(self, method):
         self.tree = Tree("fixture")
 
-    def teardown_method(self):
+    def teardown_method(self, method):
         self.tree = None
 
     def test_objects(self):
+        assert self.tree is not None
         tree = self.tree
 
         n = tree.add("Records")
@@ -115,7 +116,7 @@ class TestObjects:
             let_it_be_node.price = 9.99  # type: ignore
 
 
-class TestGenericNodeData:
+class TestDictWrapper:
     def setup_method(self):
         self.tree = Tree("fixture")
 
@@ -126,13 +127,13 @@ class TestGenericNodeData:
         d: dict = {"a": 1, "b": 2}
 
         with pytest.raises(TypeError, match="dict_inst must be a dictionary"):
-            _ = DictWrapper("foo")
+            _ = DictWrapper("foo")  # type: ignore
 
         with pytest.raises(TypeError):
-            _ = DictWrapper("foo", **d)
+            _ = DictWrapper("foo", **d)  # type: ignore
 
         with pytest.raises(TypeError):
-            _ = DictWrapper("foo", d)
+            _ = DictWrapper("foo", d)  # type: ignore
 
         with pytest.raises(ValueError):
             _ = DictWrapper(d, foo="bar")

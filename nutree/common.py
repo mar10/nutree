@@ -28,11 +28,18 @@ from typing import (
     Union,
 )
 
+try:
+    from typing import Self  # ruff: noqa: F401
+except ImportError:
+    from typing_extensions import Self  #  noqa
+
+
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
     TTree = TypeVar("TTree", bound=Tree)
+    TNode = TypeVar("TNode", bound=Node)
 
 #: Used as ID for the system root node
 ROOT_DATA_ID: str = "__root__"

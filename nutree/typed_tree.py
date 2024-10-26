@@ -10,7 +10,7 @@ from collections import Counter
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional
 
-from .common import (
+from nutree.common import (
     ROOT_DATA_ID,
     ROOT_NODE_ID,
     CalcIdCallbackType,
@@ -26,8 +26,8 @@ from .common import (
     ValueMapType,
     call_mapper,
 )
-from .node import Node
-from .tree import Tree
+from nutree.node import Node
+from nutree.tree import Tree
 
 
 class ANY_KIND:
