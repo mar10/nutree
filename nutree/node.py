@@ -121,7 +121,7 @@ class Node:
         if data_id is None:
             self._data_id: DataIdType = tree.calc_data_id(data)
         else:
-            self._data_id: DataIdType = data_id
+            self._data_id = data_id
 
         if node_id is None:
             self._node_id: int = id(self)
