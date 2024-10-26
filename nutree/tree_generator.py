@@ -97,7 +97,7 @@ class RangeRandomizer(Randomizer):
             return self.none_value
         if self.is_float:
             return random.uniform(self.min, self.max)
-        return random.randrange(self.min, self.max)  # pyright: ignore[reportArgumentType]
+        return random.randrange(self.min, self.max)  # type: ignore[reportArgumentType]
 
 
 class DateRangeRandomizer(Randomizer):
@@ -249,7 +249,7 @@ class TextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_quote(self.template)  # pyright: ignore[reportOptionalMemberAccess]
+        return fab.get_quote(self.template)  # type: ignore[reportOptionalMemberAccess]
 
 
 class BlindTextRandomizer(Randomizer):
@@ -295,7 +295,7 @@ class BlindTextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_lorem_paragraph(  # pyright: ignore[reportOptionalMemberAccess]
+        return fab.get_lorem_paragraph(  # type: ignore[reportOptionalMemberAccess]
             sentence_count=self.sentence_count,
             dialect=self.dialect,
             entropy=self.entropy,

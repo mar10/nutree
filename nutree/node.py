@@ -385,19 +385,19 @@ class Node:
     def get_siblings(self, *, add_self=False) -> list[Node]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if add_self:
-            return self._parent._children  # pyright: ignore[reportReturnType]
+            return self._parent._children  # type: ignore[reportReturnType]
         return [n for n in self._parent._children if n is not self]  # type: ignore
 
     def first_sibling(self) -> Node:
         """Return first sibling (may be self)."""
-        return self._parent._children[0]  # pyright: ignore[reportOptionalSubscript]
+        return self._parent._children[0]  # type: ignore[reportOptionalSubscript]
 
     def prev_sibling(self) -> Node | None:
         """Predecessor or None, if node is first sibling."""
         if self.is_first_sibling():
             return None
-        idx = self._parent._children.index(self)  # pyright: ignore[reportOptionalMemberAccess]
-        return self._parent._children[idx - 1]  # pyright: ignore[reportOptionalSubscript]
+        idx = self._parent._children.index(self)  # type: ignore[reportOptionalMemberAccess]
+        return self._parent._children[idx - 1]  # type: ignore[reportOptionalSubscript]
 
     def next_sibling(self) -> Node | None:
         """Return successor or None, if node is last sibling."""

@@ -521,7 +521,7 @@ class Tree:
         child nodes and return list of results."""
         res = []
         with self:
-            for n in self._root._children:  # pyright: ignore[reportOptionalIterable]
+            for n in self._root._children:  # type: ignore[reportOptionalIterable]
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -865,7 +865,7 @@ class Tree:
         for node in self:
             node_list.append(node)
             assert node._tree is self, node
-            assert node in node._parent._children, node  # pyright: ignore[reportOperatorIssue]
+            assert node in node._parent._children, node  # type: ignore[reportOperatorIssue]
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"

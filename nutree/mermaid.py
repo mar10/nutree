@@ -48,7 +48,7 @@ def _node_to_mermaid_flowchart_iter(
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
     node_mapper: MermaidNodeMapperCallbackType | str | None = None,
-    edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,  # pyright: ignore[reportRedeclaration]
+    edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,  # type: ignore[reportRedeclaration]
 ) -> Iterator[str]:
     """Generate Mermaid formatted output line-by-line.
 
