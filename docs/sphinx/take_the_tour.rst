@@ -27,8 +27,8 @@ common base class or implement a specific protocol.
         ╰── 'ee'
 
 
-Strings can be added to a tree, but in a real-world scenario we want
-need to handle ordinary objects:
+Strings can be added to a tree, but in a real-world scenario we want to
+handle ordinary objects:
 
 Setup some sample classes and objects
 -------------------------------------

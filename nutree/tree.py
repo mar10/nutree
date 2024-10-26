@@ -808,8 +808,9 @@ class Tree:
         add_root: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: MermaidNodeMapperCallbackType | None = None,
-        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
+        root_shape: str | None = None,
+        node_mapper: MermaidNodeMapperCallbackType | str | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
@@ -826,6 +827,7 @@ class Tree:
             add_self=add_root,
             unique_nodes=unique_nodes,
             headers=headers,
+            root_shape=root_shape,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

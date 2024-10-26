@@ -5,15 +5,13 @@
 
 import json
 import pprint
-import shutil
 import tempfile
 import zipfile
-from pathlib import Path
-from typing import Tuple
+from typing import Any, Tuple
 
 import pytest
 from nutree import Node, Tree
-from nutree.common import FILE_FORMAT_VERSION
+from nutree.common import FILE_FORMAT_VERSION, DataIdType
 from nutree.diff import DiffClassification, diff_node_formatter
 from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree
 
@@ -73,6 +71,7 @@ class TestSerialize:
         assert tree.first_child() == tree_2.first_child()
 
         a11 = tree_2.find("a11")
+        assert a11
         assert a11.is_clone(), "Restored clone"
         assert len(tree_2.find_all("a11")) == 2
 
@@ -300,6 +299,7 @@ class TestSerialize:
         assert tree.first_child(kind=ANY_KIND) == tree_2.first_child(kind=ANY_KIND)
 
         fail1 = tree_2.find("fail1")
+        assert fail1
         assert fail1.is_clone(), "Restored clone"
         assert len(tree_2.find_all("fail1")) == 2
 
@@ -319,7 +319,7 @@ class TestSerialize:
             ╰── TypedNode<kind=manager, Person<Dave, 54>, data_id='{456-456}'>
         """
 
-        def _calc_id(tree, data):
+        def _calc_id(tree: Tree, data: Any) -> DataIdType:
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
                 return data.guid
@@ -804,68 +804,3 @@ class TestDot:
         print(res)
         assert 'node  [style="filled" fillcolor="#e0e0e0"]' in res
         assert '[label="C" color="#00c000"]' in res
-
-
-class TestMermaid:
-    def test_serialize_mermaid(self):
-        """Save/load as object tree with clones."""
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".md") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                # add_root=False,
-                # headers=["classDef default fill:#f9f,stroke:#333,stroke-width:1px;"],
-                # node_mapper=lambda node: f"{node}",
-                # unique_nodes=False,
-                # format="png",
-                # mmdc_options={"--theme": "forest"},
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.md",
-                )
-
-    def test_serialize_mermaid_typed(self):
-        """Save/load as  object tree with clones."""
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".md") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                title="Typed Tree",
-                direction="LR",
-                # add_root=False,
-                # node_mapper=lambda node: f"{node}",
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_2.md",
-                )
-
-    # @pytest.mark.xfail(reason="mmdc may not be installed")
-    def test_serialize_mermaid_svg(self):
-        """Save/load as typed object tree with clones."""
-        if not shutil.which("mmdc"):
-            raise pytest.skip("mmdc not installed")
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".png") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                title="Typed Tree",
-                direction="LR",
-                format="svg",
-                # add_root=False,
-                # node_mapper=lambda node: f"{node}",
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_2.png",
-                )

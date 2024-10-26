@@ -7,6 +7,10 @@
   - Enforce that the same object is not added multiple times to one parent.
   - Rename `GenericNodeData` to `DictWrapper` and remove support for attribut access.
   - Drop support for Python 3.8
+  - mermaid:
+    - node mapper now must return the shape, e.g. `("TEXT")` instead of only the text.
+    - edge mapper as string has new `node` context
+    - new root_shape
 - tree.to_rdf() is now available for Tree (not only TypedTree).
 - New method `node.up()` allows method chaining when adding nodes.
 - Passes more pyright 'basic' checks.

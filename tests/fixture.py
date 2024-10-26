@@ -12,7 +12,7 @@ import time
 import timeit
 from random import randint
 from textwrap import dedent, indent
-from typing import List, Optional, Union
+from typing import IO, List, Optional, Union
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -470,11 +470,12 @@ class WritableTempFile:
     """
 
     def __init__(self, mode="w", *, encoding=None, suffix=None):
+        self.temp_file: IO[str] = None  # type: ignore
         self.mode = mode
         self.encoding = encoding
         self.suffix = suffix
 
-    def __enter__(self):
+    def __enter__(self) -> IO[str]:
         self.temp_file = tempfile.NamedTemporaryFile(
             self.mode, encoding=self.encoding, suffix=self.suffix, delete=False
         )

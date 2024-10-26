@@ -156,7 +156,11 @@ class Node:
         """
         if self._tree._forward_attrs:
             return getattr(self._data, name)
-        raise AttributeError
+        # Allow calling simple methods from within TEMPLATE.format(),
+        # e.g. `"{node.path()}"`:
+        if name.endswith("()"):
+            return getattr(self, name[:-2])()
+        raise AttributeError(repr(name))
 
     # def __iadd__(self, other) -> None:
     #     """Add child node(s)."""
@@ -1579,8 +1583,9 @@ class Node:
         add_self: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: MermaidNodeMapperCallbackType | None = None,
-        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
+        root_shape: str | None = None,
+        node_mapper: MermaidNodeMapperCallbackType | str | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
@@ -1598,6 +1603,7 @@ class Node:
             add_root=add_self,
             unique_nodes=unique_nodes,
             headers=headers,
+            root_shape=root_shape,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )
