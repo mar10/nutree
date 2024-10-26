@@ -3,10 +3,12 @@
 ## 0.10.0 (unreleased)
 
 - BREAKING:
-  - Rename `shadow_attrs` argument to `forward_attrs`
-  - Enforce that the same object is not added multiple times to one parent
+  - Rename `shadow_attrs` argument to `forward_attrs`.
+  - Enforce that the same object is not added multiple times to one parent.
   - Rename `GenericNodeData` to `DictWrapper` and remove support for attribut access.
-- tree.to_rdf() is now available for Tree (not only TypedTree)
+  - Drop support for Python 3.8
+  - mermaid: change mapper signatures and defaults
+- tree.to_rdf() is now available for Tree (not only TypedTree).
 - New method `node.up()` allows method chaining when adding nodes.
 - Passes more pyright 'basic' checks.
 

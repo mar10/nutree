@@ -156,7 +156,11 @@ class Node:
         """
         if self._tree._forward_attrs:
             return getattr(self._data, name)
-        raise AttributeError
+        # Allow calling simple methods from within TEMPLATE.format(),
+        # e.g. `"{node.path()}"`:
+        if name.endswith("()"):
+            return getattr(self, name[:-2])()
+        raise AttributeError(repr(name))
 
     # def __iadd__(self, other) -> None:
     #     """Add child node(s)."""
@@ -636,12 +640,13 @@ class Node:
         else:
             node = factory(child, parent=self, data_id=data_id, node_id=node_id)
 
+        if before is True:
+            before = 0  # prepend
+
         children = self._children
         if children is None:
             assert before in (None, True, int, False)
             self._children = [node]
-        elif before is True:  # prepend
-            children.insert(0, node)
         elif isinstance(before, int):
             children.insert(before, node)
         elif before:
@@ -744,11 +749,9 @@ class Node:
         See :meth:`add_child` for a description of `before`.
         """
         assert new_parent is not None
-        # if new_parent is None:
-        #     new_parent = self._tree._root
-        # elif
         if not isinstance(new_parent, Node):
             # it's a Tree
+            assert isinstance(new_parent, self.tree.__class__)
             new_parent = new_parent._root
 
         if new_parent._tree is not self._tree:
@@ -759,12 +762,13 @@ class Node:
             self._parent._children = None
         self._parent = new_parent
 
+        if before is True:
+            before = 0  # prepend
+
         target_siblings = new_parent._children
         if target_siblings is None:
             assert before in (None, True, False, 0), before
             new_parent._children = [self]  # type: ignore
-        elif before is True:  # prepend
-            target_siblings.insert(0, self)
         elif isinstance(before, Node):
             assert before._parent is new_parent, before
             idx = target_siblings.index(before)  # raise ValueError if not found
@@ -906,24 +910,27 @@ class Node:
                 parent_stack.append((False, n))
 
                 res = call_predicate(predicate, n)
-                if isinstance(res, SkipBranch):
+
+                if res is None or res is False:  # Add only if has a `true` descendant
+                    _visit(n)
+                elif res is True:  # Add this node (and also check children)
+                    p = _create_parents()
+                    # p.add_child(n)
+                    _visit(n)
+                elif isinstance(res, SkipBranch):
                     if res.and_self is False:
                         # Add the node itself if user explicitly returned
                         # `SkipBranch(and_self=False)`
                         p = _create_parents()
-                        p.add_child(n)
+                        # p.add_child(n)
                 elif isinstance(res, StopTraversal):
                     raise res
                 elif isinstance(res, SelectBranch):
                     # Unconditionally copy whole branch: no need to visit children
                     p = _create_parents()
                     p._add_from(n)
-                elif res in (None, False):  # Add only if has a `true` descendant
-                    _visit(n)
-                elif res is True:  # Add this node (and also check children)
-                    p = _create_parents()
-                    p.add_child(n)
-                    _visit(n)
+                else:
+                    raise ValueError(f"Invalid predicate return value: {res}")
 
                 parent_stack.pop()
             return
@@ -958,7 +965,7 @@ class Node:
 
             for n in parent.children:
                 res = call_predicate(predicate, n)
-                if res in (None, False):  # Keep only if has a `true` descendant
+                if res is None or res is False:  # Keep only if has a `true` descendant
                     if _visit(n):
                         must_keep = True
                     else:
@@ -971,10 +978,13 @@ class Node:
                     must_keep = True
                 elif isinstance(res, SkipBranch):
                     if res.and_self is False:
-                        remove_nodes = n.children
+                        must_keep = True
+                        remove_nodes = n.children.copy()
                     else:
                         remove_nodes.append(n)
                 elif isinstance(res, StopTraversal):
+                    for n in remove_nodes:
+                        n.remove()
                     raise res
 
             for n in remove_nodes:
@@ -1052,8 +1062,8 @@ class Node:
         callback: TraversalCallbackType,
         *,
         add_self=False,
-        method=IterMethod.PRE_ORDER,
-        memo=None,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        memo: Any = None,
     ) -> None | Any:
         """Call `callback(node, memo)` for all subnodes.
 
@@ -1162,7 +1172,7 @@ class Node:
         return self._iter_level(revert=True, toggle=True)
 
     def iterator(
-        self, method=IterMethod.PRE_ORDER, *, add_self=False
+        self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
     ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         try:
@@ -1573,8 +1583,9 @@ class Node:
         add_self: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: MermaidNodeMapperCallbackType | None = None,
-        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
+        root_shape: str | None = None,
+        node_mapper: MermaidNodeMapperCallbackType | str | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
@@ -1592,6 +1603,7 @@ class Node:
             add_root=add_self,
             unique_nodes=unique_nodes,
             headers=headers,
+            root_shape=root_shape,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

@@ -31,6 +31,7 @@ from .common import (
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
+    MapperCallbackType,
     NodeFactoryType,
     PredicateCallbackType,
     ReprArgType,
@@ -274,12 +275,13 @@ class Tree:
         """
         return len(self._nodes_by_data_id)
 
-    def serialize_mapper(self, node: Node, data: dict) -> dict | None:
+    @classmethod
+    def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
         """Used as default `mapper` argument for :meth:`save`."""
         return data
 
-    @staticmethod
-    def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
+    @classmethod
+    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
@@ -306,7 +308,11 @@ class Tree:
         return self._root.calc_height()
 
     def visit(
-        self, callback: TraversalCallbackType, *, method=IterMethod.PRE_ORDER, memo=None
+        self,
+        callback: TraversalCallbackType,
+        *,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        memo: Any = None,
     ) -> Any | None:
         """Call `callback(node, memo)` for all nodes.
 
@@ -736,11 +742,11 @@ class Tree:
         *,
         add_root=True,
         unique_nodes=True,
-        graph_attrs=None,
-        node_attrs=None,
-        edge_attrs=None,
-        node_mapper=None,
-        edge_mapper=None,
+        graph_attrs: dict | None = None,
+        node_attrs: dict | None = None,
+        edge_attrs: dict | None = None,
+        node_mapper: MapperCallbackType | None = None,
+        edge_mapper: MapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -803,8 +809,9 @@ class Tree:
         add_root: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
-        node_mapper: MermaidNodeMapperCallbackType | None = None,
-        edge_mapper: MermaidEdgeMapperCallbackType | None = None,
+        root_shape: str | None = None,
+        node_mapper: MermaidNodeMapperCallbackType | str | None = None,
+        edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
@@ -821,6 +828,7 @@ class Tree:
             add_self=add_root,
             unique_nodes=unique_nodes,
             headers=headers,
+            root_shape=root_shape,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )

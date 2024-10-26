@@ -218,20 +218,23 @@ we can write a Markdown file with embedded Mermaid flowchart like so::
     flowchart TD
 
     %% Nodes:
-    1("A")
-    2("a1")
-    3("a11")
-    4("a12")
-    5("a2")
-    6("B")
-    7("b1")
-    8("b11")
+    0(["Root"])
+    1["A"]
+    2["a1"]
+    3["a11"]
+    4["a12"]
+    5["a2"]
+    6["B"]
+    7["b1"]
+    8["b11"]
 
     %% Edges:
+    0 --> 1
     1 --> 2
     2 --> 3
     2 --> 4
     1 --> 5
+    0 --> 6
     6 --> 7
     7 --> 3
     7 --> 8
@@ -242,7 +245,7 @@ However we can also create a rendered image file instead::
 
     tree.to_mermaid_flowchart("graph.png", format="png")
 
-.. image:: test_mermaid.png
+.. image:: test_mermaid_default.png
 
 
 This graph may be rendered in different formats like so (using a TypedTree
@@ -256,7 +259,7 @@ example here)::
         mmdc_options={"--theme": "forest"},
     )
 
-.. image:: test_mermaid_typed.png
+.. image:: test_mermaid_typed_forest.png
 
 .. note::
     Writing of plain Markdown format is natively implemented by `nutree`.

@@ -114,18 +114,20 @@ access ``node.data.age`` as ``node.age`` for example::
     assert alice.name == "Person<Alice, 23>"
 
 .. note::
-    The `shadow_attrs` feature is readonly, so you cannot modify the object
-    through the shadow attributes. You need to access the object directly for that.
+    The `forward_attrs` feature is readonly, so we cannot modify the object
+    through the forwarded attributes. 
+    We need to access the object directly for that, e.g. ``node.data.age = 24``.
 
 .. warning::
-
     Aliasing only works for attribute names that are **not** part of the native 
-    :class:`~nutree.node.Node` data model. So these attributes will always return
-    the native values:
+    :class:`~nutree.node.Node` data model. So the following attributes will 
+    always return the native values:
     `children`, `data_id`, `data`, `kind`, `meta`, `node_id`, `parent`, `tree`, 
-    and all other methods and properties.
+    and all other methods and properties, like `parent`, `name`, etc.
 
-    Note also that shadow attributes are readonly.
+    Use the `forward_attrs` feature with caution, as it can lead to unexpected
+    behavior, especially when new native attributes are added to `Node` in 
+    future releases!
 
 
 .. _generic-node-data:
@@ -226,7 +228,7 @@ methods::
     This means that two instances of DictWrapper with the same dict content
     will have different hash values.
 
-.. info::
+.. note::
     The `forward_attrs` feature is readonly, so you cannot modify the dict
     through the forwarded attributes. You need to access the dict directly for 
     that.

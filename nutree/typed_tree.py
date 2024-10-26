@@ -171,7 +171,7 @@ class TypedNode(Node):
         for n in pc:
             if n._kind == self._kind:
                 return n
-        raise AssertionError("Internal error")
+        raise AssertionError("Internal error")  # pragma: no cover
 
     def last_sibling(self, *, any_kind=False) -> TypedNode:
         """Return last sibling `of the same kind` (may be self)."""
@@ -181,7 +181,7 @@ class TypedNode(Node):
         for n in reversed(pc):
             if n._kind == self._kind:
                 return n
-        raise AssertionError("Internal error")
+        raise AssertionError("Internal error")  # pragma: no cover
 
     def prev_sibling(self, *, any_kind=False) -> TypedNode | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""
@@ -240,11 +240,11 @@ class TypedNode(Node):
         self,
         child: TypedNode | TypedTree | Any,
         *,
-        kind: str = None,
+        kind: str | None = None,
         before: TypedNode | bool | int | None = None,
-        deep: bool = None,
-        data_id=None,
-        node_id=None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ) -> TypedNode:
         """See ..."""
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
@@ -331,10 +331,10 @@ class TypedNode(Node):
         self,
         child: TypedNode | TypedTree | Any,
         *,
-        kind: str = None,
-        deep=None,
-        data_id=None,
-        node_id=None,
+        kind: str | None = None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ):
         """Append a new subnode.
 
@@ -353,10 +353,10 @@ class TypedNode(Node):
         self,
         child: TypedNode | TypedTree | Any,
         *,
-        kind: str = None,
-        deep=None,
-        data_id=None,
-        node_id=None,
+        kind: str | None = None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ):
         """Prepend a new subnode.
 
@@ -391,9 +391,9 @@ class TypedNode(Node):
         self,
         child: TypedNode | TypedTree | Any,
         *,
-        deep=None,
-        data_id=None,
-        node_id=None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ) -> TypedNode:
         """Add a new node **of same kind** after `self`.
 
@@ -443,7 +443,7 @@ class TypedNode(Node):
         return super().filtered(predicate=predicate)
 
     def iterator(
-        self, method=IterMethod.PRE_ORDER, *, add_self=False
+        self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
     ) -> Iterator[Node]:
         """Generator that walks the hierarchy."""
         return super().iterator(method=method, add_self=add_self)
@@ -569,11 +569,11 @@ class TypedNode(Node):
         *,
         add_self=False,
         unique_nodes=True,
-        graph_attrs: dict = None,
-        node_attrs: dict = None,
-        edge_attrs: dict = None,
-        node_mapper: MapperCallbackType = None,
-        edge_mapper: MapperCallbackType = None,
+        graph_attrs: dict | None = None,
+        node_attrs: dict | None = None,
+        edge_attrs: dict | None = None,
+        node_mapper: MapperCallbackType | None = None,
+        edge_mapper: MapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 

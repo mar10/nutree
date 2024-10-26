@@ -32,10 +32,14 @@ MermaidEdgeMapperCallbackType = Callable[[int, "Node", int, "Node"], str]
 
 DEFAULT_DIRECTION: MermaidDirectionType = "TD"
 
-DEFAULT_NODE_TEMPLATE: str = "{node.name}"
-
-DEFAULT_EDGE_TEMPLATE: str = "{from_id} --> {to_id}"
-DEFAULT_EDGE_TEMPLATE_TYPED: str = '{from_id}-- "{kind}" -->{to_id}'
+#: Default Mermaid node shape templates
+#: See https://mermaid.js.org/syntax/flowchart.html#node-shapes
+DEFAULT_ROOT_SHAPE: str = '(["{node.name}"])'
+DEFAULT_NODE_SHAPE: str = '["{node.name}"]'
+#: Default Mermaid edge shape templates
+#: See https://mermaid.js.org/syntax/flowchart.html#links-between-nodes
+DEFAULT_EDGE: str = "{from_id} --> {to_id}"
+DEFAULT_EDGE_TYPED: str = '{from_id}-- "{to_node.kind}" -->{to_id}'
 
 
 def _node_to_mermaid_flowchart_iter(
@@ -47,6 +51,7 @@ def _node_to_mermaid_flowchart_iter(
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
+    root_shape: str | None = None,
     node_mapper: MermaidNodeMapperCallbackType | str | None = None,
     edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,  # type: ignore[reportRedeclaration]
 ) -> Iterator[str]:
@@ -54,7 +59,9 @@ def _node_to_mermaid_flowchart_iter(
 
     https://mermaid.js.org/syntax/flowchart.html
     Args:
-        mapper (method):
+        node_mapper (method):
+            See https://mermaid.js.org/syntax/flowchart.html#node-shapes
+        edge_mapper (method):
         add_self (bool):
         unique_nodes (bool):
     """
@@ -63,17 +70,20 @@ def _node_to_mermaid_flowchart_iter(
     def _id(n: Node) -> DataIdType:
         return n._data_id if unique_nodes else n._node_id
 
+    if root_shape is None:
+        root_shape = DEFAULT_ROOT_SHAPE
+
     if node_mapper is None:
-        node_mapper = lambda node: DEFAULT_NODE_TEMPLATE.format(node=node)
+        node_mapper = lambda node: DEFAULT_NODE_SHAPE.format(node=node)
     elif isinstance(node_mapper, str):
-        templ = node_mapper
-        node_mapper = lambda node: templ.format(node=node)
+        node_templ = node_mapper
+        node_mapper = lambda node: node_templ.format(node=node)
 
     if isinstance(edge_mapper, str):
-        templ = edge_mapper
+        edge_templ = edge_mapper
 
         def edge_mapper(from_id, from_node, to_id, to_node):
-            return templ.format(
+            return edge_templ.format(
                 from_id=from_id, from_node=from_node, to_id=to_id, to_node=to_node
             )
 
@@ -81,7 +91,7 @@ def _node_to_mermaid_flowchart_iter(
 
         def edge_mapper(from_id, from_node, to_id, to_node):
             kind = getattr(to_node, "kind", None)
-            templ = DEFAULT_EDGE_TEMPLATE_TYPED if kind else DEFAULT_EDGE_TEMPLATE
+            templ = DEFAULT_EDGE_TYPED if kind else DEFAULT_EDGE
             return templ.format(
                 from_id=from_id,
                 from_node=from_node,
@@ -89,9 +99,8 @@ def _node_to_mermaid_flowchart_iter(
                 to_node=to_node,
                 kind=kind,
             )
-
-    else:
-        assert callable(edge_mapper), "edge_mapper must be str or callable"
+    elif not callable(edge_mapper):  # pragma: no cover
+        raise ValueError("edge_mapper must be str or callable")
 
     if as_markdown:
         yield "```mermaid"
@@ -116,8 +125,7 @@ def _node_to_mermaid_flowchart_iter(
     yield "%% Nodes:"
     if add_root:
         id_to_idx[_id(node)] = 0
-        name = node.name
-        yield f'0{{{{"{name}"}}}}'
+        yield "0" + root_shape.format(node=node)
 
     idx = 1
     for n in node:
@@ -126,15 +134,15 @@ def _node_to_mermaid_flowchart_iter(
             continue  # we use the initial clone instead
         id_to_idx[key] = idx
 
-        name = node_mapper(n)
-        yield f'{idx}("{name}")'
+        shape = node_mapper(n)
+        yield f"{idx}{shape}"
         idx += 1
 
     yield ""
     yield "%% Edges:"
     for n in node:
         if not add_root and n._parent is node:
-            continue
+            continue  # Skip root edges
         parent_key = _id(n._parent)
         key = _id(n)
 
@@ -159,8 +167,9 @@ def node_to_mermaid_flowchart(
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,
-    node_mapper: MermaidNodeMapperCallbackType | None = None,
-    edge_mapper: MermaidEdgeMapperCallbackType | None = None,
+    root_shape: str | None = None,
+    node_mapper: MermaidNodeMapperCallbackType | str | None = None,
+    edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
 ) -> None:
     """Write a Mermaid flowchart to a file or stream."""
     if format:
@@ -178,6 +187,7 @@ def node_to_mermaid_flowchart(
             add_root=add_root,
             unique_nodes=unique_nodes,
             headers=headers,
+            root_shape=root_shape,
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         ):
@@ -209,12 +219,12 @@ def node_to_mermaid_flowchart(
 
             try:
                 check_output(cmd)
-            except CalledProcessError as e:
+            except CalledProcessError as e:  # pragma: no cover
                 raise RuntimeError(
                     f"Could not convert Mermaid output using {cmd}.\n"
                     f"Error: {e.output.decode()}"
                 ) from e
-            except FileNotFoundError as e:
+            except FileNotFoundError as e:  # pragma: no cover
                 raise RuntimeError(
                     f"Could not convert Mermaid output using {cmd}.\n"
                     "Mermaid CLI (mmdc) not found.\n"
@@ -225,5 +235,4 @@ def node_to_mermaid_flowchart(
     elif format:
         raise RuntimeError("Need a filepath to convert Mermaid output.")
 
-    _write(target)
-    return
+    raise AssertionError  # pragma: no cover

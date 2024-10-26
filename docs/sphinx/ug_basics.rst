@@ -11,6 +11,65 @@ Basics
     navigation, searching, and iteration.
 
 
+Data Model
+----------
+
+A :class:`~nutree.tree.Tree` object is a shallow wrapper around a single, 
+invisible system root node. All visible toplevel nodes are direct children of
+this root node. |br|
+Trees expose methods to iterate, search, copy, filter, serialize, etc.
+
+A :class:`~nutree.node.Node` represents a single element in the tree. |br|
+It is a shallow wrapper around a user data instance, that adds navigation,
+modification, and other functionality.
+
+Main `Node` attributes are initialized on construction:
+
+parent (`Node`, readonly)
+  The direct ancestor (``node.parent`` is `None` for toplevel nodes).
+  Use :meth:`~nutree.node.Node.move_to` to modify.
+
+children (`List[Node]`, readonly)
+  List of direct subnodes, may be empty.
+  Children are added or removed using methods like
+  :meth:`~nutree.tree.Tree.add`,
+  :meth:`~nutree.node.Node.prepend_child`,
+  :meth:`~nutree.node.Node.remove`,
+  :meth:`~nutree.node.Node.remove_children`,
+  :meth:`~nutree.node.Node.move_to`, etc.
+
+data (`object|str`, readonly)
+  The user data payload. 
+  This may be a simple string or an arbitrary object instance. |br|
+  Internally the tree maintains a map from `data_id` to the referencing `Nodes`.
+  Use :meth:`~nutree.node.Node.set_data` to modify this value. |br|
+  The same data instance may be referenced by multiple nodes. In this case we 
+  call those nodes `clones`.
+
+data_id (int, readonly):
+  The unique key of a `data` instance. This value is calculated as ``hash(data)`` 
+  by default, but can be set to a custom value. |br|
+  Use :meth:`~nutree.node.Node.set_data` to modify this value.
+
+meta (dict, readonly):
+  :class:`~nutree.node.Node` uses 
+  `__slots__ <https://docs.python.org/3/reference/datamodel.html?highlight=__slots__#slots>`_ 
+  for memory efficiency.
+  As a side effect, it is not possible to assign new attributes to a node instance. |br|
+  The `meta` slot can be used to attach arbitrary key/value pairs to a node. |br|
+  Use :meth:`~nutree.node.Node.get_meta`, :meth:`~nutree.node.Node.set_meta`, 
+  :meth:`~nutree.node.Node.update_meta`, and :meth:`~nutree.node.Node.clear_meta`,  
+  to modify this value.
+
+node_id (int, readonly):
+  The unique key of a `Node` instance. This value is calculated as ``id(node)`` 
+  by default, but can be set to a custom value in the constructor.
+  It cannot be changed later.
+
+kind (str, readonly):
+  Used by :class:`~nutree.typed_tree.TypedNode` (see :ref:`Typed child nodes <typed-tree>`).
+
+
 Adding Nodes
 ------------
 
