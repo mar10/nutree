@@ -10,6 +10,7 @@ notebook = "*"
 pandoc = "*" # jupyter nbconvert --to rst
 pre-commit = "*"
 pydot = "*"
+pyright = "*"
 pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"

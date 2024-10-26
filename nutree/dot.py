@@ -17,7 +17,7 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from .tree import Tree
 
 try:
-    import pydot  # type: ignore
+    import pydot
 except ImportError:  # pragma: no cover
     pydot = None
 

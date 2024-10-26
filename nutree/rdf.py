@@ -22,7 +22,7 @@ try:
     import rdflib
     from rdflib import Graph, IdentifiedNode, Literal, URIRef
     from rdflib.namespace import RDF, XSD, DefinedNamespace, Namespace
-except ImportError:
+except ImportError:  # pragma: no cover
     rdflib = None
     Graph = IdentifiedNode = Literal = URIRef = None
     RDF = XSD = DefinedNamespace = Namespace = None
@@ -48,12 +48,12 @@ if Namespace:
 
         _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
 
-else:  # rdflib unavailable
+else:  # rdflib unavailable # pragma: no cover
     NUTREE_NS = None
 
 
 def _make_graph() -> Graph:
-    if not rdflib:
+    if not rdflib:  # pragma: no cover
         raise RuntimeError("Need rdflib installed.")
     graph = Graph()
 
