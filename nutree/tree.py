@@ -18,7 +18,6 @@ from typing import (
     Iterable,
     Iterator,
     Literal,
-    Optional,
     Type,
     Union,
     cast,
@@ -385,8 +384,8 @@ class Tree(Generic[TNode]):
         self,
         child: TNode | Self | Any,
         *,
-        before: Optional[TNode | bool | int] = None,
-        deep: Optional[bool] = None,
+        before: TNode | bool | int | None = None,
+        deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id=None,
     ) -> TNode:
@@ -408,8 +407,8 @@ class Tree(Generic[TNode]):
     def copy(
         self,
         *,
-        name: Optional[str] = None,
-        predicate: Optional[PredicateCallbackType] = None,
+        name: str | None = None,
+        predicate: PredicateCallbackType | None = None,
     ) -> Self:
         """Return a copy of this tree.
 
@@ -463,7 +462,7 @@ class Tree(Generic[TNode]):
         *,
         match: PredicateCallbackType | None = None,
         data_id: DataIdType | None = None,
-        max_results: Optional[int] = None,
+        max_results: int | None = None,
     ) -> list[TNode]:
         """Return a list of matching nodes (list may be empty).
 
@@ -520,9 +519,7 @@ class Tree(Generic[TNode]):
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort(
-        self, *, key: Optional[SortKeyType] = None, reverse=False, deep=True
-    ) -> None:
+    def sort(self, *, key: SortKeyType | None = None, reverse=False, deep=True) -> None:
         """Sort toplevel nodes (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by

@@ -15,7 +15,6 @@ from typing import (
     Any,
     Iterable,
     Iterator,
-    Optional,
     TypeVar,
     cast,
 )
@@ -278,7 +277,7 @@ class Node:
         else:
             self._meta[key] = value
 
-    def clear_meta(self, key: Optional[str] = None) -> None:
+    def clear_meta(self, key: str | None = None) -> None:
         """Reset all metadata or a distinct entry."""
         if key is None:
             self._meta = None
@@ -311,7 +310,7 @@ class Node:
         data,
         *,
         data_id: DataIdType | None = None,
-        with_clones: Optional[bool] = None,
+        with_clones: bool | None = None,
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         if not data and not data_id:
@@ -561,8 +560,8 @@ class Node:
         self,
         child: Self | Tree | Any,
         *,
-        before: Optional[Self | bool | int] = None,
-        deep: Optional[bool] = None,
+        before: Self | bool | int | None = None,
+        deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id=None,
     ) -> Self:
@@ -646,11 +645,13 @@ class Node:
             # If creating an inherited node, use the parent class as constructor
             # child_class = child.__class__
 
-            node = self.__class__(
+            node = self.tree.node_factory(
                 source_node.data, parent=self, data_id=data_id, node_id=node_id
             )
         else:
-            node = self.__class__(child, parent=self, data_id=data_id, node_id=node_id)
+            node = self.tree.node_factory(
+                child, parent=self, data_id=data_id, node_id=node_id
+            )
 
         if before is True:
             before = 0  # prepend
@@ -673,7 +674,7 @@ class Node:
             children.append(node)
 
         if deep and source_node:
-            node._add_from(source_node)  # pyright: ignore[reportArgumentType]
+            node._add_from(source_node)
 
         return node
 
@@ -753,7 +754,7 @@ class Node:
         self,
         new_parent: Self | Tree[Self],
         *,
-        before: Optional[Self | bool | int] = None,
+        before: Self | bool | int | None = None,
     ):
         """Move this node to another parent.
 
@@ -828,7 +829,7 @@ class Node:
         return
 
     def copy(
-        self, *, add_self=True, predicate: Optional[PredicateCallbackType] = None
+        self, *, add_self=True, predicate: PredicateCallbackType | None = None
     ) -> Tree:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
@@ -847,7 +848,7 @@ class Node:
         target: Self | Tree,
         *,
         add_self=True,
-        before: Optional[Self | bool | int] = None,
+        before: Self | bool | int | None = None,
         deep: bool = False,
     ) -> Self:
         """Copy this node to another parent and return the new node.
@@ -874,7 +875,7 @@ class Node:
         return res  # type: ignore
 
     def _add_from(
-        self, other: Self, *, predicate: Optional[PredicateCallbackType] = None
+        self, other: Self, *, predicate: PredicateCallbackType | None = None
     ) -> None:
         """Append copies of all source descendants to self.
 
@@ -1272,7 +1273,7 @@ class Node:
     find = find_first
 
     def sort_children(
-        self, *, key: Optional[SortKeyType] = None, reverse=False, deep=False
+        self, *, key: SortKeyType | None = None, reverse=False, deep=False
     ) -> None:
         """Sort child nodes.
 

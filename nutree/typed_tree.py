@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional
+from typing import IO, Any, Iterator
 
 from nutree.common import (
     ROOT_DATA_ID,
@@ -60,9 +60,9 @@ class TypedNode(Node):
         data,
         *,
         parent: TypedNode,
-        data_id: Optional[DataIdType] = None,
-        node_id: Optional[int] = None,
-        meta: Optional[dict] = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
+        meta: dict | None = None,
     ):
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta

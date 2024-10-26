@@ -7,7 +7,7 @@ Methods and classes to support file system related functionality.
 from datetime import datetime
 from operator import attrgetter, itemgetter
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 from nutree.tree import Node, Tree
 
@@ -18,8 +18,8 @@ class FileSystemEntry:
         name: str,
         *,
         is_dir: bool = False,
-        size: Optional[int] = None,
-        mdate: Optional[float] = None,
+        size: Union[int, None] = None,
+        mdate: Union[float, None] = None,
     ):
         self.name = name
         self.is_dir = is_dir
