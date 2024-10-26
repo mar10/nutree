@@ -9,6 +9,7 @@ ipykernel = "*"
 notebook = "*"
 pandoc = "*" # jupyter nbconvert --to rst
 pre-commit = "*"
+pydot = "*"
 pytest = "*"
 pytest-cov = "*"
 PyYAML = "*"

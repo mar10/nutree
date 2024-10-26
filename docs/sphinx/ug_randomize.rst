@@ -141,8 +141,8 @@ May produce::
 
 **A few things to note**
 
-- The generated tree contains nodes :class:`~common.DictWrapper` as ``node.data``
-  value..
+- The generated tree contains :class:`~common.DictWrapper` instances as ``node.data``
+  value.
 
 - Every ``node.data`` contains items from the structure definition except for
   the ones starting with a colon, for example ``":count"``. |br|
