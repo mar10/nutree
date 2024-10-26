@@ -115,12 +115,12 @@ class Tree(Generic[TNode]):
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
         self._root: TNode = cast(TNode, _SystemRootNode(self))
-        self._node_by_id: dict[int, Node] = {}
-        self._nodes_by_data_id: dict[DataIdType, list[Self]] = {}
+        self._node_by_id: dict[int, TNode] = {}
+        self._nodes_by_data_id: dict[DataIdType, list[TNode]] = {}
         # Optional callback that calculates data_ids from data objects
         # hash(data) is used by default
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
-        # Enable aliasing when accessing Node instances.
+        # Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
 
     def __repr__(self):
@@ -146,7 +146,7 @@ class Tree(Generic[TNode]):
     def __eq__(self, other) -> bool:
         raise NotImplementedError("Use `is` instead of `==`.")
 
-    def __getitem__(self, data: object) -> Node:
+    def __getitem__(self, data: object) -> TNode:
         """Implement ``tree[data]`` syntax to lookup a node.
 
         `data` may be a plain string, data object, data_id, or node_id.
@@ -207,7 +207,7 @@ class Tree(Generic[TNode]):
             return self._calc_data_id_hook(self, data)
         return hash(data)
 
-    def _register(self, node: Node) -> None:
+    def _register(self, node: TNode) -> None:
         assert node._tree is self
         # node._tree = self
         assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
@@ -222,7 +222,7 @@ class Tree(Generic[TNode]):
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
 
-    def _unregister(self, node: Node, *, clear: bool = True) -> None:
+    def _unregister(self, node: TNode, *, clear: bool = True) -> None:
         """Unlink node from this tree (children must be unregistered first)."""
         assert node._node_id in self._node_by_id, f"{node}"
         del self._node_by_id[node._node_id]
@@ -253,18 +253,18 @@ class Tree(Generic[TNode]):
         return
 
     @property
-    def children(self) -> list[Node]:
+    def children(self) -> list[TNode]:
         """Return list of direct child nodes, i.e. toplevel nodes
         (list may be empty)."""
         return self._root.children
 
-    def get_toplevel_nodes(self) -> list[Node]:
+    def get_toplevel_nodes(self) -> list[TNode]:
         """Return list of direct child nodes, i.e. toplevel nodes (may be
         empty, alias for :meth:`children`)."""
         return self._root.children
 
     @property
-    def system_root(self) -> _SystemRootNode:
+    def system_root(self) -> TNode:
         return self._root
 
     @property
@@ -284,26 +284,26 @@ class Tree(Generic[TNode]):
         return len(self._nodes_by_data_id)
 
     @classmethod
-    def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
+    def serialize_mapper(cls, node: TNode, data: dict) -> dict | None:
         """Used as default `mapper` argument for :meth:`save`."""
         return data
 
     @classmethod
-    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
+    def deserialize_mapper(cls, parent: TNode, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
         )
 
-    def first_child(self) -> Node | None:
+    def first_child(self) -> TNode | None:
         """Return the first toplevel node."""
         return self._root.first_child()
 
-    def last_child(self) -> Node | None:
+    def last_child(self) -> TNode | None:
         """Return the last toplevel node."""
         return self._root.last_child()
 
-    def get_random_node(self) -> Node:
+    def get_random_node(self) -> TNode:
         """Return a random node.
 
         Note that there is also `IterMethod.RANDOM_ORDER`.
@@ -329,7 +329,7 @@ class Tree(Generic[TNode]):
         """
         return self._root.visit(callback, add_self=False, method=method, memo=memo)
 
-    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER) -> Iterator[Node]:
+    def iterator(self, method: IterMethod = IterMethod.PRE_ORDER) -> Iterator[TNode]:
         """Traverse tree structure and yield nodes.
 
         See Node's :meth:`~nutree.node.Node.iterator` method for details.
@@ -383,13 +383,13 @@ class Tree(Generic[TNode]):
 
     def add_child(
         self,
-        child: Node | Tree | Any,
+        child: TNode | Self | Any,
         *,
-        before: Optional[Node | bool | int] = None,
+        before: Optional[TNode | bool | int] = None,
         deep: Optional[bool] = None,
         data_id: DataIdType | None = None,
         node_id=None,
-    ) -> Node:
+    ) -> TNode:
         """Add a toplevel node.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
@@ -410,7 +410,7 @@ class Tree(Generic[TNode]):
         *,
         name: Optional[str] = None,
         predicate: Optional[PredicateCallbackType] = None,
-    ) -> Tree:
+    ) -> Self:
         """Return a copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
@@ -424,12 +424,12 @@ class Tree(Generic[TNode]):
         """
         if name is None:
             name = f"Copy of {self}"
-        new_tree = Tree(name)
+        new_tree = self.__class__(name)
         with self:
             new_tree._root._add_from(self._root, predicate=predicate)
         return new_tree
 
-    def copy_to(self, target: Node | Tree, *, deep=True) -> None:
+    def copy_to(self, target: TNode | Self, *, deep=True) -> None:
         """Copy this tree's nodes to another target.
 
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
@@ -444,7 +444,7 @@ class Tree(Generic[TNode]):
         """
         self._root.filter(predicate=predicate)
 
-    def filtered(self, predicate: PredicateCallbackType) -> Tree:
+    def filtered(self, predicate: PredicateCallbackType) -> Self:
         """Return a filtered copy of this tree.
 
         See also :ref:`iteration-callbacks`.
@@ -464,7 +464,7 @@ class Tree(Generic[TNode]):
         match: PredicateCallbackType | None = None,
         data_id: DataIdType | None = None,
         max_results: Optional[int] = None,
-    ) -> list[Node]:
+    ) -> list[TNode]:
         """Return a list of matching nodes (list may be empty).
 
         See also Node's :meth:`~nutree.node.Node.find_all` method and
@@ -493,7 +493,7 @@ class Tree(Generic[TNode]):
         match: PredicateCallbackType | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ) -> Node | None:
+    ) -> TNode | None:
         """Return the one matching node or `None`.
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
@@ -540,14 +540,14 @@ class Tree(Generic[TNode]):
         return res
 
     @classmethod
-    def from_dict(cls, obj: list[dict], *, mapper=None) -> Tree:
+    def from_dict(cls, obj: list[dict], *, mapper=None) -> Self:
         """Return a new :class:`Tree` instance from a list of dicts.
 
         See also :meth:`~nutree.tree.Tree.to_dict_list` and
         Node's :meth:`~nutree.node.Node.find_first` methods, and
         :ref:`iteration-callbacks`.
         """
-        new_tree = Tree()
+        new_tree = cls()
         new_tree._root.from_dict(obj, mapper=mapper)
         return new_tree
 
@@ -663,9 +663,9 @@ class Tree(Generic[TNode]):
         obj: list[tuple[int, str | dict]],
         *,
         mapper: DeserializeMapperType | None = None,
-    ) -> Tree:
+    ) -> Self:
         tree = cls()  # Tree or TypedTree
-        node_idx_map: dict[int, Node] = {0: tree._root}
+        node_idx_map: dict[int, TNode] = {0: tree._root}
         if mapper is None:
             mapper = cls.deserialize_mapper
 
@@ -697,7 +697,7 @@ class Tree(Generic[TNode]):
         mapper: DeserializeMapperType | None = None,
         file_meta: dict | None = None,
         auto_uncompress: bool = True,
-    ) -> Tree:
+    ) -> Self:
         """Create a new :class:`Tree` instance from a file path or JSON file stream.
 
         If ``file_meta`` is a dict, it receives the content if the file's
@@ -849,7 +849,7 @@ class Tree(Generic[TNode]):
         """
         return tree_to_rdf(self)
 
-    def diff(self, other: Tree, *, ordered=False, reduce=False) -> Tree:
+    def diff(self, other: Self, *, ordered=False, reduce=False) -> Tree:
         """Compare this tree against `other` and return a merged, annotated copy.
 
         The resulting tree contains a union of all nodes from this and the

@@ -632,8 +632,8 @@ class TypedTree(Tree):
         )
         self._root = _SystemRootTypedNode(self)
 
-    @staticmethod
-    def deserialize_mapper(parent: TypedNode, data: dict) -> str | object | None:
+    @classmethod
+    def deserialize_mapper(cls, parent: TypedNode, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a
