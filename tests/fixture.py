@@ -3,8 +3,10 @@
 """
 Test helpers.
 """
-# ruff: noqa: T201, T203 `print` found
 
+from __future__ import annotations
+
+# ruff: noqa: T201, T203 `print` found
 import os
 import re
 import tempfile
@@ -12,7 +14,7 @@ import time
 import timeit
 from random import randint
 from textwrap import dedent, indent
-from typing import IO, List, Optional, Union
+from typing import IO, List
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -186,7 +188,7 @@ def create_typed_tree(
     return tree
 
 
-def generate_tree(level_defs: List[int]) -> "Tree":
+def generate_tree(level_defs: List[int]) -> Tree:
     """Generate a tree.
 
     Example:
@@ -219,7 +221,7 @@ def flatten_nodes(tree):
 
 
 def canonical_repr(
-    obj: Union[str, Tree, Node], *, repr: Optional[ReprArgType] = None, style="ascii32"
+    obj: str | Tree | Node, *, repr: ReprArgType | None = None, style="ascii32"
 ) -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
@@ -240,12 +242,12 @@ canonical_tree_header = "Tree<*>"
 
 
 def _check_content(
-    tree: Union[Tree, Node, str],
+    tree: Tree | Node | str,
     expect_ascii,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
-    style=None,
+    repr: ReprArgType | None = None,
+    style: str | None = None,
 ):
     if style is None:
         if "├── " in expect_ascii or "╰── " in expect_ascii:
@@ -269,12 +271,12 @@ def _check_content(
 
 
 def check_content(
-    tree: Union[Tree, Node, str],
+    tree: Tree | Node | str,
     expect_ascii,
     *,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
+    repr: ReprArgType | None = None,
     style=None,
 ):
     err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)

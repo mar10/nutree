@@ -33,6 +33,8 @@ ignore = [
 # convention = "google"
 
 [tool.pyright]
+# include = ["nutree", "tests"]
+include = ["nutree"]
 # typeCheckingMode = "off"
 typeCheckingMode = "basic"
 

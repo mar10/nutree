@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Iterator
+from typing import IO, Any, Iterator, cast
 
 from nutree.common import (
     ROOT_DATA_ID,
@@ -23,13 +23,18 @@ from nutree.common import (
     UniqueConstraintError,
     ValueMapType,
     call_mapper,
+    sentinel,
 )
 from nutree.node import Node
 from nutree.tree import Tree
 
 
-class ANY_KIND:
+class TAnyKind:
     """Special argument value for some methods that access child nodes."""
+
+
+#: Special argument value for some methods that access child nodes
+ANY_KIND = sentinel.ANY_KIND
 
 
 # ------------------------------------------------------------------------------
@@ -68,6 +73,7 @@ class TypedNode(Node):
         )
         assert isinstance(kind, str) and kind != ANY_KIND, f"Unsupported `kind`: {kind}"
         self._kind = kind
+
         # del self._children
         # self._child_map: Dict[Node] = None
 
@@ -157,13 +163,13 @@ class TypedNode(Node):
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
             return super().get_siblings(add_self=add_self)
-        children = self._parent._children
+        children = self._parent.children
         rel = self.kind
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
 
     def first_sibling(self, *, any_kind=False) -> Self:
         """Return first sibling `of the same kind` (may be self)."""
-        pc = self._parent._children
+        pc = self._parent.children
         if any_kind:
             return pc[0]
         for n in pc:
@@ -173,7 +179,7 @@ class TypedNode(Node):
 
     def last_sibling(self, *, any_kind=False) -> Self:
         """Return last sibling `of the same kind` (may be self)."""
-        pc = self._parent._children
+        pc = self._parent.children
         if any_kind:
             return pc[-1]
         for n in reversed(pc):
@@ -183,7 +189,7 @@ class TypedNode(Node):
 
     def prev_sibling(self, *, any_kind=False) -> Self | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""
-        pc = self._parent._children
+        pc = self._parent.children
         own_idx = pc.index(self)
         if own_idx > 0:
             for idx in range(own_idx - 1, -1, -1):
@@ -194,7 +200,7 @@ class TypedNode(Node):
 
     def next_sibling(self, *, any_kind=False) -> Self | None:
         """Return successor `of the same kind` or None if node is last sibling."""
-        pc = self._parent._children
+        pc = self._parent.children
         pc_len = len(pc)
         own_idx = pc.index(self)
 
@@ -208,23 +214,23 @@ class TypedNode(Node):
     def get_index(self, *, any_kind=False) -> int:
         """Return index in sibling list."""
         if any_kind:
-            kc = self._parent._children
+            kc = self._parent.children
         else:
-            kc = self.parent.get_children(self.kind)
+            kc = self._parent.get_children(self.kind)
         return kc.index(self)
 
     def is_first_sibling(self, *, any_kind=False) -> bool:
         """Return true if this node is the first sibling, i.e. the first child
         of its parent."""
         if any_kind:
-            return self is self._parent._children[0]
+            return self is self._parent.children[0]
         return self is self.first_sibling(any_kind=False)
 
     def is_last_sibling(self, *, any_kind=False) -> bool:
         """Return true if this node is the last sibling, i.e. the last child
         **of this kind** of its parent."""
         if any_kind:
-            return self is self._parent._children[-1]
+            return self is self._parent.children[-1]
         return self is self.last_sibling(any_kind=False)
 
     def add_child(
@@ -243,26 +249,26 @@ class TypedNode(Node):
         # TODO: Check if target and child types match
         # TODO: share more code from overloaded method
         if kind is None:
-            kind = self._tree.DEFAULT_CHILD_TYPE
+            kind = cast(TypedTree, self._tree).DEFAULT_CHILD_TYPE
 
         if isinstance(child, (Node, Tree)) and not isinstance(
             child, (TypedNode, TypedTree)
         ):
             raise TypeError("If child is a node or tree it must be typed.")
 
-        if isinstance(child, self._tree.__class__):
+        if isinstance(child, TypedTree):
             if deep is None:
                 deep = True
             topnodes = child._root.children
-            if isinstance(before, (int, TypedNode)) or before is True:
+            if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
             for n in topnodes:
-                self.add_child(n, before=before, deep=deep)
-            return
+                self.add_child(n, kind=n.kind, before=before, deep=deep)
+            return child._root
 
         source_node = None
         factory = self._tree.node_factory
-        if isinstance(child, Node):  # TypedNode):
+        if isinstance(child, factory):
             if deep is None:
                 deep = False
             if deep and data_id is not None or node_id is not None:
@@ -279,7 +285,7 @@ class TypedNode(Node):
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             # If creating an inherited node, use the parent class as constructor
-            child_class = child.__class__
+            child_class = factory  # child.__class__
 
             node = child_class(
                 kind,
@@ -290,6 +296,8 @@ class TypedNode(Node):
             )
         else:
             node = factory(kind, child, parent=self, data_id=data_id, node_id=node_id)
+
+        # assert isinstance(node, self.__class__)
 
         children = self._children
         if children is None:
@@ -356,7 +364,7 @@ class TypedNode(Node):
         return self.add_child(
             child,
             kind=kind,
-            before=self.first_child(),
+            before=self.first_child(kind=ANY_KIND),
             deep=deep,
             data_id=data_id,
             node_id=node_id,
@@ -392,7 +400,7 @@ class TypedNode(Node):
 
         This method calls :meth:`add_child` on ``self.parent``.
         """
-        next_node = self.next_sibling
+        next_node = self.next_sibling()
         return self._parent.add_child(
             child,
             kind=kind,
@@ -436,7 +444,7 @@ class TypedNode(Node):
     # __iter__ = iterator
 
     @classmethod
-    def _make_list_entry(cls, node: Self) -> dict:
+    def _make_list_entry(cls, node: Self) -> dict[str, Any]:
         node_data = node._data
         # is_custom_id = node._data_id != hash(node_data)
 
@@ -449,7 +457,8 @@ class TypedNode(Node):
         else:
             data = Node._make_list_entry(node)
 
-        if node.kind != ANY_KIND:
+        assert isinstance(data, dict)
+        if node.kind is not ANY_KIND:
             data["kind"] = node.kind
         return data
 
@@ -523,7 +532,7 @@ class TypedTree(Tree):
         self._root = _SystemRootTypedNode(self)
 
     @classmethod
-    def deserialize_mapper(cls, parent: TypedNode, data: dict) -> str | object | None:
+    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a
@@ -537,11 +546,11 @@ class TypedTree(Tree):
         self,
         child: TypedNode | Self | Any,
         *,
-        kind: str = None,
+        kind: str | None = None,
         before: TypedNode | bool | int | None = None,
-        deep: bool = None,
-        data_id=None,
-        node_id=None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ) -> TypedNode:
         """Add a toplevel node.
 
@@ -659,7 +668,7 @@ class TypedTree(Tree):
         target: IO[str] | str | Path,
         *,
         mapper: DeserializeMapperType | None = None,
-        file_meta: dict = None,
+        file_meta: dict | None = None,
     ) -> Self:
         """Create a new :class:`TypedTree` instance from a JSON file stream.
 

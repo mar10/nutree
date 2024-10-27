@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import sys
+import unittest.mock
 import warnings
 import zipfile
 from contextlib import contextmanager
@@ -40,6 +41,9 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 
     TTree = TypeVar("TTree", bound=Tree)
     TNode = TypeVar("TNode", bound=Node)
+
+#: A sentinel object that can be used to detect if a parameter was passed.
+sentinel = unittest.mock.sentinel
 
 #: Used as ID for the system root node
 ROOT_DATA_ID: str = "__root__"

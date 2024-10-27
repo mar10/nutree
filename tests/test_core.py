@@ -1,12 +1,14 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
+
 # ruff: noqa: T201, T203 `print` found
 # pyright: reportRedeclaration=false
 # pyright: reportOptionalMemberAccess=false
+from __future__ import annotations
 
 import re
-from typing import Any, Union
+from typing import Any
 
 import pytest
 from nutree import AmbiguousMatchError, IterMethod, Node, Tree
@@ -994,7 +996,7 @@ class TestMutate:
             *,
             source: str,
             target: str,
-            before: Union[Node, str, int, None],
+            before: Node | str | int | None,
             result: str,
         ):
             tree = fixture.create_tree()
