@@ -1324,7 +1324,7 @@ class TestCopy:
         with pytest.raises(ValueError, match="Predicate is required"):
             tree.filter(predicate=None)  # type: ignore
         with pytest.raises(ValueError, match="Predicate is required"):
-            tree.system_root.filter(predicate=None)  # type: ignore
+            tree.system_root.filter(predicate=None)
 
         def _tf(
             *,

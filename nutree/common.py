@@ -30,7 +30,7 @@ from typing import (
 )
 
 try:
-    from typing import Self  # ruff: noqa: F401
+    from typing import Self
 except ImportError:
     from typing_extensions import Self  #  noqa
 
@@ -159,6 +159,9 @@ DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 PredicateCallbackType = Callable[
     ["Node"], Union[None, bool, IterationControl, Type[IterationControl]]
 ]
+
+#:
+MatchArgumentType = Union[str, PredicateCallbackType, list, tuple, Any]
 
 #:
 TraversalCallbackType = Callable[

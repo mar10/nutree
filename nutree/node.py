@@ -39,6 +39,7 @@ from nutree.common import (
     IterMethod,
     KeyMapType,
     MapperCallbackType,
+    MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
     SelectBranch,
@@ -954,7 +955,7 @@ class Node:
             pass
         return
 
-    def filtered(self, predicate: PredicateCallbackType) -> Tree:
+    def filtered(self, predicate: PredicateCallbackType) -> Tree[Self]:
         """Return a filtered copy of this node and descendants as tree.
 
         See also :ref:`iteration-callbacks`.
@@ -1207,7 +1208,11 @@ class Node:
     __iter__ = iterator
 
     def _search(
-        self, match, *, max_results: int | None = None, add_self=False
+        self,
+        match,
+        *,
+        max_results: int | None = None,
+        add_self=False,
     ) -> Iterator[Self]:
         if callable(match):
             cb_match = match
@@ -1234,7 +1239,7 @@ class Node:
         self,
         data=None,
         *,
-        match: PredicateCallbackType | None = None,
+        match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
         add_self=False,
         max_results: int | None = None,
@@ -1259,7 +1264,7 @@ class Node:
         self,
         data=None,
         *,
-        match: PredicateCallbackType | None = None,
+        match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
     ) -> Self | None:
         """Return the first matching node or `None`.

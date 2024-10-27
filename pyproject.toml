@@ -33,10 +33,11 @@ ignore = [
 # convention = "google"
 
 [tool.pyright]
-# include = ["nutree", "tests"]
-include = ["nutree"]
-# typeCheckingMode = "off"
 typeCheckingMode = "basic"
+# typeCheckingMode = "off"
+# include = ["nutree"]
+include = ["nutree", "tests"]
+exclude = ["nutree/rdf.py"]
 
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 reportUnnecessaryTypeIgnoreComment = true

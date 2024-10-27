@@ -35,6 +35,7 @@ from nutree.common import (
     IterMethod,
     KeyMapType,
     MapperCallbackType,
+    MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
     Self,
@@ -460,7 +461,7 @@ class Tree(Generic[TNode]):
         self,
         data=None,
         *,
-        match: PredicateCallbackType | None = None,
+        match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
         max_results: int | None = None,
     ) -> list[TNode]:
@@ -489,7 +490,7 @@ class Tree(Generic[TNode]):
         self,
         data=None,
         *,
-        match: PredicateCallbackType | None = None,
+        match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TNode | None:
