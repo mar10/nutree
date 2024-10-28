@@ -415,6 +415,7 @@ def run_timings(
     #     return 1
 
     def format_time(dt):
+        scale = 0
         unit = time_unit
         if unit is not None:
             scale = units[unit]

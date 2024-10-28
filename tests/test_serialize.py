@@ -492,7 +492,8 @@ class TestSerialize:
                     return data.guid
                 return hash(data)
 
-            def serialize_mapper(self, node: Node, data: dict) -> dict | None:
+            @classmethod
+            def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
                 if isinstance(node.data, fixture.Department):
                     data["type"] = "dept"
                     data["name"] = node.data.name
@@ -502,8 +503,10 @@ class TestSerialize:
                     data["age"] = node.data.age
                 return data
 
-            @staticmethod
-            def deserialize_mapper(parent: Node, data: dict) -> str | object | None:
+            @classmethod
+            def deserialize_mapper(
+                cls, parent: Node, data: dict
+            ) -> str | object | None:
                 node_type = data["type"]
                 print("deserialize_mapper", data)
                 res = data

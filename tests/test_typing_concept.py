@@ -1,4 +1,5 @@
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportIncompatibleMethodOverride=false
 
 from __future__ import annotations
 

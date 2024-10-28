@@ -3,6 +3,7 @@
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
 """
+# pyright: reportIncompatibleMethodOverride=false
 
 from __future__ import annotations
 
@@ -691,7 +692,7 @@ class _SystemRootTypedNode(TypedNode):
     """Invisible system root node."""
 
     def __init__(self, tree: TypedTree) -> None:
-        self._tree: TypedTree = tree
+        self._tree: TypedTree = tree  # type: ignore
         self._parent = None  # type: ignore
         self._node_id = ROOT_NODE_ID
         self._data_id = ROOT_DATA_ID

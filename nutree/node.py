@@ -620,6 +620,7 @@ class Node:
             topnodes = child._root.children
             if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
+            n = None
             for n in topnodes:
                 self.add_child(n, before=before, deep=deep)
             return cast(Self, n)  # need to return a node
