@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .tree import Node, Tree
+    from nutree.tree import Node, Tree
 
 from enum import Enum
 

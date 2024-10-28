@@ -3,16 +3,19 @@
 """
 Test helpers.
 """
-# ruff: noqa: T201, T203 `print` found
 
+from __future__ import annotations
+
+# ruff: noqa: T201, T203 `print` found
 import os
 import re
 import tempfile
 import time
 import timeit
+import uuid
 from random import randint
 from textwrap import dedent, indent
-from typing import IO, List, Optional, Union
+from typing import IO, List
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -24,10 +27,10 @@ def is_running_on_ci() -> bool:
 
 
 class Person:
-    def __init__(self, name, *, age, guid=None) -> None:
-        self.name = name
-        self.age = age
-        self.guid = guid
+    def __init__(self, name: str, *, age: int, guid: str | None = None) -> None:
+        self.name: str = name
+        self.age: int = age
+        self.guid: str = uuid.uuid4().hex if guid is None else guid
 
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
@@ -42,9 +45,9 @@ class Person:
 
 
 class Department:
-    def __init__(self, name, *, guid=None) -> None:
-        self.name = name
-        self.guid = guid
+    def __init__(self, name: str, *, guid: str | None = None) -> None:
+        self.name: str = name
+        self.guid: str = uuid.uuid4().hex if guid is None else guid
 
     def __repr__(self) -> str:
         return f"Department<{self.name}>"
@@ -186,7 +189,7 @@ def create_typed_tree(
     return tree
 
 
-def generate_tree(level_defs: List[int]) -> "Tree":
+def generate_tree(level_defs: List[int]) -> Tree:
     """Generate a tree.
 
     Example:
@@ -219,7 +222,7 @@ def flatten_nodes(tree):
 
 
 def canonical_repr(
-    obj: Union[str, Tree, Node], *, repr: Optional[ReprArgType] = None, style="ascii32"
+    obj: str | Tree | Node, *, repr: ReprArgType | None = None, style="ascii32"
 ) -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
@@ -240,12 +243,12 @@ canonical_tree_header = "Tree<*>"
 
 
 def _check_content(
-    tree: Union[Tree, Node, str],
+    tree: Tree | Node | str,
     expect_ascii,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
-    style=None,
+    repr: ReprArgType | None = None,
+    style: str | None = None,
 ):
     if style is None:
         if "├── " in expect_ascii or "╰── " in expect_ascii:
@@ -269,12 +272,12 @@ def _check_content(
 
 
 def check_content(
-    tree: Union[Tree, Node, str],
+    tree: Tree | Node | str,
     expect_ascii,
     *,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
+    repr: ReprArgType | None = None,
     style=None,
 ):
     err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)
@@ -412,6 +415,7 @@ def run_timings(
     #     return 1
 
     def format_time(dt):
+        scale = 0
         unit = time_unit
         if unit is not None:
             scale = units[unit]

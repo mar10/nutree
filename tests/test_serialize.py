@@ -2,6 +2,9 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportOptionalMemberAccess=false
+
+from __future__ import annotations
 
 import json
 import pprint
@@ -130,7 +133,7 @@ class TestSerialize:
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
 
-        def _calc_id(tree, data):
+        def _calc_id(tree: Tree, data: Any) -> str | int:
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
                 return data.guid
@@ -484,12 +487,13 @@ class TestSerialize:
             }
             DEFAULT_VALUE_MAP = {"type": ["person", "dept"]}
 
-            def calc_data_id(tree, data):
+            def calc_data_id(self, data):
                 if hasattr(data, "guid"):
                     return data.guid
                 return hash(data)
 
-            def serialize_mapper(self, node: Node, data: dict):
+            @classmethod
+            def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
                 if isinstance(node.data, fixture.Department):
                     data["type"] = "dept"
                     data["name"] = node.data.name
@@ -499,18 +503,21 @@ class TestSerialize:
                     data["age"] = node.data.age
                 return data
 
-            @staticmethod
-            def deserialize_mapper(parent: Node, data: dict):
+            @classmethod
+            def deserialize_mapper(
+                cls, parent: Node, data: dict
+            ) -> str | object | None:
                 node_type = data["type"]
                 print("deserialize_mapper", data)
+                res = data
                 if node_type == "person":
-                    data = fixture.Person(
+                    res = fixture.Person(
                         name=data["name"], age=data["age"], guid=data["data_id"]
                     )
                 elif node_type == "dept":
-                    data = fixture.Department(name=data["name"], guid=data["data_id"])
-                print(f"deserialize_mapper -> {data}")
-                return data
+                    res = fixture.Department(name=data["name"], guid=data["data_id"])
+                print(f"deserialize_mapper -> {res}")
+                return res
 
         # Use a TypedTree
         tree = MyTree(name="MyTree")

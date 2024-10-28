@@ -2,6 +2,7 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportAttributeAccessIssue=false
 
 from nutree.typed_tree import TypedTree
 

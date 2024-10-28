@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get install graphviz
           python -V
           python -m pip install --upgrade pip
           python -m pip install pydot pytest pytest-cov pytest-html rdflib ruff
