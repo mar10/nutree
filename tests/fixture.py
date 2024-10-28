@@ -12,6 +12,7 @@ import re
 import tempfile
 import time
 import timeit
+import uuid
 from random import randint
 from textwrap import dedent, indent
 from typing import IO, List
@@ -26,10 +27,10 @@ def is_running_on_ci() -> bool:
 
 
 class Person:
-    def __init__(self, name, *, age, guid=None) -> None:
-        self.name = name
-        self.age = age
-        self.guid = guid
+    def __init__(self, name: str, *, age: int, guid: str | None = None) -> None:
+        self.name: str = name
+        self.age: int = age
+        self.guid: str = uuid.uuid4().hex if guid is None else guid
 
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
@@ -44,9 +45,9 @@ class Person:
 
 
 class Department:
-    def __init__(self, name, *, guid=None) -> None:
-        self.name = name
-        self.guid = guid
+    def __init__(self, name: str, *, guid: str | None = None) -> None:
+        self.name: str = name
+        self.guid: str = uuid.uuid4().hex if guid is None else guid
 
     def __repr__(self) -> str:
         return f"Department<{self.name}>"

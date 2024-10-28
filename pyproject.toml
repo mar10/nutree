@@ -35,9 +35,10 @@ ignore = [
 [tool.pyright]
 typeCheckingMode = "basic"
 # typeCheckingMode = "off"
+reportMissingImports = "none"
 # include = ["nutree"]
 include = ["nutree", "tests"]
-exclude = ["nutree/rdf.py"]
+# exclude = ["**/nutree/rdf.py"]
 
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 reportUnnecessaryTypeIgnoreComment = true

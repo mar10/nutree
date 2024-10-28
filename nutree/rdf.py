@@ -4,6 +4,12 @@
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
 
+# pyright: reportOptionalCall=false
+# pyright: reportInvalidTypeForm=false
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
@@ -21,15 +27,17 @@ try:
     import rdflib
     from rdflib import Graph, IdentifiedNode, Literal, URIRef
     from rdflib.namespace import RDF, XSD, DefinedNamespace, Namespace
-except ImportError:  # pragma: no cover
+
+except ImportError:
     rdflib = None
     Graph = IdentifiedNode = Literal = URIRef = None
     RDF = XSD = DefinedNamespace = Namespace = None
-    # raise
+
 
 RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], Union[None, bool]]
 
-if Namespace:
+
+if rdflib:
 
     class NUTREE_NS(DefinedNamespace):
         """
@@ -39,16 +47,16 @@ if Namespace:
         _fail = True
 
         # diff_meta:
-        index: URIRef  #
-        has_child: URIRef  #
-        kind: URIRef  #
+        index: URIRef
+        has_child: URIRef
+        kind: URIRef
         name: URIRef  #
-        system_root: URIRef  #
+        system_root: URIRef
 
         _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
 
 else:  # rdflib unavailable # pragma: no cover
-    NUTREE_NS = None
+    NUTREE_NS = None  # type: ignore
 
 
 def _make_graph() -> Graph:

@@ -2,6 +2,7 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportOptionalMemberAccess=false
 
 import pytest
 from nutree import Tree
@@ -106,14 +107,14 @@ class TestObjects:
         # Note caveat: `node.name` is not forwardeded, but a native property:
         assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
         with pytest.raises(AttributeError):
-            let_it_be_node.name = "foo"  # type: ignore
+            let_it_be_node.name = "foo"
 
         # `node.price` is alliased to `node.data.price`
         assert let_it_be_node.price == 12.34
 
         # forward-attributes are readonly
         with pytest.raises(AttributeError):
-            let_it_be_node.price = 9.99  # type: ignore
+            let_it_be_node.price = 9.99
 
 
 class TestDictWrapper:
@@ -182,7 +183,7 @@ class TestDictWrapper:
 
         with pytest.raises(TypeError, match="'Node' object is not subscriptable"):
             # should NOT support item access via indexing
-            _ = node["a"]  # type: ignore
+            _ = node["a"]
 
         with pytest.raises(AttributeError):
             # should not support attribute access via data
@@ -250,7 +251,7 @@ class TestDictWrapper:
 
         # Frozen dataclasses are immutable
         with pytest.raises(FrozenInstanceError):
-            item.count += 1
+            item.count += 1  # type: ignore
 
         # We can also add by passing the data_id as keyword argument:
         _ = tree.add(item, data_id="123-456")

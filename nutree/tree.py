@@ -191,7 +191,7 @@ class Tree(Generic[TNode]):
         (also makes empty trees falsy)."""
         return self.count
 
-    def calc_data_id(self, data) -> DataIdType:
+    def calc_data_id(self, data: Any) -> DataIdType:
         """Called internally to calculate `data_id` for a `data` object.
 
         This value is used to lookup nodes by data, identify clones, and for

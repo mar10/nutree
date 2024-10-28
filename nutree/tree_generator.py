@@ -240,7 +240,7 @@ class TextRandomizer(Randomizer):
             Defaults to 1.0.
     """
 
-    def __init__(self, template: Union[str, list], *, probability: float = 1.0) -> None:
+    def __init__(self, template: str | list[str], *, probability: float = 1.0) -> None:
         super().__init__(probability=probability)
         if not fab:
             raise RuntimeError("Need fabulist installed to generate random text.")
@@ -275,11 +275,11 @@ class BlindTextRandomizer(Randomizer):
     def __init__(
         self,
         *,
-        sentence_count: Union[int, tuple] = (2, 6),
+        sentence_count: int | tuple = (2, 6),
         dialect: str = "ipsum",
         entropy: int = 2,
         keep_first: bool = False,
-        words_per_sentence: Union[int, tuple] = (3, 15),
+        words_per_sentence: int | tuple = (3, 15),
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)

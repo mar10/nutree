@@ -1497,7 +1497,7 @@ class TestCopy:
             tree_2 = tree.filtered(predicate=None)  # type: ignore
 
         with pytest.raises(ValueError, match="Predicate is required"):
-            tree_2 = tree.system_root.filtered(predicate=None)  # type: ignore
+            tree_2 = tree.system_root.filtered(predicate=None)
 
         tree_2 = tree.copy()
 
