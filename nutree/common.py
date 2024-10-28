@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import sys
+import unittest.mock
 import warnings
 import zipfile
 from contextlib import contextmanager
@@ -28,11 +29,21 @@ from typing import (
     Union,
 )
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self  #  noqa
+
+
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
     TTree = TypeVar("TTree", bound=Tree)
+    TNode = TypeVar("TNode", bound=Node)
+
+#: A sentinel object that can be used to detect if a parameter was passed.
+sentinel = unittest.mock.sentinel
 
 #: Used as ID for the system root node
 ROOT_DATA_ID: str = "__root__"
@@ -122,9 +133,6 @@ CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 #: Type of ``format(..., repr=)```
 ReprArgType = Union[str, Callable[["Node"], str]]
 
-#: Type of ``Tree(..., factory)```
-NodeFactoryType = Type["Node"]
-
 #: A dict of scalar values
 FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
 
@@ -151,6 +159,9 @@ DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 PredicateCallbackType = Callable[
     ["Node"], Union[None, bool, IterationControl, Type[IterationControl]]
 ]
+
+#:
+MatchArgumentType = Union[str, PredicateCallbackType, list, tuple, Any]
 
 #:
 TraversalCallbackType = Callable[

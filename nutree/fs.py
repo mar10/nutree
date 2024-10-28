@@ -4,10 +4,11 @@
 Methods and classes to support file system related functionality.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from operator import attrgetter, itemgetter
 from pathlib import Path
-from typing import Optional, Union
 
 from nutree.tree import Node, Tree
 
@@ -18,8 +19,8 @@ class FileSystemEntry:
         name: str,
         *,
         is_dir: bool = False,
-        size: Optional[int] = None,
-        mdate: Optional[float] = None,
+        size: int | None = None,
+        mdate: float | None = None,
     ):
         self.name = name
         self.is_dir = is_dir
@@ -61,7 +62,7 @@ class FileSystemTree(Tree):
         return FileSystemEntry(data["n"], size=data["s"], mdate=data["m"])
 
 
-def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> FileSystemTree:
+def load_tree_from_fs(path: str | Path, *, sort: bool = True) -> FileSystemTree:
     """Scan a filesystem folder and store as tree.
 
     Args:

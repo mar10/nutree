@@ -10,11 +10,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Iterator
 
-from .common import MapperCallbackType, call_mapper
+from nutree.common import MapperCallbackType, call_mapper
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
 try:
     import pydot

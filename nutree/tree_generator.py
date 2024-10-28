@@ -60,8 +60,8 @@ class RangeRandomizer(Randomizer):
     A randomizer class that generates random values within a specified range.
 
     Args:
-        min_val (Union[float, int]): The minimum value of the range.
-        max_val (Union[float, int]): The maximum value of the range.
+        min_val (float| int): The minimum value of the range.
+        max_val (float| int): The maximum value of the range.
         probability (float, optional): The probability of generating a value.
             Defaults to 1.0.
         none_value (Any, optional): The value to return when skipping generation.
@@ -76,8 +76,8 @@ class RangeRandomizer(Randomizer):
 
     def __init__(
         self,
-        min_val: Union[float, int],
-        max_val: Union[float, int],
+        min_val: float | int,
+        max_val: float | int,
         *,
         probability: float = 1.0,
         none_value: Any = None,
@@ -106,7 +106,7 @@ class DateRangeRandomizer(Randomizer):
 
     Args:
         min_dt (date): The minimum date of the range.
-        max_dt (Union[date, int]): The maximum date of the range.
+        max_dt (date | int): The maximum date of the range.
             Pass an integer to specify the number of days from min_dt.
         as_js_stamp (bool, optional): If True, return the date as a JavaScript
             timestamp. Defaults to True.
@@ -121,7 +121,7 @@ class DateRangeRandomizer(Randomizer):
     def __init__(
         self,
         min_dt: date,
-        max_dt: Union[date, int],
+        max_dt: date | int,
         *,
         as_js_stamp=True,
         probability: float = 1.0,
@@ -240,7 +240,7 @@ class TextRandomizer(Randomizer):
             Defaults to 1.0.
     """
 
-    def __init__(self, template: Union[str, list], *, probability: float = 1.0) -> None:
+    def __init__(self, template: str | list[str], *, probability: float = 1.0) -> None:
         super().__init__(probability=probability)
         if not fab:
             raise RuntimeError("Need fabulist installed to generate random text.")
@@ -275,11 +275,11 @@ class BlindTextRandomizer(Randomizer):
     def __init__(
         self,
         *,
-        sentence_count: Union[int, tuple] = (2, 6),
+        sentence_count: int | tuple = (2, 6),
         dialect: str = "ipsum",
         entropy: int = 2,
         keep_first: bool = False,
-        words_per_sentence: Union[int, tuple] = (3, 15),
+        words_per_sentence: int | tuple = (3, 15),
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)

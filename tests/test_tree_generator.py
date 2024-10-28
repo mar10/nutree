@@ -116,7 +116,11 @@ class TestBase:
                 "__root__": {
                     "function": {
                         ":count": 3,
-                        "title": TextRandomizer(("{idx}: Provide $(Noun:plural)",)),
+                        "title": TextRandomizer(
+                            [
+                                "{idx}: Provide $(Noun:plural)",
+                            ]
+                        ),
                         "details": BlindTextRandomizer(dialect="ipsum"),
                         "expanded": True,
                     },
