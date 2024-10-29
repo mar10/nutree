@@ -3,6 +3,7 @@
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
+# pragma: exclude-file-from-coverage
 
 # pyright: reportOptionalCall=false
 # pyright: reportInvalidTypeForm=false

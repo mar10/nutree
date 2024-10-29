@@ -34,11 +34,8 @@ ignore = [
 
 [tool.pyright]
 typeCheckingMode = "standard"
-# typeCheckingMode = "off"
 reportMissingImports = "none"
-# include = ["nutree"]
 include = ["nutree", "tests"]
-# exclude = ["**/nutree/rdf.py"]
 
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 reportUnnecessaryTypeIgnoreComment = true
@@ -69,7 +66,15 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
-
+exclude_also = [
+    # 1. Exclude an except clause of a specific form:
+    # "except ValueError:\\n\\s*assume\\(False\\)",
+    # 2. Comments to turn coverage on and off:
+    # "no cover: start(?s:.)*?no cover: stop",
+    # 3. A pragma comment that excludes an entire file:
+    # "\\A(?s:.*# pragma: exclude file.*)\\Z",
+    "\\A(?s:.*# pragma: exclude-file-from-coverage.*)\\Z",
+    ]
 [tool.coverage.html]
 directory = "build/coverage"
 
