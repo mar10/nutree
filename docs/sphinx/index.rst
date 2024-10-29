@@ -32,66 +32,14 @@ nutree
 **Note:** Run ``pip install "nutree[graph]"`` or ``pip install "nutree[all]"`` 
 instead, in order to install additional graph support.
 
-.. ::
-
-..    from nutree import Tree, Node
-
-..    tree = Tree("Store")
-
-..    n = tree.add("Records")
-
-..    n.add("Let It Be")
-..    n.add("Get Yer Ya-Ya's Out!")
-
-..    n = tree.add("Books")
-..    n.add("The Little Prince")
-
-..    tree.print()
-
-.. ::
-
-..    Tree<'Store'>
-..    ├─── 'Records'
-..    │    ├─── 'Let It Be'
-..    │    ╰─── "Get Yer Ya-Ya's Out!"
-..    ╰─── 'Books'
-..         ╰─── 'The Little Prince'
-
-
-.. Tree nodes wrap the data and also expose methods for navigation, searching,
-.. iteration, ... ::
-
-..    records_node = tree["Records"]
-
-..    assert isinstance(records_node, Node)
-..    assert records_node.name == "Records"
-
-..    print(records_node.first_child())
-
-.. ::
-
-..    Node<'Let It Be', data_id=510268653885439170>
-
-.. Nodes may be strings or arbitrary objects::
-
-..    alice = Person("Alice", age=23, guid="{123-456}")
-..    tree.add(alice)
-
-..    # Lookup nodes by object, data_id, name pattern, ...
-..    alice_node = tree[alice]
-..    assert isinstance(alice_node.data, Person)
-..    assert alice_node.data is alice
-
-..    del tree[alice]
-
 
 Nutree Facts
 ============
 
   * :ref:`Handle multiple references of single objects ('clones') <clones>`
   * :ref:`Search by name pattern, id, or object reference <searching>`
-  * :ref:`Unobtrusive handling of arbitrary objects <objects>`
   * :ref:`Compare two trees and calculate patches <diff-and-merge>`
+  * :ref:`Unobtrusive handling of arbitrary objects <objects>`
   * :ref:`Save as DOT file and graphwiz diagram <save-dot>`
   * :ref:`Nodes can be plain strings or objects <objects>`
   * :ref:`(De)Serialize to (compressed) JSON <serialize>`

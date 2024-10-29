@@ -180,6 +180,8 @@ class TestNavigate:
 
         assert records.tree is records._tree
 
+        assert len(tree.get_toplevel_nodes()) == 2
+
         assert tree.find(data="Records") is records
         # TODO: hashes are salted in Py3, so we can't assume stable keys in tests
         # assert tree.find(data_id="1862529381406879915") is records

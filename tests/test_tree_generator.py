@@ -24,6 +24,13 @@ from tests import fixture
 
 class TestBase:
     def test_simple(self):
+        _cb_count = 0
+
+        def _calback(data):
+            nonlocal _cb_count
+            assert data["title"].startswith("Failure ")
+            _cb_count += 1
+
         structure_def = {
             "name": "fmea",
             #: Types define the default properties of the nodes
@@ -41,28 +48,29 @@ class TestBase:
             "relations": {
                 "__root__": {
                     "function": {
-                        ":count": 3,
+                        ":count": 30,
                         "title": "Function {hier_idx}",
                         "date": DateRangeRandomizer(
                             datetime.date(2020, 1, 1), datetime.date(2020, 12, 31)
                         ),
                         "date2": DateRangeRandomizer(
-                            datetime.date(2020, 1, 1), 365, probability=0.99
+                            datetime.date(2020, 1, 1), 365, probability=0.5
                         ),
                         "value": ValueRandomizer("foo", probability=0.5),
                         "expanded": SparseBoolRandomizer(probability=0.5),
-                        "state": SampleRandomizer(["open", "closed"], probability=0.99),
+                        "state": SampleRandomizer(["open", "closed"], probability=0.5),
                     },
                 },
                 "function": {
                     "failure": {
                         ":count": RangeRandomizer(1, 3),
+                        ":callback": _calback,
                         "title": "Failure {hier_idx}",
                     },
                 },
                 "failure": {
                     "cause": {
-                        ":count": RangeRandomizer(1, 3, probability=0.99),
+                        ":count": RangeRandomizer(1, 3, probability=0.5),
                         "title": "Cause {hier_idx}",
                     },
                     "effect": {
@@ -76,6 +84,7 @@ class TestBase:
         tree.print()
         assert type(tree) is Tree
         assert tree.calc_height() == 3
+        assert _cb_count >= 3
 
         tree2 = TypedTree.build_random_tree(structure_def)
         tree2.print()

@@ -411,39 +411,6 @@ class TypedNode(Node):
             node_id=node_id,
         )
 
-    # def move_to(
-    #     self,
-    #     new_parent: TypedNode | TypedTree,
-    #     *,
-    #     before: TypedNode | bool | int | None = None,
-    # ):
-    #     """Move this node before or after `new_parent`."""
-    #     raise NotImplementedError
-
-    # def copy(self, *, add_self=True, predicate=None) -> TypedTree:
-    #     """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this
-    #  branch.
-
-    #     See also :meth:`_add_from` and :ref:`iteration-callbacks`.
-    #     """
-    #     return super().copy(add_self=add_self, predicate=predicate)
-
-    # def filtered(self, predicate: PredicateCallbackType) -> TypedTree:
-    #     """Return a filtered copy of this node and descendants as tree.
-
-    #     See also :ref:`iteration-callbacks`.
-    #     """
-    #     return super().filtered(predicate=predicate)
-
-    # def iterator(
-    #     self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self=False
-    # ) -> Iterator[Node]:
-    #     """Generator that walks the hierarchy."""
-    #     return super().iterator(method=method, add_self=add_self)
-
-    # #: Implement ``for subnode in node: ...`` syntax to iterate descendant nodes.
-    # __iter__ = iterator
-
     @classmethod
     def _make_list_entry(cls, node: Self) -> dict[str, Any]:
         node_data = node._data

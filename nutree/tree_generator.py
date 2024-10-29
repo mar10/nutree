@@ -20,7 +20,7 @@ try:
     from fabulist import Fabulist
 
     fab = Fabulist()
-except ImportError:
+except ImportError:  # pragma: no cover
     # We run without fabulist (with reduced functionality in this case)
     Fabulist = None
     fab = None
@@ -149,7 +149,6 @@ class DateRangeRandomizer(Randomizer):
     def generate(self) -> Union[date, float, None]:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
-            # print("SKIP")
             return
         res = self.min + timedelta(days=random.randrange(self.delta_days))
         # print(res)
@@ -205,7 +204,7 @@ class SampleRandomizer(Randomizer):
         super().__init__(probability=probability)
         self.sample_list = sample_list
         # TODO: remove this when support for Python 3.8 is removed
-        if sys.version_info < (3, 9) and counts:
+        if sys.version_info < (3, 9) and counts:  # pragma: no cover
             raise RuntimeError("counts argument requires Python 3.9 or later.")
 
         self.counts = counts
@@ -214,7 +213,7 @@ class SampleRandomizer(Randomizer):
         if self._skip_value():
             return
         # TODO: remove this when support for Python 3.8 is removed
-        if sys.version_info < (3, 9) and not self.counts:
+        if sys.version_info < (3, 9) and not self.counts:  # pragma: no cover
             return random.sample(self.sample_list, 1)[0]
         return random.sample(self.sample_list, 1, counts=self.counts)[0]
 
@@ -242,7 +241,7 @@ class TextRandomizer(Randomizer):
 
     def __init__(self, template: str | list[str], *, probability: float = 1.0) -> None:
         super().__init__(probability=probability)
-        if not fab:
+        if not fab:  # pragma: no cover
             raise RuntimeError("Need fabulist installed to generate random text.")
         self.template = template
 
@@ -283,7 +282,7 @@ class BlindTextRandomizer(Randomizer):
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
-        if not fab:
+        if not fab:  # pragma: no cover
             raise RuntimeError("Need fabulist installed to generate random text.")
 
         self.sentence_count = sentence_count
