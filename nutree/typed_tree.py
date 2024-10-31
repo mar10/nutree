@@ -11,6 +11,9 @@ from collections import Counter
 from pathlib import Path
 from typing import IO, Any, Iterator, cast
 
+# typing.Self requires Python 3.11
+from typing_extensions import Self
+
 from nutree.common import (
     ROOT_DATA_ID,
     ROOT_NODE_ID,
@@ -19,7 +22,6 @@ from nutree.common import (
     DeserializeMapperType,
     KeyMapType,
     MapperCallbackType,
-    Self,
     SerializeMapperType,
     UniqueConstraintError,
     ValueMapType,
@@ -265,7 +267,7 @@ class TypedNode(Node):
                 topnodes.reverse()
             for n in topnodes:
                 self.add_child(n, kind=n.kind, before=before, deep=deep)
-            return child._root
+            return child._root  # type: ignore
 
         source_node = None
         factory = self._tree.node_factory
@@ -467,7 +469,7 @@ class TypedNode(Node):
 # ------------------------------------------------------------------------------
 # - TypedTree
 # ------------------------------------------------------------------------------
-class TypedTree(Tree):
+class TypedTree(Tree[TypedNode]):
     """
     A special tree variant, derived from :class:`~nutree.tree.Tree`,
     that uses :class:`~nutree.typed_tree.TypedNode` objects, which maintain

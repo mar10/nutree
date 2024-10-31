@@ -3,16 +3,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Generic, List, Type, TypeVar, cast
+from typing import Any, Generic, List, Type, cast
 
-try:
-    from typing import Self
-except ImportError as e:
-    print(f"ImportError: {e}")
-    from typing_extensions import Self  # noqa: F401
+from typing_extensions import Self, TypeVar
 
-
-TNode = TypeVar("TNode", bound="Node")
+TNode = TypeVar("TNode", bound="Node", default="Node")
 
 
 class Node:
@@ -71,6 +66,7 @@ class TypedTree(Tree[TypedNode]):
 
 class TestTypingSelf:
     def test_tree(self):
+        # tree0 = Tree()
         tree = Tree[Node]()
         n = tree.add("top")
         n.add("child")

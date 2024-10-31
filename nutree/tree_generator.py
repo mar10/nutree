@@ -10,10 +10,13 @@ import random
 import sys
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Sequence, Type, Union
+from typing import Any, Sequence, Union
+
+from typing_extensions import TypeVar
 
 from nutree.common import DictWrapper
 from nutree.node import Node
+from nutree.tree import Tree
 from nutree.typed_tree import TypedNode
 
 try:
@@ -25,8 +28,7 @@ except ImportError:  # pragma: no cover
     Fabulist = None
     fab = None
 
-if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from nutree.common import TTree
+TTree = TypeVar("TTree", bound=Tree)
 
 
 # ------------------------------------------------------------------------------
@@ -390,7 +392,7 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class: Type[TTree], structure_def: dict) -> TTree:
+def build_random_tree(*, tree_class: type[TTree], structure_def: dict) -> TTree:
     """
     Return a nutree.TypedTree with random data from a specification.
     See :ref:`randomize` for details.

@@ -25,22 +25,15 @@ from typing import (
     List,
     Literal,
     Type,
-    TypeVar,
     Union,
 )
-
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self  #  noqa
-
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
     from nutree.tree import Tree
 
-    TTree = TypeVar("TTree", bound=Tree)
-    TNode = TypeVar("TNode", bound=Node)
+    # TTree = TypeVar("TTree", bound=Tree)
+    # TNode = TypeVar("TNode", bound=Node)
 
 #: A sentinel object that can be used to detect if a parameter was passed.
 sentinel = unittest.mock.sentinel

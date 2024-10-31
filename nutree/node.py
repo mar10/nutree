@@ -15,9 +15,13 @@ from typing import (
     Any,
     Iterable,
     Iterator,
-    TypeVar,
+    # TypeVar,
     cast,
 )
+
+# typing.Self requires Python 3.11
+# TypeVar(..., default="Node") requires Python 3.13
+from typing_extensions import Self, TypeVar
 
 from nutree.mermaid import (
     MermaidDirectionType,
@@ -29,6 +33,7 @@ from nutree.mermaid import (
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.tree import Tree
+
 
 from nutree.common import (
     CONNECTORS,
@@ -43,7 +48,6 @@ from nutree.common import (
     PredicateCallbackType,
     ReprArgType,
     SelectBranch,
-    Self,
     SerializeMapperType,
     SkipBranch,
     SortKeyType,
@@ -59,7 +63,7 @@ from nutree.common import (
 from nutree.dot import node_to_dot
 from nutree.rdf import RDFMapperCallbackType, node_to_rdf
 
-TNode = TypeVar("TNode", bound="Node")
+TNode = TypeVar("TNode", bound="Node", default="Node")
 
 
 # ------------------------------------------------------------------------------
@@ -199,7 +203,7 @@ class Node:
         return self.get_path(repr="{node.name}")
 
     @property
-    def tree(self) -> Tree:
+    def tree(self) -> Tree[Self]:
         """Return container :class:`~nutree.tree.Tree` instance."""
         return self._tree
 
@@ -832,7 +836,7 @@ class Node:
 
     def copy(
         self, *, add_self=True, predicate: PredicateCallbackType | None = None
-    ) -> Tree:
+    ) -> Tree[Self]:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
         See also :ref:`iteration-callbacks`.
@@ -1210,7 +1214,7 @@ class Node:
 
     def _search(
         self,
-        match,
+        match: MatchArgumentType,
         *,
         max_results: int | None = None,
         add_self=False,
@@ -1221,6 +1225,7 @@ class Node:
             pattern = re.compile(pattern=match)
             cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
         elif isinstance(match, (list, tuple)):
+            assert len(match) == 2, match
             pattern = re.compile(pattern=match[0], flags=match[1])
             cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
         else:

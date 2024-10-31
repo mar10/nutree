@@ -12,7 +12,6 @@ import threading
 from pathlib import Path
 from typing import (
     IO,
-    TYPE_CHECKING,
     Any,
     Generic,
     Iterable,
@@ -22,6 +21,9 @@ from typing import (
     Union,
     cast,
 )
+
+# typing.Self requires Python 3.11
+from typing_extensions import Self
 
 from nutree.common import (
     FILE_FORMAT_VERSION,
@@ -38,7 +40,6 @@ from nutree.common import (
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
-    Self,
     SerializeMapperType,
     SortKeyType,
     TraversalCallbackType,
@@ -60,9 +61,6 @@ from nutree.mermaid import (
 )
 from nutree.node import Node, TNode
 from nutree.rdf import tree_to_rdf
-
-if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from nutree.common import TTree
 
 _DELETED_TAG = "<deleted>"
 
@@ -906,7 +904,7 @@ class Tree(Generic[TNode]):
         return True
 
     @classmethod
-    def build_random_tree(cls: type[TTree], structure_def: dict) -> TTree:
+    def build_random_tree(cls: type[Self], structure_def: dict) -> Self:
         """Build a random tree for .
 
         Returns a new :class:`Tree` instance with random nodes, as defined by
@@ -929,7 +927,7 @@ class _SystemRootNode(Node):
     """Invisible system root node."""
 
     def __init__(self, tree: Tree) -> None:
-        self._tree: Tree = tree
+        self._tree: Tree = tree  # type: ignore
         self._parent = None  # type: ignore
         self._node_id = ROOT_NODE_ID
         self._data_id = ROOT_DATA_ID
