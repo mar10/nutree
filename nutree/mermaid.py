@@ -8,6 +8,7 @@ Functions and declarations to support
 
 from __future__ import annotations
 
+import io
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
 from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, Literal
@@ -193,46 +194,49 @@ def node_to_mermaid_flowchart(
         ):
             fp.write(line + "\n")
 
+    if isinstance(target, io.StringIO):
+        if format:
+            raise RuntimeError("Need a filepath to convert Mermaid output.")
+        _write(target)
+        return
+
     if isinstance(target, str):
         target = Path(target)
 
-    if isinstance(target, Path):
-        mm_path = target.with_suffix(".tmp") if format else target
+    if not isinstance(target, Path):
+        raise ValueError(f"target must be a Path, str, or StringIO: {target}")
 
-        with open(mm_path, "w") as fp:
-            _write(fp)
+    mm_path = target.with_suffix(".tmp") if format else target
 
-        if format:
-            # Convert Mermaid output using mmdc
-            # See https://github.com/mermaid-js/mermaid-cli
+    with mm_path.open("w") as fp:
+        _write(fp)
 
-            # Make sure the source markdown stream is flushed
-            # fp.close()
+    if format:
+        # Convert Mermaid output using mmdc
+        # See https://github.com/mermaid-js/mermaid-cli
 
-            mmdc_options["-i"] = str(mm_path)
-            mmdc_options["-o"] = str(target)
-            mmdc_options["-e"] = format
+        # Make sure the source markdown stream is flushed
+        # fp.close()
 
-            cmd = ["mmdc"]
-            for k, v in mmdc_options.items():
-                cmd.extend((k, v))
+        mmdc_options["-i"] = str(mm_path)
+        mmdc_options["-o"] = str(target)
+        mmdc_options["-e"] = format
 
-            try:
-                check_output(cmd)
-            except CalledProcessError as e:  # pragma: no cover
-                raise RuntimeError(
-                    f"Could not convert Mermaid output using {cmd}.\n"
-                    f"Error: {e.output.decode()}"
-                ) from e
-            except FileNotFoundError as e:  # pragma: no cover
-                raise RuntimeError(
-                    f"Could not convert Mermaid output using {cmd}.\n"
-                    "Mermaid CLI (mmdc) not found.\n"
-                    "Please install it with `npm install -g mermaid.cli`."
-                ) from e
-        return
+        cmd = ["mmdc"]
+        for k, v in mmdc_options.items():
+            cmd.extend((k, v))
 
-    elif format:
-        raise RuntimeError("Need a filepath to convert Mermaid output.")
-
-    raise AssertionError  # pragma: no cover
+        try:
+            check_output(cmd)
+        except CalledProcessError as e:  # pragma: no cover
+            raise RuntimeError(
+                f"Could not convert Mermaid output using {cmd}.\n"
+                f"Error: {e.output.decode()}"
+            ) from e
+        except FileNotFoundError as e:  # pragma: no cover
+            raise RuntimeError(
+                f"Could not convert Mermaid output using {cmd}.\n"
+                "Mermaid CLI (mmdc) not found.\n"
+                "Please install it with `npm install -g mermaid.cli`."
+            ) from e
+    return
