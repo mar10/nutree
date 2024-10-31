@@ -75,6 +75,32 @@ class TestClones:
 
         assert tree._self_check()
 
+    def test_clones_typed(self):
+        """
+        TypedTree<'fixture'>
+        ├── function → func1
+        │   ├── failure → fail1
+        │   │   ├── cause → cause1
+        │   │   ├── cause → cause2
+        │   │   ├── effect → eff1
+        │   │   ╰── effect → eff2
+        │   ╰── failure → fail2
+        ╰── function → func2
+        """
+        tree = fixture.create_typed_tree()
+
+        assert tree.count == 8
+        assert tree.count_unique == 8
+
+        fail1 = tree["fail1"]
+        # Not allowed to add two clones to same parent
+        with pytest.raises(UniqueConstraintError):
+            fail1.add("cause1", kind="cause")
+        fail1.add("cause1")
+        tree.print()
+        assert tree.count == 9
+        assert tree.count_unique == 8
+
     def test_dict(self):
         """ """
         tree = fixture.create_tree()

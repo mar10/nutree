@@ -216,8 +216,15 @@ class Tree(Generic[TNode]):
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
             for clone in clone_list:
                 if clone.parent is node.parent:
-                    del self._node_by_id[node._node_id]
-                    raise UniqueConstraintError("Node.data already exists in parent")
+                    is_same_kind = getattr(clone, "kind", None) == getattr(
+                        node, "kind", None
+                    )
+                    if is_same_kind:
+                        del self._node_by_id[node._node_id]
+                        raise UniqueConstraintError(
+                            f"Node.data already exists in parent: {clone=}, "
+                            f"{clone.parent=}"
+                        )
             clone_list.append(node)
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
@@ -494,7 +501,7 @@ class Tree(Generic[TNode]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TNode | None:
-        """Return the one matching node or `None`.
+        """Return the first matching node or `None`.
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
         is not neccessarily the first of a specific iteration method.
