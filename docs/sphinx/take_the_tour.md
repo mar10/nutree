@@ -166,15 +166,17 @@ tree.find_all(match=lambda node: "i" in node.data.name)
 
 ### Control the `data_id`
 
-If the object instances have a natural attribute that identifies them, we can use
-it instead of the default `hash()`. <br>
-This improves readability and helps to (de)serialize:
+If the object instances have an attribute that naturally identifies them, 
+we can use it instead of the default `hash()`. <br>
+This improves readability and may be more appropriate for serialization:
 
 
 ```python
 tree_2 = Tree("Organization", calc_data_id=lambda tree, data: str(data.guid))
+
 dep_node_2 = tree_2.add(development_dep)
 dep_node_2.add(bob)
+
 tree_2.print(repr="{node}")
 ```
 
@@ -183,7 +185,7 @@ tree_2.print(repr="{node}")
         ╰── Node<'Person<Bob (35)>', data_id=ad20de1f-34c4-40cc-a102-51c28fb6ec5b>
 
 
-now we could also search by the guid, for example
+now we could also search by the GUID, for example:
 
 
 ```python
@@ -204,7 +206,7 @@ There are multiple methods to iterate the tree.
 
 ```python
 res = []
-for node in tree:  # depth-first, pre-orde traversal
+for node in tree:  # depth-first, pre-order traversal
     res.append(node.data.name)
 print(res)
 ```
@@ -278,7 +280,7 @@ tree_copy.print(repr="{node}")
 
 ## Mutation
 
-We can add, copy, move, remove, sort, etc.
+We can add, copy, move, remove, sort, &hellip; nodes.
 
 For example:
 
@@ -304,7 +306,8 @@ tree.print(repr="{node.data}")
     ╰── Person<Alice (25)>
 
 
-Read the user guide for more.
+Read the [user guide](https://nutree.readthedocs.io/en/latest/ug_mutation.html) 
+for more ways to modify a tree.
 
 ## Data IDs and Clones
 
