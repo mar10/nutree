@@ -332,3 +332,7 @@ Reading can then be implemnted using :meth:`~nutree.tree.Tree.from_dict()`::
 
 .. seealso :: This example tree only contains plain string data.
     Read :doc:`ug_objects` on how to (de)serialize arbitrary objects.
+
+
+.. seealso :: Read :doc:`ug_graphs` on how to create graphical outputs 
+    in PNG or SVG format.

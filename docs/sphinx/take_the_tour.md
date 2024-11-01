@@ -90,13 +90,13 @@ tree.print()
 ```
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x107bd3cb0>
-    │   ├── <__main__.Department object at 0x1078ea0f0>
-    │   │   ╰── <__main__.Person object at 0x107902180>
-    │   ╰── <__main__.Person object at 0x1079015b0>
-    ├── <__main__.Department object at 0x1078eb560>
-    │   ╰── <__main__.Person object at 0x109ab25a0>
-    ╰── <__main__.Person object at 0x107900980>
+    ├── <__main__.Department object at 0x109bbf6b0>
+    │   ├── <__main__.Department object at 0x1078baa50>
+    │   │   ╰── <__main__.Person object at 0x109cb23c0>
+    │   ╰── <__main__.Person object at 0x109cb2300>
+    ├── <__main__.Department object at 0x1078b8f20>
+    │   ╰── <__main__.Person object at 0x109cb2060>
+    ╰── <__main__.Person object at 0x109cb1f70>
 
 
 Tree nodes store a reference to the object in the `node.data` attribute.
@@ -134,7 +134,7 @@ tree[alice]
 
 
 
-    Node<'Person<Alice (25)>', data_id=276365464>
+    Node<'Person<Alice (25)>', data_id=278704631>
 
 
 
@@ -158,9 +158,9 @@ tree.find_all(match=lambda node: "i" in node.data.name)
 
 
 
-    [Node<'Person<Claire (45)>', data_id=276365848>,
-     Node<'Department<Marketing>', data_id=276360022>,
-     Node<'Person<Alice (25)>', data_id=276365464>]
+    [Node<'Person<Claire (45)>', data_id=278704700>,
+     Node<'Department<Marketing>', data_id=276347122>,
+     Node<'Person<Alice (25)>', data_id=278704631>]
 
 
 
@@ -179,8 +179,8 @@ tree_2.print(repr="{node}")
 ```
 
     Tree<'Organization'>
-    ╰── Node<'Department<Development>', data_id=571ace0b-1a49-44d4-ab52-97320e945d69>
-        ╰── Node<'Person<Bob (35)>', data_id=b4cbb694-a18d-420b-ad03-cda9fd0bf7f9>
+    ╰── Node<'Department<Development>', data_id=8e6ae0d7-b268-4c9d-8da8-bdc5cdcb4f8d>
+        ╰── Node<'Person<Bob (35)>', data_id=ad20de1f-34c4-40cc-a102-51c28fb6ec5b>
 
 
 now we could also search by the guid, for example
@@ -193,7 +193,7 @@ tree_2.find(data_id=str(bob.guid))
 
 
 
-    Node<'Person<Bob (35)>', data_id=b4cbb694-a18d-420b-ad03-cda9fd0bf7f9>
+    Node<'Person<Bob (35)>', data_id=ad20de1f-34c4-40cc-a102-51c28fb6ec5b>
 
 
 
@@ -258,9 +258,9 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=276550603>
-    │   ╰── Node<'Department<Test>', data_id=276359695>
-    ╰── Node<'Department<Marketing>', data_id=276360022>
+    ├── Node<'Department<Development>', data_id=278642539>
+    │   ╰── Node<'Department<Test>', data_id=276347557>
+    ╰── Node<'Department<Marketing>', data_id=276347122>
 
 
 In-place filtering is also available:
@@ -272,8 +272,8 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=276550603>
-    ╰── Node<'Department<Marketing>', data_id=276360022>
+    ├── Node<'Department<Development>', data_id=278642539>
+    ╰── Node<'Department<Marketing>', data_id=276347122>
 
 
 ## Mutation
@@ -317,14 +317,14 @@ identical data_id:
 tree.print(repr="{node}", title=False)
 ```
 
-    Node<'Department<Development>', data_id=276550603>
-    ├── Node<'Department<Test>', data_id=276359695>
-    │   ╰── Node<'Person<Claire (45)>', data_id=276365848>
-    ╰── Node<'Person<Alice (25)>', data_id=276365464>
-    Node<'Department<Marketing>', data_id=276360022>
-    ├── Node<'Person<Dave (55)>', data_id=278573658>
-    ╰── Node<'Person<Bob (35)>', data_id=276365659>
-    Node<'Person<Alice (25)>', data_id=276365464>
+    Node<'Department<Development>', data_id=278642539>
+    ├── Node<'Department<Test>', data_id=276347557>
+    │   ╰── Node<'Person<Claire (45)>', data_id=278704700>
+    ╰── Node<'Person<Alice (25)>', data_id=278704631>
+    Node<'Department<Marketing>', data_id=276347122>
+    ├── Node<'Person<Dave (55)>', data_id=278704646>
+    ╰── Node<'Person<Bob (35)>', data_id=278704688>
+    Node<'Person<Alice (25)>', data_id=278704631>
 
 
 
@@ -333,8 +333,8 @@ for clone in tree.find_all(alice):
     print(f"{clone}, parent={clone.parent}")
 ```
 
-    Node<'Person<Alice (25)>', data_id=276365464>, parent=None
-    Node<'Person<Alice (25)>', data_id=276365464>, parent=Node<'Department<Development>', data_id=276550603>
+    Node<'Person<Alice (25)>', data_id=278704631>, parent=None
+    Node<'Person<Alice (25)>', data_id=278704631>, parent=Node<'Department<Development>', data_id=278642539>
 
 
 ## Special Data Types
@@ -353,7 +353,7 @@ tree_str.add("B")
 tree_str.print()
 ```
 
-    Tree<'4456612640'>
+    Tree<'4459280720'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -383,17 +383,12 @@ tree.print(repr="{node}")
 # tree.find(d)
 ```
 
-    Tree<'4457449184'>
-    ├── Node<'A', data_id=-2140708064199008729>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4421803904>
-    ╰── Node<'B', data_id=-6374143811137841581>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4421803904>
+    Tree<'4459281584'>
+    ├── Node<'A', data_id=646631547239422124>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4459448768>
+    ╰── Node<'B', data_id=-8358617541791855429>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4459448768>
 
-
-## Serialization
-
-Read the user guide for different methods to save, load, or convert a tree
-to different output formats.
 
 ## Typed Trees
 
@@ -412,11 +407,22 @@ typed_tree.add("Mia", kind="friend").add("Noah", kind="brother").up().add(
 typed_tree.print()
 ```
 
-    TypedTree<'4415355264'>
+    TypedTree<'4459281248'>
     ╰── friend → Mia
         ├── brother → Noah
         ╰── sister → Olivia
 
+
+## Serialization
+
+Nutree supports save/load in a compact native JSON format as well as 
+ZIP, RDF, DOT, and mermaid. <br>
+Even conversion to and SVG, PNG is possible:
+
+![example](../sphinx/test_mermaid_typed.png)
+
+Read the [User Guide](https://nutree.readthedocs.io/en/latest/ug_serialize.html) 
+for different methods to save, load, or convert a tree to different output formats.
 
 # Typing
 
