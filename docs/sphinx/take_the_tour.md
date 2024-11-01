@@ -90,13 +90,13 @@ tree.print()
 ```
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x10da423f0>
-    │   ├── <__main__.Department object at 0x107ca8860>
-    │   │   ╰── <__main__.Person object at 0x10dbcea20>
-    │   ╰── <__main__.Person object at 0x10dbce2a0>
-    ├── <__main__.Department object at 0x10da419d0>
-    │   ╰── <__main__.Person object at 0x10dbce390>
-    ╰── <__main__.Person object at 0x10dbce1b0>
+    ├── <__main__.Department object at 0x107bd3cb0>
+    │   ├── <__main__.Department object at 0x1078ea0f0>
+    │   │   ╰── <__main__.Person object at 0x107902180>
+    │   ╰── <__main__.Person object at 0x1079015b0>
+    ├── <__main__.Department object at 0x1078eb560>
+    │   ╰── <__main__.Person object at 0x109ab25a0>
+    ╰── <__main__.Person object at 0x107900980>
 
 
 Tree nodes store a reference to the object in the `node.data` attribute.
@@ -134,7 +134,7 @@ tree[alice]
 
 
 
-    Node<'Person<Alice (25)>', data_id=282840603>
+    Node<'Person<Alice (25)>', data_id=276365464>
 
 
 
@@ -152,13 +152,15 @@ There are other other search methods as well
 
 
 ```python
-tree.find_all(lambda node: "i" in str(node.data))
+tree.find_all(match=lambda node: "i" in node.data.name)
 ```
 
 
 
 
-    []
+    [Node<'Person<Claire (45)>', data_id=276365848>,
+     Node<'Department<Marketing>', data_id=276360022>,
+     Node<'Person<Alice (25)>', data_id=276365464>]
 
 
 
@@ -177,8 +179,8 @@ tree_2.print(repr="{node}")
 ```
 
     Tree<'Organization'>
-    ╰── Node<'Department<Development>', data_id=a8a94901-3e87-4c71-832a-95a3678c406f>
-        ╰── Node<'Person<Bob (35)>', data_id=1055ff94-ac20-4642-95ef-a92a650a3978>
+    ╰── Node<'Department<Development>', data_id=571ace0b-1a49-44d4-ab52-97320e945d69>
+        ╰── Node<'Person<Bob (35)>', data_id=b4cbb694-a18d-420b-ad03-cda9fd0bf7f9>
 
 
 now we could also search by the guid, for example
@@ -191,7 +193,7 @@ tree_2.find(data_id=str(bob.guid))
 
 
 
-    Node<'Person<Bob (35)>', data_id=1055ff94-ac20-4642-95ef-a92a650a3978>
+    Node<'Person<Bob (35)>', data_id=b4cbb694-a18d-420b-ad03-cda9fd0bf7f9>
 
 
 
@@ -225,17 +227,14 @@ print(res)
 
 
 ```python
-tree.visit(lambda node, memo: print(node.data.name), method=IterMethod.LEVEL_ORDER)
+def callback(node, memo):
+    print(node.data.name, end=", ")
+
+
+tree.visit(callback, method=IterMethod.LEVEL_ORDER)
 ```
 
-    Development
-    Marketing
-    Alice
-    Test
-    Bob
-    Dave
-    Claire
-
+    Development, Marketing, Alice, Test, Bob, Dave, Claire, 
 
 The above traversal methods are also available for single nodes:
 
@@ -250,16 +249,31 @@ print(res)
 
 ## Filter
 
+We can create a filtered copy like so:
+
 
 ```python
-tree_copy = tree.copy(predicate=lambda node: isinstance(node.data, Department))
+tree_copy = tree.filtered(lambda node: isinstance(node.data, Department))
 tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=282739263>
-    │   ╰── Node<'Department<Test>', data_id=276605062>
-    ╰── Node<'Department<Marketing>', data_id=282739101>
+    ├── Node<'Department<Development>', data_id=276550603>
+    │   ╰── Node<'Department<Test>', data_id=276359695>
+    ╰── Node<'Department<Marketing>', data_id=276360022>
+
+
+In-place filtering is also available:
+
+
+```python
+tree_copy.filter(lambda node: "m" in node.data.name.lower())
+tree_copy.print(repr="{node}")
+```
+
+    Tree<"Copy of Tree<'Organization'>">
+    ├── Node<'Department<Development>', data_id=276550603>
+    ╰── Node<'Department<Marketing>', data_id=276360022>
 
 
 ## Mutation
@@ -290,6 +304,8 @@ tree.print(repr="{node.data}")
     ╰── Person<Alice (25)>
 
 
+Read the user guide for more.
+
 ## Data IDs and Clones
 
 In the example above, we duplicated the 'Alice' node, so we now have two 
@@ -301,14 +317,14 @@ identical data_id:
 tree.print(repr="{node}", title=False)
 ```
 
-    Node<'Department<Development>', data_id=282739263>
-    ├── Node<'Department<Test>', data_id=276605062>
-    │   ╰── Node<'Person<Claire (45)>', data_id=282840738>
-    ╰── Node<'Person<Alice (25)>', data_id=282840603>
-    Node<'Department<Marketing>', data_id=282739101>
-    ├── Node<'Person<Dave (55)>', data_id=282840633>
-    ╰── Node<'Person<Bob (35)>', data_id=282840618>
-    Node<'Person<Alice (25)>', data_id=282840603>
+    Node<'Department<Development>', data_id=276550603>
+    ├── Node<'Department<Test>', data_id=276359695>
+    │   ╰── Node<'Person<Claire (45)>', data_id=276365848>
+    ╰── Node<'Person<Alice (25)>', data_id=276365464>
+    Node<'Department<Marketing>', data_id=276360022>
+    ├── Node<'Person<Dave (55)>', data_id=278573658>
+    ╰── Node<'Person<Bob (35)>', data_id=276365659>
+    Node<'Person<Alice (25)>', data_id=276365464>
 
 
 
@@ -317,14 +333,15 @@ for clone in tree.find_all(alice):
     print(f"{clone}, parent={clone.parent}")
 ```
 
-    Node<'Person<Alice (25)>', data_id=282840603>, parent=None
-    Node<'Person<Alice (25)>', data_id=282840603>, parent=Node<'Department<Development>', data_id=282739263>
+    Node<'Person<Alice (25)>', data_id=276365464>, parent=None
+    Node<'Person<Alice (25)>', data_id=276365464>, parent=Node<'Department<Development>', data_id=276550603>
 
 
 ## Special Data Types
 ### Plain Strings
 
-We can add simple string objects the same way as any other object
+Plain strings are hashable objects, so we can handle them the same way as any 
+other object:
 
 
 ```python
@@ -336,7 +353,7 @@ tree_str.add("B")
 tree_str.print()
 ```
 
-    Tree<'4525455792'>
+    Tree<'4456612640'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -347,7 +364,10 @@ tree_str.print()
 
 We cannot add Python `dict` objects to a tree, because nutree cannot derive
 a *data_id* for unhashable types. <br>
-A a workaround, we can wrap it inside `DictWrapper` objects:
+We can handle this by passing a *data_id* explicitly to `add()` and similar 
+methods, or implement a `calc_data_id` callback as shown before.
+
+As another workaround, we can wrap it inside `DictWrapper` objects:
 
 
 ```python
@@ -363,11 +383,11 @@ tree.print(repr="{node}")
 # tree.find(d)
 ```
 
-    Tree<'4525453728'>
-    ├── Node<'A', data_id=6789757684237002091>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4425631040>
-    ╰── Node<'B', data_id=-9085030021599920704>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4425631040>
+    Tree<'4457449184'>
+    ├── Node<'A', data_id=-2140708064199008729>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4421803904>
+    ╰── Node<'B', data_id=-6374143811137841581>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4421803904>
 
 
 ## Serialization
@@ -392,8 +412,13 @@ typed_tree.add("Mia", kind="friend").add("Noah", kind="brother").up().add(
 typed_tree.print()
 ```
 
-    TypedTree<'4425583216'>
+    TypedTree<'4415355264'>
     ╰── friend → Mia
         ├── brother → Noah
         ╰── sister → Olivia
 
+
+# Typing
+
+Nutree comes fully typed (passing [pyright](https://microsoft.github.io/pyright/#/) 
+standard checks). This improves type-safety and auto-complete features in your IDE.
