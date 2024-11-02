@@ -26,6 +26,7 @@ yabs = "*"
 nutree = {path = ".",editable = true}
 
 [packages]
+typing_extensions = "*"
 
 [requires]
 python_version = "3.12"
