@@ -6,8 +6,9 @@ name = "pypi"
 [dev-packages]
 fabulist="*"
 ipykernel = "*"
+mypy = "*"
 notebook = "*"
-pandoc = "*" # jupyter nbconvert --to rst
+# pandoc = "*" # jupyter nbconvert --to rst
 pre-commit = "*"
 pydot = "*"
 pyright = "*"
