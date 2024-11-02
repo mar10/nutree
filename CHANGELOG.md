@@ -10,7 +10,7 @@
   - mermaid: change mapper signatures and defaults
 - tree.to_rdf() is now available for Tree (not only TypedTree).
 - New method `node.up()` allows method chaining when adding nodes.
-- Passes pyright 'typeCheckingMode = "standard"'.
+- Pass pyright 'typeCheckingMode = "standard"'.
 - Use generic typing for improved type checking.
 
 ## 0.9.0 (2024-09-12)

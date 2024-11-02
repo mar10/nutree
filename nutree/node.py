@@ -630,21 +630,24 @@ class Node:
             return cast(Self, n)  # need to return a node
 
         source_node = None
-        # factory: Type[Self] = self._tree.node_factory
+
         if isinstance(child, Node):
+            # Adding an existing node means that we create a clone
             if deep is None:
                 deep = False
             if deep and data_id is not None or node_id is not None:
                 raise ValueError("Cannot set ID for deep copies.")
+
             source_node = child
             if source_node._tree is self._tree:
-                if source_node._parent is self._parent:
+                if source_node._parent is self:
                     raise UniqueConstraintError(
-                        f"Same parent not allowed: {source_node}"
+                        f"Cannot add a copy of {source_node} as child of {self}, "
+                        "because it would create a 2nd instance in the same parent."
                     )
             else:
                 pass
-                # raise NotImplementedError("Cross-tree adding")
+
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 

@@ -18,7 +18,7 @@ nutree
 
    Overview<self>
    installation
-   take_the_tour
+   take_the_tour.md
    user_guide
    reference_guide
    development
