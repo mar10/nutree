@@ -34,7 +34,8 @@ def _make_tree_2():
 class TestCommon:
     def test_check_python_version(self):
         assert check_python_version((3, 7)) is True
-        assert check_python_version((99, 1)) is False
+        with pytest.warns(DeprecationWarning):
+            assert check_python_version((99, 1)) is False
 
 
 class TestBasics:
@@ -645,7 +646,8 @@ class TestTraversal:
             if node.name == "a12":
                 raise StopIteration
 
-        res_2 = tree.visit(cb)
+        with pytest.warns(RuntimeWarning, match="Should raise StopTraversal"):
+            res_2 = tree.visit(cb)
 
         assert ",".join(res) == "A,a1,a11,a12"
 
@@ -654,7 +656,7 @@ class TestTraversal:
         def cb(node: Node, memo: Any):
             res.append(node.name)
             if node.name == "a12":
-                return StopIteration
+                return StopTraversal
 
         res_2 = tree.visit(cb)
 
@@ -1466,7 +1468,7 @@ class TestCopy:
 
         def pred(node):
             if node.name == "a12":
-                raise StopIteration
+                raise StopTraversal
             return "2" in node.name.lower()
 
         tree_2 = tree.filtered(predicate=pred)
