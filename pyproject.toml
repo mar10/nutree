@@ -1,3 +1,4 @@
+# --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
 target-version = "py38"
 src = ["nutree", "tests"]
@@ -32,6 +33,7 @@ ignore = [
 # [tool.ruff.pydocstyle]
 # convention = "google"
 
+# --- Pyright Settings ---------------------------------------------------------
 [tool.pyright]
 typeCheckingMode = "standard"
 reportMissingImports = "none"
@@ -40,7 +42,12 @@ include = ["nutree", "tests"]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 reportUnnecessaryTypeIgnoreComment = true
 
-# --- Coverage Settings --------------------------------------------------------
+# --- Mypy Settings ------------------------------------------------------------
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+# --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]
 # addopts = "-ra -q --cov=nutree --cov-report=html"
 addopts = "-ra -q --cov=nutree"

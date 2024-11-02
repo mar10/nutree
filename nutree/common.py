@@ -121,7 +121,7 @@ class StopTraversal(IterationControl):
 DataIdType = Union[str, int]
 
 #: Type of ``Tree(..., calc_data_id)```
-CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
+CalcIdCallbackType = Callable[["Tree[Any]", Any], DataIdType]
 
 #: Type of ``format(..., repr=)```
 ReprArgType = Union[str, Callable[["Node"], str]]
@@ -227,19 +227,18 @@ class DictWrapper:
     __slots__ = ("_dict",)
 
     def __init__(self, dict_inst: dict | None = None, **values) -> None:
+        self._dict: dict = {}
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
             if not isinstance(dict_inst, dict):
-                self._dict = None  # type: ignore
                 raise TypeError("dict_inst must be a dictionary or None")
             if values:
-                self._dict = None  # type: ignore
                 raise ValueError("Cannot pass both dict_inst and **values")
-            self._dict: dict = dict_inst
+            self._dict = dict_inst
         else:
             # Single keyword arguments are passed (probably from unpacked dict):
             # store them in a new dictionary
-            self._dict: dict = values
+            self._dict = values
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self._dict}>"
@@ -302,6 +301,7 @@ class DictWrapper:
             tree.save(file_path, mapper=DictWrapper.serialize_mapper)
 
         """
+        assert isinstance(nutree_node.data, DictWrapper)
         return nutree_node.data._dict.copy()
 
     @classmethod

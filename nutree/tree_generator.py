@@ -12,8 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Sequence, Union
 
-from typing_extensions import TypeVar
-
+# from typing_extensions import TypeVar
 from nutree.common import DictWrapper
 from nutree.node import Node
 from nutree.tree import Tree
@@ -28,7 +27,7 @@ except ImportError:  # pragma: no cover
     Fabulist = None
     fab = None
 
-TTree = TypeVar("TTree", bound=Tree)
+# TTree = TypeVar("TTree", bound=Tree)
 
 
 # ------------------------------------------------------------------------------
@@ -392,7 +391,7 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class: type[TTree], structure_def: dict) -> TTree:
+def build_random_tree(*, tree_class: type[Tree[Any]], structure_def: dict) -> Tree:
     """
     Return a nutree.TypedTree with random data from a specification.
     See :ref:`randomize` for details.
@@ -405,7 +404,7 @@ def build_random_tree(*, tree_class: type[TTree], structure_def: dict) -> TTree:
     assert not structure_def, f"found extra data: {structure_def}"
     assert "__root__" in relations, "missing '__root__' relation"
 
-    tree: TTree = tree_class(
+    tree: Tree = tree_class(
         name=name,
         forward_attrs=True,
     )

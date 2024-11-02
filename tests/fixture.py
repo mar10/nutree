@@ -222,7 +222,10 @@ def flatten_nodes(tree):
 
 
 def canonical_repr(
-    obj: str | Tree | Node, *, repr: ReprArgType | None = None, style="ascii32"
+    obj: str | TypedTree | Tree | Node,
+    *,
+    repr: ReprArgType | None = None,
+    style="ascii32",
 ) -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
@@ -243,7 +246,7 @@ canonical_tree_header = "Tree<*>"
 
 
 def _check_content(
-    tree: Tree | Node | str,
+    tree: TypedTree | Tree | Node | str,
     expect_ascii,
     msg="",
     ignore_tree_name=True,
@@ -272,7 +275,7 @@ def _check_content(
 
 
 def check_content(
-    tree: Tree | Node | str,
+    tree: TypedTree | Tree | Node | str,
     expect_ascii,
     *,
     msg="",

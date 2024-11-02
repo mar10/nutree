@@ -13,7 +13,7 @@ Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdfli
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 from nutree.common import IterationControl
 
@@ -163,7 +163,7 @@ def node_to_rdf(
 
 
 def tree_to_rdf(
-    tree: Tree,
+    tree: Tree[Any],
     *,
     node_mapper: RDFMapperCallbackType | None = None,
 ) -> Graph:

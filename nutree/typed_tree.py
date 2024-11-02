@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Iterator, cast
+from typing import IO, Any, Iterator, Type, cast
 
 # typing.Self requires Python 3.11
 from typing_extensions import Self
@@ -269,14 +269,16 @@ class TypedNode(Node):
                 self.add_child(n, kind=n.kind, before=before, deep=deep)
             return child._root  # type: ignore
 
-        source_node = None
-        factory = self._tree.node_factory
-        if isinstance(child, factory):
+        source_node: Self = None  # type: ignore
+        new_node: Self = None  # type: ignore
+        factory: Type[Self] = self._tree.node_factory  # type: ignore
+
+        if isinstance(child, TypedNode):
             if deep is None:
                 deep = False
             if deep and data_id is not None or node_id is not None:
                 raise ValueError("Cannot set ID for deep copies.")
-            source_node = child
+            source_node = cast(Self, child)
             if source_node._tree is self._tree:
                 if source_node._parent is self:
                     raise UniqueConstraintError(
@@ -288,9 +290,7 @@ class TypedNode(Node):
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             # If creating an inherited node, use the parent class as constructor
-            child_class = factory  # child.__class__
-
-            node = child_class(
+            new_node = factory(
                 kind,
                 source_node.data,
                 parent=self,
@@ -298,18 +298,20 @@ class TypedNode(Node):
                 node_id=node_id,
             )
         else:
-            node = factory(kind, child, parent=self, data_id=data_id, node_id=node_id)
+            new_node = factory(
+                kind, child, parent=self, data_id=data_id, node_id=node_id
+            )
 
         # assert isinstance(node, self.__class__)
 
         children = self._children
         if children is None:
             assert before in (None, True, int, False)
-            self._children = [node]
+            self._children = [new_node]
         elif before is True:  # prepend
-            children.insert(0, node)
+            children.insert(0, new_node)
         elif isinstance(before, int):
-            children.insert(before, node)
+            children.insert(before, new_node)
         elif before:
             if before._parent is not self:
                 raise ValueError(
@@ -317,14 +319,14 @@ class TypedNode(Node):
                     f"must be a child of target node ({self})"
                 )
             idx = children.index(before)  # raises ValueError
-            children.insert(idx, node)
+            children.insert(idx, new_node)
         else:
-            children.append(node)
+            children.append(new_node)
 
         if deep and source_node:
-            node._add_from(source_node)
+            new_node._add_from(source_node)
 
-        return node
+        return new_node
 
     #: Alias for :meth:`add_child`
     add = add_child
@@ -467,6 +469,23 @@ class TypedNode(Node):
 
 
 # ------------------------------------------------------------------------------
+# - _SystemRootTypedNode
+# ------------------------------------------------------------------------------
+class _SystemRootTypedNode(TypedNode):
+    """Invisible system root node."""
+
+    def __init__(self, tree: TypedTree) -> None:
+        self._tree: TypedTree = tree  # type: ignore
+        self._parent = None  # type: ignore
+        self._node_id = ROOT_NODE_ID
+        self._data_id = ROOT_DATA_ID
+        self._data = tree.name
+        self._children = []
+        self._meta = None
+        self._kind = None
+
+
+# ------------------------------------------------------------------------------
 # - TypedTree
 # ------------------------------------------------------------------------------
 class TypedTree(Tree[TypedNode]):
@@ -479,6 +498,7 @@ class TypedTree(Tree[TypedNode]):
     """
 
     node_factory = TypedNode
+    root_node_factory = _SystemRootTypedNode
 
     #: Default value for ``key_map`` argument when saving
     DEFAULT_KEY_MAP = {"data_id": "i", "str": "s", "kind": "k"}
@@ -499,7 +519,7 @@ class TypedTree(Tree[TypedNode]):
             calc_data_id=calc_data_id,
             forward_attrs=forward_attrs,
         )
-        self._root = _SystemRootTypedNode(self)
+        # self._root = _SystemRootTypedNode(self)
 
     @classmethod
     def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
@@ -652,20 +672,3 @@ class TypedTree(Tree[TypedNode]):
     #     """Build a random tree for testing."""
     #     tt = build_random_tree(cls, structure_def)
     #     return tt
-
-
-# ------------------------------------------------------------------------------
-# - _SystemRootTypedNode
-# ------------------------------------------------------------------------------
-class _SystemRootTypedNode(TypedNode):
-    """Invisible system root node."""
-
-    def __init__(self, tree: TypedTree) -> None:
-        self._tree: TypedTree = tree  # type: ignore
-        self._parent = None  # type: ignore
-        self._node_id = ROOT_NODE_ID
-        self._data_id = ROOT_DATA_ID
-        self._data = tree.name
-        self._children = []
-        self._meta = None
-        self._kind = None

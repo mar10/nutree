@@ -64,6 +64,7 @@ from nutree.dot import node_to_dot
 from nutree.rdf import RDFMapperCallbackType, node_to_rdf
 
 TNode = TypeVar("TNode", bound="Node", default="Node")
+# TNode = TypeVar("TNode", bound="Node", default="Node", covariant=True)
 
 
 # ------------------------------------------------------------------------------
@@ -410,7 +411,7 @@ class Node:
 
     def first_sibling(self) -> Self:
         """Return first sibling (may be self)."""
-        return self._parent._children[0]  # type: ignore[reportOptionalSubscript]
+        return self._parent._children[0]  # type: ignore
 
     def prev_sibling(self) -> Self | None:
         """Predecessor or None, if node is first sibling."""
@@ -629,16 +630,18 @@ class Node:
                 self.add_child(n, before=before, deep=deep)
             return cast(Self, n)  # need to return a node
 
-        source_node = None
+        source_node: Self = None  # type: ignore
+        new_node: Self = None  # type: ignore
 
         if isinstance(child, Node):
+            assert isinstance(child, self.tree.node_factory)
             # Adding an existing node means that we create a clone
             if deep is None:
                 deep = False
             if deep and data_id is not None or node_id is not None:
                 raise ValueError("Cannot set ID for deep copies.")
 
-            source_node = child
+            source_node = cast(Self, child)
             if source_node._tree is self._tree:
                 if source_node._parent is self:
                     raise UniqueConstraintError(
@@ -654,12 +657,18 @@ class Node:
             # If creating an inherited node, use the parent class as constructor
             # child_class = child.__class__
 
-            node = self.tree.node_factory(
-                source_node.data, parent=self, data_id=data_id, node_id=node_id
+            new_node = cast(
+                Self,
+                self.tree.node_factory(
+                    source_node.data, parent=self, data_id=data_id, node_id=node_id
+                ),
             )
         else:
-            node = self.tree.node_factory(
-                child, parent=self, data_id=data_id, node_id=node_id
+            new_node = cast(
+                Self,
+                self.tree.node_factory(
+                    child, parent=self, data_id=data_id, node_id=node_id
+                ),
             )
 
         if before is True:
@@ -668,9 +677,9 @@ class Node:
         children = self._children
         if children is None:
             assert before in (None, True, int, False)
-            self._children = [node]
+            self._children = [new_node]
         elif isinstance(before, int):
-            children.insert(before, node)
+            children.insert(before, new_node)
         elif before:
             if before._parent is not self:
                 raise ValueError(
@@ -678,14 +687,14 @@ class Node:
                     f"must be a child of target node ({self})"
                 )
             idx = children.index(before)  # raises ValueError
-            children.insert(idx, node)
+            children.insert(idx, new_node)
         else:
-            children.append(node)
+            children.append(new_node)
 
         if deep and source_node:
-            node._add_from(source_node)
+            new_node._add_from(source_node)
 
-        return node
+        return new_node
 
     #: Alias for :meth:`add_child`
     add = add_child
@@ -854,7 +863,7 @@ class Node:
 
     def copy_to(
         self,
-        target: Self | Tree,
+        target: Self | Tree[Self],
         *,
         add_self=True,
         before: Self | bool | int | None = None,
@@ -873,7 +882,9 @@ class Node:
         If `deep` is set, all descendants are copied recursively.
         """
         if add_self:
-            return target.add_child(self, before=before, deep=deep)
+            res = target.add_child(self, before=before, deep=deep)
+            return cast(Self, res)  # if target is Tree, type is not inferred?
+            # return target.add_child(self, before=before, deep=deep)
         assert before is None
         if not self._children:
             raise ValueError("Need child nodes when `add_self=False`")
@@ -968,7 +979,7 @@ class Node:
 
         See also :ref:`iteration-callbacks`.
         """
-        if not predicate:
+        if not predicate:  # mypy: ignore
             raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(add_self=True, predicate=predicate)
 
@@ -1143,6 +1154,7 @@ class Node:
                     return
         except StopTraversal as e:
             return e.value
+        return
 
     def _iter_pre(self) -> Iterator[Self]:
         """Depth-first, pre-order traversal."""
@@ -1397,7 +1409,12 @@ class Node:
         yield from self._render_lines(repr=repr, style=style, add_self=add_self)
 
     def format(
-        self, *, repr: ReprArgType | None = None, style=None, add_self=True, join="\n"
+        self,
+        *,
+        repr: ReprArgType | None = None,
+        style=None,
+        add_self=True,
+        join: str = "\n",
     ) -> str:
         r"""Return a pretty string representation of the node hierarchy.
 

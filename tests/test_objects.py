@@ -107,14 +107,14 @@ class TestObjects:
         # Note caveat: `node.name` is not forwardeded, but a native property:
         assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
         with pytest.raises(AttributeError):
-            let_it_be_node.name = "foo"
+            let_it_be_node.name = "foo"  # type: ignore
 
         # `node.price` is alliased to `node.data.price`
         assert let_it_be_node.price == 12.34
 
         # forward-attributes are readonly
         with pytest.raises(AttributeError):
-            let_it_be_node.price = 9.99
+            let_it_be_node.price = 9.99  # type: ignore
 
 
 class TestDictWrapper:
@@ -183,7 +183,7 @@ class TestDictWrapper:
 
         with pytest.raises(TypeError, match="'Node' object is not subscriptable"):
             # should NOT support item access via indexing
-            _ = node["a"]
+            _ = node["a"]  # type: ignore
 
         with pytest.raises(AttributeError):
             # should not support attribute access via data

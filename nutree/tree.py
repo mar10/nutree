@@ -71,6 +71,22 @@ check_python_version(MIN_PYTHON_VERSION_INFO)
 
 
 # ------------------------------------------------------------------------------
+# - _SystemRootNode
+# ------------------------------------------------------------------------------
+class _SystemRootNode(Node):
+    """Invisible system root node."""
+
+    def __init__(self, tree: Tree) -> None:
+        self._tree: Tree = tree  # type: ignore
+        self._parent = None  # type: ignore
+        self._node_id = ROOT_NODE_ID
+        self._data_id = ROOT_DATA_ID
+        self._data = tree.name
+        self._children = []
+        self._meta = None
+
+
+# ------------------------------------------------------------------------------
 # - Tree
 # ------------------------------------------------------------------------------
 class Tree(Generic[TNode]):
@@ -89,14 +105,15 @@ class Tree(Generic[TNode]):
     **Note:** Use with care, see also :ref:`forward-attributes`.
     """
 
-    node_factory: Type[TNode] = cast(Type[TNode], Node)
+    node_factory: Type[Node] = Node
+    root_node_factory = _SystemRootNode
 
     #: Default connector prefixes ``format(style=...)`` argument.
     DEFAULT_CONNECTOR_STYLE = "round43"
     #: Default value for ``save(..., key_map=...)`` argument.
-    DEFAULT_KEY_MAP = {"data_id": "i", "str": "s"}
+    DEFAULT_KEY_MAP: dict[str, str] = {"data_id": "i", "str": "s"}
     #: Default value for ``save(..., value_map=...)`` argument.
-    DEFAULT_VALUE_MAP = {}
+    DEFAULT_VALUE_MAP: dict[str, list[str]] = {}
     # #: Default value for ``save(..., mapper=...)`` argument.
     # DEFAULT_SERIALZATION_MAPPER = None
     # #: Default value for ``load(..., mapper=...)`` argument.
@@ -112,7 +129,7 @@ class Tree(Generic[TNode]):
         self._lock = threading.RLock()
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
-        self._root: TNode = cast(TNode, _SystemRootNode(self))
+        self._root: TNode = self.root_node_factory(self)  # type: ignore
         self._node_by_id: dict[int, TNode] = {}
         self._nodes_by_data_id: dict[DataIdType, list[TNode]] = {}
         # Optional callback that calculates data_ids from data objects
@@ -904,7 +921,7 @@ class Tree(Generic[TNode]):
         return True
 
     @classmethod
-    def build_random_tree(cls: type[Self], structure_def: dict) -> Self:
+    def build_random_tree(cls, structure_def: dict) -> Self:
         """Build a random tree for .
 
         Returns a new :class:`Tree` instance with random nodes, as defined by
@@ -917,20 +934,4 @@ class Tree(Generic[TNode]):
         from nutree.tree_generator import build_random_tree
 
         tt = build_random_tree(tree_class=cls, structure_def=structure_def)
-        return tt
-
-
-# ------------------------------------------------------------------------------
-# - _SystemRootNode
-# ------------------------------------------------------------------------------
-class _SystemRootNode(Node):
-    """Invisible system root node."""
-
-    def __init__(self, tree: Tree) -> None:
-        self._tree: Tree = tree  # type: ignore
-        self._parent = None  # type: ignore
-        self._node_id = ROOT_NODE_ID
-        self._data_id = ROOT_DATA_ID
-        self._data = tree.name
-        self._children = []
-        self._meta = None
+        return cast(Self, tt)

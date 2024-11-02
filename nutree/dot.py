@@ -8,7 +8,7 @@ Functions and declarations to support
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Iterator
+from typing import IO, TYPE_CHECKING, Any, Iterator
 
 from nutree.common import MapperCallbackType, call_mapper
 
@@ -111,7 +111,7 @@ def node_to_dot(
 
 
 def tree_to_dotfile(
-    tree: Tree,
+    tree: Tree[Any],
     target: IO[str] | str | Path,
     *,
     format=None,
