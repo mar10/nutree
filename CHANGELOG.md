@@ -11,7 +11,8 @@
 - tree.to_rdf() is now available for Tree (not only TypedTree).
 - New method `node.up()` allows method chaining when adding nodes.
 - Pass pyright 'typeCheckingMode = "standard"'.
-- Use generic typing for improved type checking.
+- Use generic typing for improved type checking, e.g. use `tree = Tree[Animals]()`
+  to create a type-aware container.
 
 ## 0.9.0 (2024-09-12)
 

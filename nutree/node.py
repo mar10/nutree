@@ -569,7 +569,7 @@ class Node(Generic[TData]):
 
     def add_child(
         self,
-        child: Self | Tree | Any,
+        child: Self | Tree | TData,
         *,
         before: Self | bool | int | None = None,
         deep: bool | None = None,
@@ -603,7 +603,7 @@ class Node(Generic[TData]):
             - <Node>: prepend the new node before this child node
 
         Args:
-            child (Node|Tree|Any):
+            child (Node|Tree|TData):
                 Either an existing Node or a data object.
             before (bool|int|Node|None):
                 Optional position.
@@ -627,7 +627,7 @@ class Node(Generic[TData]):
         if isinstance(child, self._tree.__class__):
             if deep is None:
                 deep = True
-            topnodes = child._root.children
+            topnodes = cast(list[Self], child.system_root.children)
             if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
             n = None
@@ -701,7 +701,7 @@ class Node(Generic[TData]):
 
     def append_child(
         self,
-        child: Self | Tree | Any,
+        child: Self | Tree | TData,
         *,
         deep=None,
         data_id: DataIdType | None = None,
@@ -717,7 +717,7 @@ class Node(Generic[TData]):
 
     def prepend_child(
         self,
-        child: Self | Tree | Any,
+        child: Self | Tree | TData,
         *,
         deep=None,
         data_id: DataIdType | None = None,
@@ -737,7 +737,7 @@ class Node(Generic[TData]):
 
     def prepend_sibling(
         self,
-        child: Self | Tree | Any,
+        child: Self | Tree | TData,
         *,
         deep=None,
         data_id: DataIdType | None = None,
@@ -753,7 +753,7 @@ class Node(Generic[TData]):
 
     def append_sibling(
         self,
-        child: Self | Tree | Any,
+        child: Self | Tree | TData,
         *,
         deep=None,
         data_id: DataIdType | None = None,
@@ -1096,7 +1096,7 @@ class Node(Generic[TData]):
         *,
         add_self=False,
         method: IterMethod = IterMethod.PRE_ORDER,
-        memo: Any = None,
+        memo: Any | None = None,
     ) -> None | Any:
         """Call `callback(node, memo)` for all subnodes.
 
