@@ -121,7 +121,7 @@ class StopTraversal(IterationControl):
 DataIdType = Union[str, int]
 
 #: Type of ``Tree(..., calc_data_id)```
-CalcIdCallbackType = Callable[["Tree[Any]", Any], DataIdType]
+CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 
 #: Type of ``format(..., repr=)```
 ReprArgType = Union[str, Callable[["Node"], str]]

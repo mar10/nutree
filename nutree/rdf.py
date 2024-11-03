@@ -163,7 +163,7 @@ def node_to_rdf(
 
 
 def tree_to_rdf(
-    tree: Tree[Any],
+    tree: Tree[Any, Any],
     *,
     node_mapper: RDFMapperCallbackType | None = None,
 ) -> Graph:
