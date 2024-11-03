@@ -111,7 +111,7 @@ def node_to_dot(
 
 
 def tree_to_dotfile(
-    tree: Tree[Any],
+    tree: Tree[Any, Any],
     target: IO[str] | str | Path,
     *,
     format=None,

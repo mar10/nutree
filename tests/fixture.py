@@ -61,7 +61,12 @@ class Department:
 
 
 def create_tree(
-    *, style="simple", name="fixture", clones=False, tree=None, print=True
+    *,
+    style="simple",
+    name="fixture",
+    clones=False,
+    tree: Tree | None = None,
+    print=True,
 ) -> Tree:
     if tree is not None:
         assert not tree, "must be empty"
@@ -123,7 +128,12 @@ def create_tree(
 
 
 def create_typed_tree(
-    *, style="simple", name="fixture", clones=False, tree=None, print=True
+    *,
+    style="simple",
+    name="fixture",
+    clones=False,
+    tree: TypedTree | None = None,
+    print=True,
 ) -> TypedTree:
     if tree is not None:
         assert not tree, "must be empty"
@@ -282,7 +292,7 @@ def check_content(
     ignore_tree_name=True,
     repr: ReprArgType | None = None,
     style=None,
-):
+) -> bool:
     err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)
     if err:
         raise AssertionError(err) from None

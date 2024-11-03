@@ -9,15 +9,14 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Any, Iterator, Type, cast
+from typing import IO, Iterator, Type, cast
 
 # typing.Self requires Python 3.11
-from typing_extensions import Self
+from typing_extensions import Any, Self
 
 from nutree.common import (
     ROOT_DATA_ID,
     ROOT_NODE_ID,
-    CalcIdCallbackType,
     DataIdType,
     DeserializeMapperType,
     KeyMapType,
@@ -28,7 +27,7 @@ from nutree.common import (
     call_mapper,
     sentinel,
 )
-from nutree.node import Node
+from nutree.node import Node, TData
 from nutree.tree import Tree
 
 
@@ -43,7 +42,7 @@ ANY_KIND = sentinel.ANY_KIND
 # ------------------------------------------------------------------------------
 # - TypedNode
 # ------------------------------------------------------------------------------
-class TypedNode(Node):
+class TypedNode(Node[TData]):
     """
     A special node variant, derived from :class:`~nutree.node.Node` and
     used by :class:`~nutree.typed_tree.TypedTree`.
@@ -64,14 +63,14 @@ class TypedNode(Node):
     def __init__(
         self,
         kind: str,
-        data,
+        data: TData,
         *,
         parent: Self,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
         meta: dict | None = None,
     ):
-        self._kind = kind  # tree._register() checks for this attribute
+        self._kind: str = kind  # tree._register() checks for this attribute
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
@@ -86,33 +85,9 @@ class TypedNode(Node):
             f"{self.name}, data_id={self.data_id!r}>"
         )
 
-    # @property
-    # def name(self) -> str:
-    #     """String representation of the embedded `data` object with kind."""
-    #     # return f"{self._kind} → {self.data}"
-    #     # Inspired by clarc notation: http://www.jclark.com/xml/xmlns.htm
-    #     # return f"{{{self._kind}}}:{self.data}"
-    #     return f"{self.data}"
-
     @property
     def kind(self) -> str:
         return self._kind
-
-    # @property
-    # def parent(self) -> TypedNode | None:
-    #     """Return parent node or None for toplevel nodes."""
-    #     p = self._parent
-    #     return p if p._parent else None
-
-    # @property
-    # def children(self) -> list[TypedNode]:
-    #     """Return list of direct child nodes (list may be empty).
-
-    #     Note that this property returns all children, independent of the kind.
-    #     See also :meth:`get_children`.
-    #     """
-    #     c = self._children
-    #     return [] if c is None else c
 
     def get_children(self, kind: str | ANY_KIND) -> list[Self]:
         """Return list of direct child nodes of a given type (list may be empty)."""
@@ -122,12 +97,6 @@ class TypedNode(Node):
         elif kind is ANY_KIND:
             return all_children
         return list(filter(lambda n: n._kind == kind, all_children))
-
-    # def set_data(
-    #     self, kind: str, data, *, data_id=None, with_clones: bool = None
-    # ) -> None:
-    #     """Change node's `data` and/or `data_id` and update bookkeeping."""
-    #     super().set_data(data, data_id=data_id, with_clones=with_clones)
 
     def first_child(self, kind: str | ANY_KIND) -> Self | None:
         """First direct child node or None if no children exist."""
@@ -238,7 +207,7 @@ class TypedNode(Node):
 
     def add_child(
         self,
-        child: Self | TypedTree | Any,
+        child: Self | TypedTree | TData,
         *,
         kind: str | None = None,
         before: Self | bool | int | None = None,
@@ -262,12 +231,12 @@ class TypedNode(Node):
         if isinstance(child, TypedTree):
             if deep is None:
                 deep = True
-            topnodes = child._root.children
+            topnodes = cast(list[Self], child.system_root.children)
             if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
             for n in topnodes:
                 self.add_child(n, kind=n.kind, before=before, deep=deep)
-            return child._root  # type: ignore
+            return child.system_root  # type: ignore
 
         source_node: Self = None  # type: ignore
         new_node: Self = None  # type: ignore
@@ -333,7 +302,7 @@ class TypedNode(Node):
 
     def append_child(
         self,
-        child: Self | TypedTree | Any,
+        child: Self | TypedTree | TData,
         *,
         kind: str | None = None,
         deep: bool | None = None,
@@ -355,7 +324,7 @@ class TypedNode(Node):
 
     def prepend_child(
         self,
-        child: Self | TypedTree | Any,
+        child: Self | TypedTree | TData,
         *,
         kind: str | None = None,
         deep: bool | None = None,
@@ -377,7 +346,7 @@ class TypedNode(Node):
 
     def prepend_sibling(
         self,
-        child: Self | TypedTree | Any,
+        child: Self | TypedTree | TData,
         *,
         kind: str | None = None,
         deep=None,
@@ -394,7 +363,7 @@ class TypedNode(Node):
 
     def append_sibling(
         self,
-        child: Self | TypedTree | Any,
+        child: Self | TypedTree | TData,
         *,
         kind: str | None = None,
         deep: bool | None = None,
@@ -482,13 +451,13 @@ class _SystemRootTypedNode(TypedNode):
         self._data = tree.name
         self._children = []
         self._meta = None
-        self._kind = None
+        self._kind = None  # type: ignore
 
 
 # ------------------------------------------------------------------------------
 # - TypedTree
 # ------------------------------------------------------------------------------
-class TypedTree(Tree[TypedNode]):
+class TypedTree(Tree[TData, TypedNode[TData]]):
     """
     A special tree variant, derived from :class:`~nutree.tree.Tree`,
     that uses :class:`~nutree.typed_tree.TypedNode` objects, which maintain
@@ -507,20 +476,6 @@ class TypedTree(Tree[TypedNode]):
     #: Default value for ``add_child`` when loading.
     DEFAULT_CHILD_TYPE = "child"
 
-    def __init__(
-        self,
-        name: str | None = None,
-        *,
-        calc_data_id: CalcIdCallbackType | None = None,
-        forward_attrs: bool = False,
-    ):
-        super().__init__(
-            name,
-            calc_data_id=calc_data_id,
-            forward_attrs=forward_attrs,
-        )
-        # self._root = _SystemRootTypedNode(self)
-
     @classmethod
     def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
@@ -534,19 +489,19 @@ class TypedTree(Tree[TypedNode]):
 
     def add_child(
         self,
-        child: TypedNode | Self | Any,
+        child: TypedNode[TData] | Self | TData,
         *,
         kind: str | None = None,
-        before: TypedNode | bool | int | None = None,
+        before: TypedNode[TData] | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ) -> TypedNode:
+    ) -> TypedNode[TData]:
         """Add a toplevel node.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """
-        return self._root.add_child(
+        return self.system_root.add_child(
             child,
             kind=kind,
             before=before,
@@ -558,15 +513,15 @@ class TypedTree(Tree[TypedNode]):
     #: Alias for :meth:`add_child`
     add = add_child  # Must re-bind here
 
-    def first_child(self, kind: str | ANY_KIND) -> TypedNode | None:
+    def first_child(self, kind: str | ANY_KIND) -> TypedNode[TData] | None:
         """Return the first toplevel node."""
-        return self._root.first_child(kind=kind)
+        return self.system_root.first_child(kind=kind)
 
-    def last_child(self, kind: str | ANY_KIND) -> TypedNode | None:
+    def last_child(self, kind: str | ANY_KIND) -> TypedNode[TData] | None:
         """Return the last toplevel node."""
-        return self._root.last_child(kind=kind)
+        return self.system_root.last_child(kind=kind)
 
-    def iter_by_type(self, kind: str | ANY_KIND) -> Iterator[TypedNode]:
+    def iter_by_type(self, kind: str | ANY_KIND) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
             return self.iterator()
         for n in self.iterator():
@@ -622,7 +577,7 @@ class TypedTree(Tree[TypedNode]):
             mapper = cls.deserialize_mapper
 
         # System root has index #0:
-        node_idx_map: dict[int, TypedNode] = {0: tree._root}
+        node_idx_map: dict[int, TypedNode[TData]] = {0: tree.system_root}
 
         # Start reading data lines starting at index #1:
         for idx, (parent_idx, data) in enumerate(obj, 1):
@@ -630,7 +585,7 @@ class TypedTree(Tree[TypedNode]):
             # print(idx, parent_idx, data, parent)
             if isinstance(data, str):
                 # This can only happen if the source was generated by a plain Tree
-                n = parent.add(data, kind=cls.DEFAULT_CHILD_TYPE)
+                n = parent.add(data, kind=cls.DEFAULT_CHILD_TYPE)  # type: ignore
             elif isinstance(data, int):
                 first_clone = node_idx_map[data]
                 n = parent.add(

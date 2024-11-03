@@ -391,7 +391,7 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class: type[Tree[Any]], structure_def: dict) -> Tree:
+def build_random_tree(*, tree_class: type[Tree[Any, Any]], structure_def: dict) -> Tree:
     """
     Return a nutree.TypedTree with random data from a specification.
     See :ref:`randomize` for details.
