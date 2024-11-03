@@ -59,7 +59,7 @@ from nutree.mermaid import (
     MermaidFormatType,
     MermaidNodeMapperCallbackType,
 )
-from nutree.node import Node, TNode
+from nutree.node import Node, TData, TNode
 from nutree.rdf import tree_to_rdf
 
 _DELETED_TAG = "<deleted>"
@@ -77,7 +77,7 @@ class _SystemRootNode(Node):
     """Invisible system root node."""
 
     def __init__(self, tree: Tree) -> None:
-        self._tree: Tree = tree  # type: ignore
+        self._tree: Tree = tree
         self._parent = None  # type: ignore
         self._node_id = ROOT_NODE_ID
         self._data_id = ROOT_DATA_ID
@@ -89,7 +89,7 @@ class _SystemRootNode(Node):
 # ------------------------------------------------------------------------------
 # - Tree
 # ------------------------------------------------------------------------------
-class Tree(Generic[TNode]):
+class Tree(Generic[TData, TNode]):
     """
     A Tree object is a shallow wrapper around a single, invisible system root node.
     All visible toplevel nodes are direct children of this root node.
@@ -105,7 +105,7 @@ class Tree(Generic[TNode]):
     **Note:** Use with care, see also :ref:`forward-attributes`.
     """
 
-    node_factory: Type[Node] = Node
+    node_factory: Type[TNode] = cast(Type[TNode], Node)
     root_node_factory = _SystemRootNode
 
     #: Default connector prefixes ``format(style=...)`` argument.
@@ -129,7 +129,7 @@ class Tree(Generic[TNode]):
         self._lock = threading.RLock()
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
-        self._root: TNode = self.root_node_factory(self)  # type: ignore
+        self._root: Node = self.root_node_factory(self)  # type: ignore
         self._node_by_id: dict[int, TNode] = {}
         self._nodes_by_data_id: dict[DataIdType, list[TNode]] = {}
         # Optional callback that calculates data_ids from data objects
@@ -197,10 +197,6 @@ class Tree(Generic[TNode]):
             )
         return res[0]
 
-    # def __iadd__(self, other) -> None:
-    #     """Support `tree += node(s)` syntax"""
-    #     self._root += other
-
     def __len__(self):
         """Make ``len(tree)`` return the number of nodes
         (also makes empty trees falsy)."""
@@ -219,7 +215,7 @@ class Tree(Generic[TNode]):
         repeated invocations of Python.
         """
         if self._calc_data_id_hook:
-            return self._calc_data_id_hook(self, data)
+            return self._calc_data_id_hook(self, data)  # type: ignore
         return hash(data)
 
     def _register(self, node: TNode) -> None:
@@ -278,16 +274,16 @@ class Tree(Generic[TNode]):
     def children(self) -> list[TNode]:
         """Return list of direct child nodes, i.e. toplevel nodes
         (list may be empty)."""
-        return self._root.children
+        return self.system_root.children
 
     def get_toplevel_nodes(self) -> list[TNode]:
         """Return list of direct child nodes, i.e. toplevel nodes (may be
         empty, alias for :meth:`children`)."""
-        return self._root.children
+        return self.system_root.children
 
     @property
     def system_root(self) -> TNode:
-        return self._root
+        return cast(TNode, self._root)
 
     @property
     def count(self) -> int:
@@ -305,6 +301,85 @@ class Tree(Generic[TNode]):
         """
         return len(self._nodes_by_data_id)
 
+    def _set_data(
+        self,
+        node: TNode,
+        data: TData,
+        *,
+        data_id: DataIdType | None = None,
+        with_clones: bool | None = None,
+    ) -> None:
+        """Change node's `data` and/or `data_id` and update bookkeeping."""
+        if not data and not data_id:
+            raise ValueError("Missing data or data_id")
+
+        if data is None or data is node._data:
+            new_data = None
+        else:
+            new_data = data
+            if data_id is None:
+                data_id = self.calc_data_id(data)
+
+        if data_id is None or data_id == node._data_id:
+            new_data_id = None
+        else:
+            new_data_id = data_id
+
+        node_map = self._nodes_by_data_id
+        cur_nodes = node_map[node._data_id]
+        has_clones = len(cur_nodes) > 1
+
+        if has_clones and with_clones is None:
+            raise AmbiguousMatchError(
+                "set_data() for clones requires `with_clones` decision"
+            )
+
+        if new_data_id:
+            # data_id (and possibly data) changes: we have to update the map
+            if has_clones:
+                if with_clones:
+                    # Move the whole slot (but check if new id already exist)
+                    prev_clones = node_map[node._data_id]
+                    del node_map[node._data_id]
+                    try:  # are we adding to existing clones now?
+                        node_map[new_data_id].extend(prev_clones)
+                    except KeyError:  # still a singleton, just a new data_id
+                        node_map[new_data_id] = prev_clones
+                    for n in prev_clones:
+                        n._data_id = new_data_id
+                        if new_data:
+                            n._data = new_data
+                else:
+                    # Move this one node to another slot in the map
+                    node_map[node._data_id].remove(node)
+                    try:  # are we adding to existing clones again?
+                        node_map[new_data_id].append(node)
+                    except KeyError:  # now a singleton with a new data_id
+                        node_map[new_data_id] = [node]
+                    node._data_id = new_data_id
+                    if new_data:
+                        node._data = new_data
+            else:
+                # data_id (and possibly data) changed for a *single* node
+                del node_map[node._data_id]
+                try:  # are we creating a clone now?
+                    node_map[new_data_id].append(node)
+                except KeyError:  # still a singleton, just a new data_id
+                    node_map[new_data_id] = [node]
+                node._data_id = new_data_id
+                if new_data:
+                    node._data = new_data
+        elif new_data:
+            # `data` changed, but `data_id` remains the same:
+            # simply replace the reference
+            if with_clones:
+                for n in cur_nodes:
+                    n._data = data
+            else:
+                node._data = new_data
+
+        return
+
     @classmethod
     def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
         """Used as default `mapper` argument for :meth:`save`."""
@@ -319,11 +394,11 @@ class Tree(Generic[TNode]):
 
     def first_child(self) -> TNode | None:
         """Return the first toplevel node."""
-        return self._root.first_child()
+        return self.system_root.first_child()
 
     def last_child(self) -> TNode | None:
         """Return the last toplevel node."""
-        return self._root.last_child()
+        return self.system_root.last_child()
 
     def get_random_node(self) -> TNode:
         """Return a random node.
@@ -335,7 +410,7 @@ class Tree(Generic[TNode]):
 
     def calc_height(self) -> int:
         """Return the maximum depth of all nodes."""
-        return self._root.calc_height()
+        return self.system_root.calc_height()
 
     def visit(
         self,
@@ -349,7 +424,9 @@ class Tree(Generic[TNode]):
         See Node's :meth:`~nutree.node.Node.visit` method and
         :ref:`iteration-callbacks` for details.
         """
-        return self._root.visit(callback, add_self=False, method=method, memo=memo)
+        return self.system_root.visit(
+            callback, add_self=False, method=method, memo=memo
+        )
 
     def iterator(self, method: IterMethod = IterMethod.PRE_ORDER) -> Iterator[TNode]:
         """Traverse tree structure and yield nodes.
@@ -362,7 +439,7 @@ class Tree(Generic[TNode]):
             values = list(self._node_by_id.values())
             random.shuffle(values)
             return (n for n in values)
-        return self._root.iterator(method=method)
+        return self.system_root.iterator(method=method)
 
     #: Implement ``for node in tree: ...`` syntax to iterate nodes depth-first.
     __iter__ = iterator
@@ -376,7 +453,9 @@ class Tree(Generic[TNode]):
         if title:
             yield f"{self}" if title is True else f"{title}"
         has_title = title is not False
-        yield from self._root.format_iter(repr=repr, style=style, add_self=has_title)
+        yield from self.system_root.format_iter(
+            repr=repr, style=style, add_self=has_title
+        )
 
     def format(
         self, *, repr: ReprArgType | None = None, style=None, title=None, join="\n"
@@ -405,7 +484,7 @@ class Tree(Generic[TNode]):
 
     def add_child(
         self,
-        child: TNode | Self | Any,
+        child: TNode | Self | TData,
         *,
         before: TNode | bool | int | None = None,
         deep: bool | None = None,
@@ -416,7 +495,7 @@ class Tree(Generic[TNode]):
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """
-        return self._root.add_child(
+        return self.system_root.add_child(
             child,
             before=before,
             deep=deep,
@@ -448,7 +527,7 @@ class Tree(Generic[TNode]):
             name = f"Copy of {self}"
         new_tree = self.__class__(name)
         with self:
-            new_tree._root._add_from(self._root, predicate=predicate)
+            new_tree.system_root._add_from(self.system_root, predicate=predicate)
         return new_tree
 
     def copy_to(self, target: TNode | Self, *, deep=True) -> None:
@@ -457,14 +536,14 @@ class Tree(Generic[TNode]):
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
         """
         with self:
-            self._root.copy_to(target, add_self=False, before=None, deep=deep)
+            self.system_root.copy_to(target, add_self=False, before=None, deep=deep)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
         """In-place removal of unmatching nodes.
 
         See also :ref:`iteration-callbacks`.
         """
-        self._root.filter(predicate=predicate)
+        self.system_root.filter(predicate=predicate)
 
     def filtered(self, predicate: PredicateCallbackType) -> Self:
         """Return a filtered copy of this tree.
@@ -477,7 +556,7 @@ class Tree(Generic[TNode]):
 
     def clear(self) -> None:
         """Remove all nodes from this tree."""
-        self._root.remove_children()
+        self.system_root.remove_children()
 
     def find_all(
         self,
@@ -504,7 +583,7 @@ class Tree(Generic[TNode]):
             return []
 
         elif match is not None:
-            return self._root.find_all(match=match, max_results=max_results)
+            return self.system_root.find_all(match=match, max_results=max_results)
 
         raise NotImplementedError
 
@@ -534,7 +613,7 @@ class Tree(Generic[TNode]):
             return res[0] if res else None
         elif match is not None:
             assert node_id is None
-            return self._root.find_first(match=match)
+            return self.system_root.find_first(match=match)
         elif node_id is not None:
             return self._node_by_id.get(node_id)
         raise NotImplementedError
@@ -548,14 +627,14 @@ class Tree(Generic[TNode]):
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.
         """
-        self._root.sort_children(key=key, reverse=reverse, deep=deep)
+        self.system_root.sort_children(key=key, reverse=reverse, deep=deep)
 
     def to_dict_list(self, *, mapper: SerializeMapperType | None = None) -> list[dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         child nodes and return list of results."""
         res = []
         with self:
-            for n in self._root._children:  # type: ignore[reportOptionalIterable]
+            for n in self.system_root._children:  # type: ignore[reportOptionalIterable]
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -568,7 +647,7 @@ class Tree(Generic[TNode]):
         :ref:`iteration-callbacks`.
         """
         new_tree = cls()
-        new_tree._root.from_dict(obj, mapper=mapper)
+        new_tree.system_root.from_dict(obj, mapper=mapper)
         return new_tree
 
     def to_list_iter(
@@ -579,7 +658,7 @@ class Tree(Generic[TNode]):
         value_map: ValueMapType | None = None,
     ) -> Iterator[tuple[int, Union[FlatJsonDictType, str]]]:
         """Yield a parent-referencing list of child nodes."""
-        yield from self._root.to_list_iter(
+        yield from self.system_root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
         )
 
@@ -685,7 +764,7 @@ class Tree(Generic[TNode]):
         mapper: DeserializeMapperType | None = None,
     ) -> Self:
         tree = cls()  # Tree or TypedTree
-        node_idx_map: dict[int, TNode] = {0: tree._root}
+        node_idx_map: dict[int, TNode] = {0: tree.system_root}
         if mapper is None:
             mapper = cls.deserialize_mapper
 

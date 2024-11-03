@@ -1,16 +1,17 @@
 # ruff: noqa: T201, T203 `print` found
 # pyright: reportIncompatibleMethodOverride=false
+# mypy: ignore[override]
+
+# type: ignore
 
 from __future__ import annotations
 
-from typing import Any, Generic, List, Type, cast, reveal_type
+from typing import Generic, List, Type, cast
 from uuid import UUID, uuid4
 
-from typing_extensions import Self, TypeVar
+from typing_extensions import Any, Self, TypeVar, reveal_type
 
 TData = TypeVar("TData", bound="Any", default="Any")
-# TNode = TypeVar("TNode", bound="Node")
-# TNode = TypeVar("TNode", bound="Node[TData]", default="Any")
 TNode = TypeVar("TNode", bound="Node", default="Node[TData]")
 
 
@@ -125,7 +126,6 @@ class TestTreeTyping:
         alice = dev.add(Person("Alice", 42))
         tree.add(42)
         alice.add(42)
-        alice.children.add()
 
         reveal_type(tree.root)
         reveal_type(alice)

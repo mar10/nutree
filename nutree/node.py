@@ -13,6 +13,7 @@ from typing import (
     IO,
     TYPE_CHECKING,
     Any,
+    Generic,
     Iterable,
     Iterator,
     # TypeVar,
@@ -37,7 +38,6 @@ if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
 
 from nutree.common import (
     CONNECTORS,
-    AmbiguousMatchError,
     DataIdType,
     DeserializeMapperType,
     FlatJsonDictType,
@@ -63,14 +63,14 @@ from nutree.common import (
 from nutree.dot import node_to_dot
 from nutree.rdf import RDFMapperCallbackType, node_to_rdf
 
-TNode = TypeVar("TNode", bound="Node", default="Node")
-# TNode = TypeVar("TNode", bound="Node", default="Node", covariant=True)
+TData = TypeVar("TData", bound="Any", default="Any")
+TNode = TypeVar("TNode", bound="Node", default="Node[TData]")
 
 
 # ------------------------------------------------------------------------------
 # - Node
 # ------------------------------------------------------------------------------
-class Node:
+class Node(Generic[TData]):
     """
     A Node represents a single element in the tree.
     It is a shallow wrapper around a user data instance, that adds navigation,
@@ -121,14 +121,14 @@ class Node:
 
     def __init__(
         self,
-        data,
+        data: TData,
         *,
         parent: Self,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
         meta: dict | None = None,
     ):
-        self._data = data
+        self._data: TData = data
         self._parent: Self = parent
 
         tree = parent._tree
@@ -147,7 +147,7 @@ class Node:
 
         self._meta = meta
 
-        tree._register(self)
+        tree._register(self)  # type: ignore
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
@@ -178,16 +178,6 @@ class Node:
         if name.endswith("()"):
             return getattr(self, name[:-2])()
         raise AttributeError(repr(name))
-
-    # def __iadd__(self, other) -> None:
-    #     """Add child node(s)."""
-    #     if isinstance(other, (Node, str)):
-    #         self.add_child(other)
-    #     elif isinstance(other, (list, tuple)):
-    #         for o in other:
-    #             self += o
-    #     else:
-    #         raise NotImplementedError
 
     # Do not define __len__: we don't want leaf nodes to evaluate as falsy
     # def __len__(self) -> int:
@@ -244,7 +234,7 @@ class Node:
         return [] if c is None else c
 
     @property
-    def data(self) -> Any:
+    def data(self) -> TData:
         """Return the wrapped data instance (use :meth:`~nutree.tree.Tree.set_data()`
         to modify)."""
         return self._data
@@ -319,77 +309,92 @@ class Node:
         with_clones: bool | None = None,
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
-        if not data and not data_id:
-            raise ValueError("Missing data or data_id")
+        return self.tree._set_data(
+            self,  # type: ignore
+            data,
+            data_id=data_id,
+            with_clones=with_clones,
+        )
 
-        tree = self._tree
+    # def set_data(
+    #     self,
+    #     data,
+    #     *,
+    #     data_id: DataIdType | None = None,
+    #     with_clones: bool | None = None,
+    # ) -> None:
+    #     """Change node's `data` and/or `data_id` and update bookkeeping."""
+    #     if not data and not data_id:
+    #         raise ValueError("Missing data or data_id")
 
-        if data is None or data is self._data:
-            new_data = None
-        else:
-            new_data = data
-            if data_id is None:
-                data_id = tree.calc_data_id(data)
+    #     tree = self.tree
 
-        if data_id is None or data_id == self._data_id:
-            new_data_id = None
-        else:
-            new_data_id = data_id
+    #     if data is None or data is self._data:
+    #         new_data = None
+    #     else:
+    #         new_data = data
+    #         if data_id is None:
+    #             data_id = tree.calc_data_id(data)
 
-        node_map = tree._nodes_by_data_id
-        cur_nodes = node_map[self._data_id]
-        has_clones = len(cur_nodes) > 1
+    #     if data_id is None or data_id == self._data_id:
+    #         new_data_id = None
+    #     else:
+    #         new_data_id = data_id
 
-        if has_clones and with_clones is None:
-            raise AmbiguousMatchError(
-                "set_data() for clones requires `with_clones` decision"
-            )
+    #     node_map = tree._nodes_by_data_id
+    #     cur_nodes = node_map[self._data_id]
+    #     has_clones = len(cur_nodes) > 1
 
-        if new_data_id:
-            # data_id (and possibly data) changes: we have to update the map
-            if has_clones:
-                if with_clones:
-                    # Move the whole slot (but check if new id already exist)
-                    prev_clones = node_map[self._data_id]
-                    del node_map[self._data_id]
-                    try:  # are we adding to existing clones now?
-                        node_map[new_data_id].extend(prev_clones)
-                    except KeyError:  # still a singleton, just a new data_id
-                        node_map[new_data_id] = prev_clones
-                    for n in prev_clones:
-                        n._data_id = new_data_id
-                        if new_data:
-                            n._data = new_data
-                else:
-                    # Move this one node to another slot in the map
-                    node_map[self._data_id].remove(self)
-                    try:  # are we adding to existing clones again?
-                        node_map[new_data_id].append(self)
-                    except KeyError:  # now a singleton with a new data_id
-                        node_map[new_data_id] = [self]
-                    self._data_id = new_data_id
-                    if new_data:
-                        self._data = new_data
-            else:
-                # data_id (and possibly data) changed for a *single* node
-                del node_map[self._data_id]
-                try:  # are we creating a clone now?
-                    node_map[new_data_id].append(self)
-                except KeyError:  # still a singleton, just a new data_id
-                    node_map[new_data_id] = [self]
-                self._data_id = new_data_id
-                if new_data:
-                    self._data = new_data
-        elif new_data:
-            # `data` changed, but `data_id` remains the same:
-            # simply replace the reference
-            if with_clones:
-                for n in cur_nodes:
-                    n._data = data
-            else:
-                self._data = new_data
+    #     if has_clones and with_clones is None:
+    #         raise AmbiguousMatchError(
+    #             "set_data() for clones requires `with_clones` decision"
+    #         )
 
-        return
+    #     if new_data_id:
+    #         # data_id (and possibly data) changes: we have to update the map
+    #         if has_clones:
+    #             if with_clones:
+    #                 # Move the whole slot (but check if new id already exist)
+    #                 prev_clones = node_map[self._data_id]
+    #                 del node_map[self._data_id]
+    #                 try:  # are we adding to existing clones now?
+    #                     node_map[new_data_id].extend(prev_clones)
+    #                 except KeyError:  # still a singleton, just a new data_id
+    #                     node_map[new_data_id] = prev_clones
+    #                 for n in prev_clones:
+    #                     n._data_id = new_data_id
+    #                     if new_data:
+    #                         n._data = new_data
+    #             else:
+    #                 # Move this one node to another slot in the map
+    #                 node_map[self._data_id].remove(self)
+    #                 try:  # are we adding to existing clones again?
+    #                     node_map[new_data_id].append(self)
+    #                 except KeyError:  # now a singleton with a new data_id
+    #                     node_map[new_data_id] = [self]
+    #                 self._data_id = new_data_id
+    #                 if new_data:
+    #                     self._data = new_data
+    #         else:
+    #             # data_id (and possibly data) changed for a *single* node
+    #             del node_map[self._data_id]
+    #             try:  # are we creating a clone now?
+    #                 node_map[new_data_id].append(self)
+    #             except KeyError:  # still a singleton, just a new data_id
+    #                 node_map[new_data_id] = [self]
+    #             self._data_id = new_data_id
+    #             if new_data:
+    #                 self._data = new_data
+    #     elif new_data:
+    #         # `data` changed, but `data_id` remains the same:
+    #         # simply replace the reference
+    #         if with_clones:
+    #             for n in cur_nodes:
+    #                 n._data = data
+    #         else:
+    #             self._data = new_data
+
+    #     return
 
     def get_children(self) -> list[Self]:
         """Return list of direct child nodes (list may be empty)."""
@@ -433,7 +438,7 @@ class Node:
 
     def get_clones(self, *, add_self=False) -> list[Self]:
         """Return a list of all nodes that reference the same data if any."""
-        clones = self._tree._nodes_by_data_id[self._data_id]
+        clones = cast(list[Self], self._tree._nodes_by_data_id[self._data_id])
         if add_self:
             return clones.copy()
         return [n for n in clones if n is not self]
@@ -630,6 +635,7 @@ class Node:
                 self.add_child(n, before=before, deep=deep)
             return cast(Self, n)  # need to return a node
 
+        factory = self.tree.node_factory
         source_node: Self = None  # type: ignore
         new_node: Self = None  # type: ignore
 
@@ -654,22 +660,16 @@ class Node:
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
-            # If creating an inherited node, use the parent class as constructor
-            # child_class = child.__class__
-
-            new_node = cast(
-                Self,
-                self.tree.node_factory(
-                    source_node.data, parent=self, data_id=data_id, node_id=node_id
-                ),
+            new_node = factory(
+                source_node.data,  # type: ignore
+                parent=self,  # type: ignore
+                data_id=data_id,
+                node_id=node_id,
             )
         else:
-            new_node = cast(
-                Self,
-                self.tree.node_factory(
-                    child, parent=self, data_id=data_id, node_id=node_id
-                ),
-            )
+            new_node = factory(child, parent=self, data_id=data_id, node_id=node_id)  # type: ignore
+
+        new_node = cast(Self, new_node)
 
         if before is True:
             before = 0  # prepend
@@ -770,7 +770,7 @@ class Node:
 
     def move_to(
         self,
-        new_parent: Self | Tree[Self],
+        new_parent: Self | Tree[TData, Self],
         *,
         before: Self | bool | int | None = None,
     ):
@@ -783,9 +783,9 @@ class Node:
         if not isinstance(new_parent, Node):
             # it's a Tree
             assert isinstance(new_parent, self.tree.__class__)
-            new_parent = new_parent._root
+            new_parent = new_parent.system_root
 
-        if new_parent._tree is not self._tree:
+        if new_parent.tree is not self.tree:
             raise NotImplementedError("Can only move nodes inside same tree")
 
         self._parent._children.remove(self)  # type: ignore
@@ -836,34 +836,34 @@ class Node:
         if not pc:  # store None instead of `[]`
             pc = self._parent._children = None
 
-        self._tree._unregister(self)
+        self._tree._unregister(self)  # type: ignore
 
     def remove_children(self) -> None:
         """Remove all children of this node, making it a leaf node."""
         _unregister = self._tree._unregister
         for n in self._iter_post():
-            _unregister(n)
+            _unregister(n)  # type: ignore
         self._children = None
         return
 
     def copy(
         self, *, add_self=True, predicate: PredicateCallbackType | None = None
-    ) -> Tree[Self]:
+    ) -> Tree[TData, Self]:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
         See also :ref:`iteration-callbacks`.
         """
-        new_tree = self._tree.__class__()
+        new_tree = cast("Tree[TData, Self]", self._tree.__class__())
         if add_self:
             root = new_tree.add(self)
         else:
-            root = new_tree._root
+            root = new_tree.system_root
         root._add_from(self, predicate=predicate)
         return new_tree
 
     def copy_to(
         self,
-        target: Self | Tree[Self],
+        target: Self | Tree[TData, Self],
         *,
         add_self=True,
         before: Self | bool | int | None = None,
@@ -884,7 +884,7 @@ class Node:
         if add_self:
             res = target.add_child(self, before=before, deep=deep)
             return cast(Self, res)  # if target is Tree, type is not inferred?
-            # return target.add_child(self, before=before, deep=deep)
+
         assert before is None
         if not self._children:
             raise ValueError("Need child nodes when `add_self=False`")
@@ -974,7 +974,7 @@ class Node:
             pass
         return
 
-    def filtered(self, predicate: PredicateCallbackType) -> Tree[Self]:
+    def filtered(self, predicate: PredicateCallbackType) -> Tree[TData, Self]:
         """Return a filtered copy of this node and descendants as tree.
 
         See also :ref:`iteration-callbacks`.

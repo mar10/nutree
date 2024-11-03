@@ -82,7 +82,9 @@ def diff_node_formatter(node):
     return s
 
 
-def diff_tree(t0: Tree[Any], t1: Tree[Any], *, ordered=False, reduce=False) -> Tree:
+def diff_tree(
+    t0: Tree[Any, Any], t1: Tree[Any, Any], *, ordered=False, reduce=False
+) -> Tree:
     from nutree import Tree
 
     t2 = Tree(f"diff({t0.name!r}, {t1.name!r})")
