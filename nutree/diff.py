@@ -87,9 +87,9 @@ def diff_tree(
 ) -> Tree:
     from nutree import Tree
 
-    t2 = Tree(f"diff({t0.name!r}, {t1.name!r})")
-    added_nodes = set()
-    removed_nodes = set()
+    t2 = Tree[Any, Any](f"diff({t0.name!r}, {t1.name!r})")
+    added_nodes = set[int]()
+    removed_nodes = set[int]()
 
     def compare(p0: Node, p1: Node, p2: Node):
         p0_data_ids = set()

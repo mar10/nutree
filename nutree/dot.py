@@ -4,6 +4,7 @@
 Functions and declarations to support
 `Graphviz <https://graphviz.org/doc/info/lang.html>`_.
 """
+# mypy: disable-error-code="import-not-found, import-untyped"
 
 from __future__ import annotations
 

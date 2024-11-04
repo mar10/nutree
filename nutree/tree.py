@@ -3,6 +3,12 @@
 """
 Declare the :class:`~nutree.tree.Tree` class.
 """
+# Mypy reports some errors that are not reported by pyright, and there is no
+# way to suppress them with `type: ignore`, because then pyright will report
+# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
+# globally for mypy:
+
+# mypy: disable-error-code="truthy-function"
 
 from __future__ import annotations
 
@@ -178,9 +184,9 @@ class Tree(Generic[TData, TNode]):
 
         # Support node_id lookup
         if isinstance(data, int):
-            res = self._node_by_id.get(data)
-            if res is not None:
-                return res
+            n = self._node_by_id.get(data)
+            if n is not None:
+                return n
 
         # Treat data as data_id
         if isinstance(data, (int, str)) and data in self._nodes_by_data_id:
@@ -458,7 +464,12 @@ class Tree(Generic[TData, TNode]):
         )
 
     def format(
-        self, *, repr: ReprArgType | None = None, style=None, title=None, join="\n"
+        self,
+        *,
+        repr: ReprArgType | None = None,
+        style: str | None = None,
+        title: str | bool | None = None,
+        join: str = "\n",
     ) -> str:
         """Return a pretty string representation of the tree hierarchy.
 
@@ -471,8 +482,8 @@ class Tree(Generic[TData, TNode]):
         self,
         *,
         repr: ReprArgType | None = None,
-        style=None,
-        title=None,
+        style: str | None = None,
+        title: str | bool | None = None,
         join: str = "\n",
         file: IO[str] | None = None,
     ) -> None:
@@ -634,7 +645,7 @@ class Tree(Generic[TData, TNode]):
         child nodes and return list of results."""
         res = []
         with self:
-            for n in self.system_root._children:  # type: ignore[reportOptionalIterable]
+            for n in self.system_root._children:  # type: ignore
                 res.append(n.to_dict(mapper=mapper))
         return res
 
@@ -656,7 +667,7 @@ class Tree(Generic[TData, TNode]):
         mapper: SerializeMapperType | None = None,
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
-    ) -> Iterator[tuple[int, Union[FlatJsonDictType, str]]]:
+    ) -> Iterator[tuple[DataIdType, Union[FlatJsonDictType, str, int]]]:
         """Yield a parent-referencing list of child nodes."""
         yield from self.system_root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
@@ -887,7 +898,7 @@ class Tree(Generic[TData, TNode]):
         Optionally convert to a Graphviz display formats.
         See :ref:`graphs` for details.
         """
-        res = tree_to_dotfile(
+        tree_to_dotfile(
             self,
             target,
             format=format,
@@ -899,10 +910,7 @@ class Tree(Generic[TData, TNode]):
             node_mapper=node_mapper,
             edge_mapper=edge_mapper,
         )
-        return res
-
-    # def from_dot(self, dot):
-    #     pass
+        return
 
     def to_mermaid_flowchart(
         self,
@@ -919,7 +927,7 @@ class Tree(Generic[TData, TNode]):
         root_shape: str | None = None,
         node_mapper: MermaidNodeMapperCallbackType | str | None = None,
         edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
-    ) -> None:
+    ):
         """Serialize a Mermaid flowchart representation.
 
         Optionally convert to a Graphviz display formats.
@@ -980,7 +988,7 @@ class Tree(Generic[TData, TNode]):
         for node in self:
             node_list.append(node)
             assert node._tree is self, node
-            assert node in node._parent._children, node  # type: ignore[reportOperatorIssue]
+            assert node in node._parent._children, node  # type: ignore
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"

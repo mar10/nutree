@@ -3,6 +3,7 @@ Implements a generator that creates a random tree structure from a specification
 
 See :ref:`randomize` for details.
 """
+# mypy: disable-error-code="import-not-found, import-untyped"
 
 from __future__ import annotations
 
@@ -12,7 +13,6 @@ from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Sequence, Union
 
-# from typing_extensions import TypeVar
 from nutree.common import DictWrapper
 from nutree.node import Node
 from nutree.tree import Tree
@@ -93,12 +93,12 @@ class RangeRandomizer(Randomizer):
         self.none_value = none_value
         assert self.max > self.min
 
-    def generate(self) -> Union[float, int, None]:
+    def generate(self) -> Union[float, int, Any, None]:
         if self._skip_value():
             return self.none_value
         if self.is_float:
             return random.uniform(self.min, self.max)
-        return random.randrange(self.min, self.max)  # type: ignore[reportArgumentType]
+        return random.randrange(self.min, self.max)  # type: ignore
 
 
 class DateRangeRandomizer(Randomizer):
@@ -150,18 +150,15 @@ class DateRangeRandomizer(Randomizer):
     def generate(self) -> Union[date, float, None]:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
-            return
+            return None
         res = self.min + timedelta(days=random.randrange(self.delta_days))
-        # print(res)
+
         if self.as_js_stamp:
             ONE_DAY_SEC = 24 * 60 * 60
             dt = datetime(res.year, res.month, res.day)
-            # print(f"{dt=}")
-            # print(f"{dt=}, {dt.timestamp()=}")
             dt_utc = dt.replace(tzinfo=timezone.utc)
             stamp_ms = (dt_utc.timestamp() + ONE_DAY_SEC) * 1000.0
-            # print(self.min, self.max, self.delta_days, res, stamp_ms)
-            res = stamp_ms
+            return stamp_ms
         return res
 
 
@@ -336,7 +333,7 @@ def _resolve_random_dict(d: dict, *, macros: dict | None = None) -> None:
 
 
 def _merge_specs(node_type: str, spec: dict, types: dict) -> dict:
-    res = types.get("*", {}).copy()
+    res: dict = types.get("*", {}).copy()
     res.update(types.get(node_type, {}))
     res.update(spec)
     return res
@@ -371,10 +368,10 @@ def _make_tree(
             if callback:
                 callback(data)
 
-            node_data = factory(**data)
+            node_data: Node = factory(**data)
 
             if isinstance(parent_node, TypedNode):
-                node = parent_node.add_child(node_data, kind=node_type)
+                node: Node = parent_node.add_child(node_data, kind=node_type)
             else:
                 node = parent_node.add_child(node_data)
 

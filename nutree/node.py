@@ -3,6 +3,12 @@
 """
 Declare the :class:`~nutree.node.Node` class.
 """
+# Mypy reports some errors that are not reported by pyright, and there is no
+# way to suppress them with `type: ignore`, because then pyright will report
+# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
+# globally for mypy:
+
+# mypy: disable-error-code="truthy-function, arg-type"
 
 from __future__ import annotations
 
@@ -16,7 +22,6 @@ from typing import (
     Generic,
     Iterable,
     Iterator,
-    # TypeVar,
     cast,
 )
 
@@ -152,7 +157,7 @@ class Node(Generic[TData]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Implement ``node == other`` syntax to compare embedded data.
 
         If `other` is a :class:`Node` instance, ``self.data == other.data`` is
@@ -163,8 +168,8 @@ class Node(Generic[TData]):
         identical.
         """
         if isinstance(other, Node):
-            return self._data == other._data
-        return self._data == other
+            return cast(bool, self._data == other._data)
+        return cast(bool, self._data == other)
 
     def __getattr__(self, name: str) -> Any:
         """Implement ``node.NAME`` aliasing  to ``node.data.NAME``.
@@ -411,7 +416,7 @@ class Node(Generic[TData]):
     def get_siblings(self, *, add_self=False) -> list[Self]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if add_self:
-            return self._parent._children  # type: ignore[reportReturnType]
+            return self._parent._children  # type: ignore
         return [n for n in self._parent._children if n is not self]  # type: ignore
 
     def first_sibling(self) -> Self:
@@ -422,8 +427,8 @@ class Node(Generic[TData]):
         """Predecessor or None, if node is first sibling."""
         if self.is_first_sibling():
             return None
-        idx = self._parent._children.index(self)  # type: ignore[reportOptionalMemberAccess]
-        return self._parent._children[idx - 1]  # type: ignore[reportOptionalSubscript]
+        idx = self._parent._children.index(self)  # type: ignore
+        return self._parent._children[idx - 1]  # type: ignore
 
     def next_sibling(self) -> Self | None:
         """Return successor or None, if node is last sibling."""
@@ -560,7 +565,9 @@ class Node(Generic[TData]):
             res.reverse()
         return res
 
-    def get_path(self, *, add_self=True, separator="/", repr="{node.name}") -> str:
+    def get_path(
+        self, *, add_self: bool = True, separator: str = "/", repr: str = "{node.name}"
+    ) -> str:
         """Return a breadcrumb string, e.g. '/A/a1/a12'."""
         res = (repr.format(node=p) for p in self.get_parent_list(add_self=add_self))
         return separator + separator.join(res)
@@ -782,8 +789,10 @@ class Node(Generic[TData]):
         assert new_parent is not None
         if not isinstance(new_parent, Node):
             # it's a Tree
-            assert isinstance(new_parent, self.tree.__class__)
+            # assert isinstance(new_parent, self.tree.__class__)
+            # assert isinstance(new_parent, Tree)
             new_parent = new_parent.system_root
+        assert isinstance(new_parent, Node)
 
         if new_parent.tree is not self.tree:
             raise NotImplementedError("Can only move nodes inside same tree")
@@ -791,7 +800,7 @@ class Node(Generic[TData]):
         self._parent._children.remove(self)  # type: ignore
         if not self._parent._children:  # store None instead of `[]`
             self._parent._children = None
-        self._parent = new_parent
+        self._parent = cast(Self, new_parent)
 
         if before is True:
             before = 0  # prepend
@@ -881,6 +890,7 @@ class Node(Generic[TData]):
 
         If `deep` is set, all descendants are copied recursively.
         """
+        res: Self = self
         if add_self:
             res = target.add_child(self, before=before, deep=deep)
             return cast(Self, res)  # if target is Tree, type is not inferred?
@@ -888,11 +898,10 @@ class Node(Generic[TData]):
         assert before is None
         if not self._children:
             raise ValueError("Need child nodes when `add_self=False`")
-        res = None
         for child in self.children:
             n = target.add_child(child, before=None, deep=deep)
             res = res or n  # Return the first new node
-        return res  # type: ignore
+        return res
 
     def _add_from(
         self, other: Self, *, predicate: PredicateCallbackType | None = None
@@ -923,7 +932,7 @@ class Node(Generic[TData]):
         # the `other` tree.
         parent_stack: list[tuple[bool, Self]] = [(True, self)]
 
-        def _create_parents() -> Self:
+        def _create_parents() -> Node[TData]:
             """Materialize all virtual parents and return the last one."""
             # print("_create_parents", parent_stack)
             p = parent_stack[0][1]
@@ -947,15 +956,13 @@ class Node(Generic[TData]):
                 if res is None or res is False:  # Add only if has a `true` descendant
                     _visit(n)
                 elif res is True:  # Add this node (and also check children)
-                    p = _create_parents()
-                    # p.add_child(n)
+                    _create_parents()
                     _visit(n)
                 elif isinstance(res, SkipBranch):
                     if res.and_self is False:
                         # Add the node itself if user explicitly returned
                         # `SkipBranch(and_self=False)`
-                        p = _create_parents()
-                        # p.add_child(n)
+                        _create_parents()
                 elif isinstance(res, StopTraversal):
                     raise res
                 elif isinstance(res, SelectBranch):
@@ -979,7 +986,7 @@ class Node(Generic[TData]):
 
         See also :ref:`iteration-callbacks`.
         """
-        if not predicate:  # mypy: ignore
+        if not predicate:
             raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(add_self=True, predicate=predicate)
 
@@ -1138,23 +1145,23 @@ class Node(Generic[TData]):
             if method == IterMethod.LEVEL_ORDER:
                 if add_self:
                     if call_traversal_cb(callback, self, memo) is False:
-                        return
+                        return None
                 self._visit_level(callback, memo)
-                return
+                return None
             # Otherwise pre- or post-order
             if add_self and method != IterMethod.POST_ORDER:
                 if call_traversal_cb(callback, self, memo) is False:
-                    return
+                    return None
 
             for c in self.children:
                 handler(c, callback, memo)
 
             if add_self and method == IterMethod.POST_ORDER:
                 if call_traversal_cb(callback, self, memo) is False:
-                    return
+                    return None
         except StopTraversal as e:
             return e.value
-        return
+        return None
 
     def _iter_pre(self) -> Iterator[Self]:
         """Depth-first, pre-order traversal."""
@@ -1238,11 +1245,11 @@ class Node(Generic[TData]):
             cb_match = match
         elif isinstance(match, str):
             pattern = re.compile(pattern=match)
-            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
+            cb_match = lambda node: bool(pattern.fullmatch(node.name))  # noqa: E731
         elif isinstance(match, (list, tuple)):
             assert len(match) == 2, match
             pattern = re.compile(pattern=match[0], flags=match[1])
-            cb_match = lambda node: pattern.fullmatch(node.name)  # noqa: E731
+            cb_match = lambda node: bool(pattern.fullmatch(node.name))  # noqa: E731
         else:
             cb_match = lambda node: node._data is match  # noqa: E731
 
@@ -1394,7 +1401,11 @@ class Node(Generic[TData]):
         return
 
     def format_iter(
-        self, *, repr: ReprArgType | None = None, style=None, add_self=True
+        self,
+        *,
+        repr: ReprArgType | None = None,
+        style: str | None = None,
+        add_self=True,
     ) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
         if style == "list":
@@ -1412,7 +1423,7 @@ class Node(Generic[TData]):
         self,
         *,
         repr: ReprArgType | None = None,
-        style=None,
+        style: str | None = None,
         add_self=True,
         join: str = "\n",
     ) -> str:
@@ -1506,7 +1517,7 @@ class Node(Generic[TData]):
         mapper: SerializeMapperType | None = None,
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
-    ) -> Iterator[tuple[int, FlatJsonDictType | str]]:
+    ) -> Iterator[tuple[DataIdType, FlatJsonDictType | str | int]]:
         """Yield children as parent-referencing list.
 
         ```py
@@ -1517,7 +1528,7 @@ class Node(Generic[TData]):
         #: For nodes with multiple occurrences: index of the first one
         #: For typed nodes, we must also check if the `kind` matches, before
         #: simply store a reference.
-        clone_idx_and_kind_map = {}
+        clone_idx_and_kind_map: dict[DataIdType, tuple[DataIdType, str | None]] = {}
         parent_id_map = {self._node_id: 0}
 
         if mapper is None:
@@ -1532,7 +1543,7 @@ class Node(Generic[TData]):
             # Convert value_map entries from lists to dicts for faster lookup
             # of the index.
             # E.g. `{'t': ['person', 'dept']}` -> {'t': {'person': 0, 'dept': 1}}`
-            value_dict_map: ValueDictMapType = {
+            value_dict_map = {
                 k: {v: i for i, v in enumerate(a)} for k, a in value_map.items()
             }
             # print("value_map", value_map)

@@ -11,6 +11,8 @@ Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdfli
 # pyright: reportOptionalMemberAccess=false
 # pyright: reportArgumentType=false
 
+# mypy: disable-error-code="arg-type, assignment, import-not-found, misc, return-value"
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Union
@@ -126,7 +128,7 @@ def _add_child_nodes(
             index=index,
             node_mapper=node_mapper,
         )
-        if child_tree_node.has_children:
+        if len(child_tree_node.children) > 0:
             _add_child_nodes(graph, cgn, child_tree_node, node_mapper)
 
     return

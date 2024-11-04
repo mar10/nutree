@@ -5,11 +5,18 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 """
 # pyright: reportIncompatibleMethodOverride=false
 
+# Mypy reports some errors that are not reported by pyright, and there is no
+# way to suppress them with `type: ignore`, because then pyright will report
+# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
+# globally for mypy:
+
+# mypy: disable-error-code="override, assignment, arg-type"
+
 from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import IO, Iterator, Type, cast
+from typing import IO, Iterator, Type, cast, final
 
 # typing.Self requires Python 3.11
 from typing_extensions import Any, Self
@@ -25,18 +32,21 @@ from nutree.common import (
     UniqueConstraintError,
     ValueMapType,
     call_mapper,
-    sentinel,
 )
 from nutree.node import Node, TData
 from nutree.tree import Tree
 
+# class TAnyKind:
+#     """Special argument value for some methods that access child nodes."""
 
-class TAnyKind:
+
+@final
+class ANY_KIND:
     """Special argument value for some methods that access child nodes."""
 
 
 #: Special argument value for some methods that access child nodes
-ANY_KIND = sentinel.ANY_KIND
+# ANY_KIND = sentinel.ANY_KIND
 
 
 # ------------------------------------------------------------------------------
@@ -89,7 +99,7 @@ class TypedNode(Node[TData]):
     def kind(self) -> str:
         return self._kind
 
-    def get_children(self, kind: str | ANY_KIND) -> list[Self]:
+    def get_children(self, kind: str | Type[ANY_KIND]) -> list[Self]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -98,7 +108,7 @@ class TypedNode(Node[TData]):
             return all_children
         return list(filter(lambda n: n._kind == kind, all_children))
 
-    def first_child(self, kind: str | ANY_KIND) -> Self | None:
+    def first_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
         """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -111,7 +121,7 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def last_child(self, kind: str | ANY_KIND) -> Self | None:
+    def last_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
         """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -125,7 +135,7 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def has_children(self, kind: str | ANY_KIND) -> bool:
+    def has_children(self, kind: str | Type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
         if kind is ANY_KIND:
             return bool(self._children)
@@ -189,7 +199,7 @@ class TypedNode(Node[TData]):
             kc = self._parent.children
         else:
             kc = self._parent.get_children(self.kind)
-        return kc.index(self)
+        return kc.index(cast(Self, self))
 
     def is_first_sibling(self, *, any_kind=False) -> bool:
         """Return true if this node is the first sibling, i.e. the first child
@@ -235,7 +245,12 @@ class TypedNode(Node[TData]):
             if isinstance(before, (int, Node)) or before is True:
                 topnodes.reverse()
             for n in topnodes:
-                self.add_child(n, kind=n.kind, before=before, deep=deep)
+                self.add_child(
+                    n,
+                    kind=n.kind,
+                    before=before,
+                    deep=deep,
+                )
             return child.system_root  # type: ignore
 
         source_node: Self = None  # type: ignore
@@ -268,7 +283,11 @@ class TypedNode(Node[TData]):
             )
         else:
             new_node = factory(
-                kind, child, parent=self, data_id=data_id, node_id=node_id
+                kind,
+                cast(TData, child),
+                parent=self,
+                data_id=data_id,
+                node_id=node_id,
             )
 
         # assert isinstance(node, self.__class__)
@@ -482,7 +501,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a
             # serialization mapper, for a TypedTree that has pure str nodes
-            return data["str"]
+            return cast(str, data["str"])
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
         )
@@ -513,17 +532,17 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     #: Alias for :meth:`add_child`
     add = add_child  # Must re-bind here
 
-    def first_child(self, kind: str | ANY_KIND) -> TypedNode[TData] | None:
+    def first_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the first toplevel node."""
         return self.system_root.first_child(kind=kind)
 
-    def last_child(self, kind: str | ANY_KIND) -> TypedNode[TData] | None:
+    def last_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the last toplevel node."""
         return self.system_root.last_child(kind=kind)
 
-    def iter_by_type(self, kind: str | ANY_KIND) -> Iterator[TypedNode[TData]]:
+    def iter_by_type(self, kind: str | Type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
-            return self.iterator()
+            yield from self.iterator()
         for n in self.iterator():
             if n._kind == kind:
                 yield n
@@ -551,7 +570,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
                 value_map = self.DEFAULT_VALUE_MAP.copy()
 
             if "kind" not in value_map:
-                counter = Counter()
+                counter = Counter[str]()
                 for n in self:
                     counter[n.kind] += 1
                 value_map.update({"kind": list(counter.keys())})
@@ -582,24 +601,24 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         # Start reading data lines starting at index #1:
         for idx, (parent_idx, data) in enumerate(obj, 1):
             parent = node_idx_map[parent_idx]
-            # print(idx, parent_idx, data, parent)
+
             if isinstance(data, str):
                 # This can only happen if the source was generated by a plain Tree
-                n = parent.add(data, kind=cls.DEFAULT_CHILD_TYPE)  # type: ignore
+                n = parent.add_child(data, kind=cls.DEFAULT_CHILD_TYPE)  # type: ignore
             elif isinstance(data, int):
                 first_clone = node_idx_map[data]
-                n = parent.add(
+                n = parent.add_child(
                     first_clone, kind=first_clone.kind, data_id=first_clone.data_id
                 )
             else:
                 kind = data.get("kind", cls.DEFAULT_CHILD_TYPE)
                 data_id = data.get("data_id")
                 data_obj = call_mapper(mapper, parent, data)
-                n = parent.add(data_obj, kind=kind, data_id=data_id)
+                n = parent.add_child(data_obj, kind=kind, data_id=data_id)
             # elif isinstance(data, dict) and "str" in data:
             #     # This can happen if the source was generated without a
             #     # serialization mapper, for a TypedTree that has str nodes
-            #     n = parent.add(data["str"], kind=data.get("kind"))
+            #     n = parent.add_child(data["str"], kind=data.get("kind"))
             # else:
             #     raise RuntimeError(f"Need mapper for {data}")
 

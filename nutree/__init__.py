@@ -34,7 +34,7 @@ from nutree.node import Node
 from nutree.tree import Tree
 from nutree.typed_tree import TypedNode, TypedTree
 
-__all__ = [  # pyright: ignore[reportUnsupportedDunderAll]
+__all__ = [  # type: ignore
     Tree,
     Node,
     AmbiguousMatchError,
