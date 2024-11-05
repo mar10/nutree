@@ -79,7 +79,7 @@ class TestMermaid:
     def test_serialize_mermaid_typed(self):
         """Save/load as  object tree with clones."""
         KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_typed_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
             tree.to_mermaid_flowchart(
@@ -113,7 +113,7 @@ class TestMermaid:
         KEEP_FILES = not fixture.is_running_on_ci() and False
         FORMAT = "png"
 
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_typed_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=f".{FORMAT}") as temp_file:
             tree.to_mermaid_flowchart(

@@ -3,6 +3,8 @@
 ## 0.10.0 (unreleased)
 
 - BREAKING:
+  - `kind` parameter is now mandatory for `add()` and related methods.
+    `kind=None` is still allowed to use the default ('child').
   - Rename `shadow_attrs` argument to `forward_attrs`.
   - Enforce that the same object instance is not added multiple times to one parent.
   - Rename `GenericNodeData` to `DictWrapper` and remove support for attribut access.

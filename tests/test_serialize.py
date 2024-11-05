@@ -277,13 +277,13 @@ class TestSerialize:
         self._test_serialize_objects(mode="value_map")
 
     def test_serialize_typed_tree_plain_str(self):
-        tree = fixture.create_typed_tree(clones=True)
+        tree = fixture.create_typed_tree_simple(clones=True)
         assert isinstance(tree, TypedTree)
 
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
             tree.save(fp, meta={"foo": "bar"})
-            _text, _data = _get_fp_result(fp, assert_len=418)
+            _text, _data = _get_fp_result(fp, assert_len=392)
             # Deserialize
             fp.seek(0)
             meta_2 = {}
@@ -356,7 +356,7 @@ class TestSerialize:
 
         # Use a TypedTree
         tree = TypedTree(calc_data_id=_calc_id, name="fixture")
-        fixture.create_typed_tree(style="objects", clones=True, tree=tree)
+        fixture.create_typed_tree_objects(clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
         assert tree["{123-456}"].data.name == "Alice"
@@ -526,7 +526,7 @@ class TestSerialize:
 
         # Use a TypedTree
         tree = MyTree(name="MyTree")
-        fixture.create_typed_tree(style="objects", clones=True, tree=tree)
+        fixture.create_typed_tree_objects(clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
         assert tree["{123-456}"].data.name == "Alice"
@@ -582,8 +582,8 @@ class TestSerialize:
     def test_graph(self):
         tree = TypedTree("fixture")
 
-        alice = tree.add("Alice")
-        bob = tree.add("Bob")
+        alice = tree.add("Alice", kind=None)
+        bob = tree.add("Bob", kind=None)
 
         alice.add("Carol", kind="friends")
 
@@ -622,7 +622,7 @@ class TestSerialize:
 
 class TestToDictList:
     def test_to_dict_list(self):
-        tree = fixture.create_typed_tree(clones=True)
+        tree = fixture.create_typed_tree_simple(clones=True)
         d = tree.to_dict_list()
         print(d)
         assert len(d) == 2, "two top nodes"

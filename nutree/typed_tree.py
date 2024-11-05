@@ -28,6 +28,7 @@ from nutree.common import (
     DeserializeMapperType,
     KeyMapType,
     MapperCallbackType,
+    PredicateCallbackType,
     SerializeMapperType,
     UniqueConstraintError,
     ValueMapType,
@@ -215,23 +216,50 @@ class TypedNode(Node[TData]):
             return self is self._parent.children[-1]
         return self is self.last_sibling(any_kind=False)
 
+    def _add_from(
+        self, other: Self, *, predicate: PredicateCallbackType | None = None
+    ) -> None:
+        """Append copies of all source descendants to self.
+
+        See also :ref:`iteration-callbacks`.
+        """
+        if predicate:
+            return self._add_filtered(other, predicate)
+
+        assert not self._children
+        for child in other.children:
+            new_child = self.add_child(child.data, kind=None, data_id=child._data_id)
+            if child.children:
+                new_child._add_from(child, predicate=None)
+        return
+
     def add_child(
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         before: Self | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> Self:
-        """See ..."""
+        """See ...
+
+        Args:
+            kind: the type of the new child node. Pass None to use the same
+                type as `child` (if that is a node) or default to `"child"`.
+
+        See also :meth:`~nutree.node.Node.add_child` method for details.
+        """
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
         # TODO: kind is optional if child is a TypedNode
         # TODO: Check if target and child types match
         # TODO: share more code from overloaded method
         if kind is None:
-            kind = cast(TypedTree, self._tree).DEFAULT_CHILD_TYPE
+            if isinstance(child, TypedNode):
+                kind = child.kind
+            else:
+                kind = cast(TypedTree, self._tree).DEFAULT_CHILD_TYPE
 
         if isinstance(child, (Node, Tree)) and not isinstance(
             child, (TypedNode, TypedTree)
@@ -320,17 +348,17 @@ class TypedNode(Node[TData]):
     #       method signature again:
     # #: Alias for :meth:`add_child`
     # add = add_child
-
     def add(
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         before: Self | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> Self:
+        """Alias for :meth:`add_child`)."""
         return self.add_child(
             child,
             kind=kind,
@@ -344,7 +372,7 @@ class TypedNode(Node[TData]):
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
@@ -366,7 +394,7 @@ class TypedNode(Node[TData]):
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
@@ -388,7 +416,7 @@ class TypedNode(Node[TData]):
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         deep=None,
         data_id=None,
         node_id=None,
@@ -405,7 +433,7 @@ class TypedNode(Node[TData]):
         self,
         child: Self | TypedTree | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
@@ -423,6 +451,21 @@ class TypedNode(Node[TData]):
             data_id=data_id,
             node_id=node_id,
         )
+
+    def copy(
+        self, *, add_self=True, predicate: PredicateCallbackType | None = None
+    ) -> TypedTree[TData]:
+        """Return a new :class:`~nutree.tree.Tree` instance from this branch.
+
+        See also :ref:`iteration-callbacks`.
+        """
+        new_tree = cast("TypedTree[TData]", self._tree.__class__())
+        if add_self:
+            root = new_tree.add(self, kind=self.kind)
+        else:
+            root = new_tree.system_root
+        root._add_from(self, predicate=predicate)
+        return new_tree
 
     @classmethod
     def _make_list_entry(cls, node: Self) -> dict[str, Any]:
@@ -531,7 +574,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         self,
         child: TypedNode[TData] | Self | TData,
         *,
-        kind: str | None = None,
+        kind: str | None,
         before: TypedNode[TData] | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
@@ -550,8 +593,32 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             node_id=node_id,
         )
 
-    #: Alias for :meth:`add_child`
-    add = add_child  # Must re-bind here
+    # NOTE: mypy cannot handle this alias correctly, so we have to write the
+    #       method signature again:
+    # #: Alias for :meth:`add_child`
+    # add = add_child
+    def add(
+        self,
+        child: TypedNode[TData] | Self | TData,
+        *,
+        kind: str | None,
+        before: TypedNode[TData] | bool | int | None = None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
+    ) -> TypedNode[TData]:
+        """Alias for shortcut :meth:`add_child`).
+
+        See Node's :meth:`~nutree.typed_tree.TypedNode.add_child` method for details.
+        """
+        return self.system_root.add_child(
+            child,
+            kind=kind,
+            before=before,
+            deep=deep,
+            data_id=data_id,
+            node_id=node_id,
+        )
 
     def first_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the first toplevel node."""

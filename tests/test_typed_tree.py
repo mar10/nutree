@@ -136,7 +136,8 @@ class TestTypedTree:
 
         # Copy node
         assert not fail1.is_clone()
-        func2.add(fail1)
+        func2_clone = func2.add(fail1, kind=None)
+        assert func2_clone.kind == "failure"
         assert fail1.is_clone()
 
         subtree = func2.copy()
@@ -145,15 +146,24 @@ class TestTypedTree:
     def test_add_child_2(self):
         tree = TypedTree("fixture")
 
-        a = tree.add("A")
-        a.append_child("a1")
-        a.prepend_child("a0")
-        a.append_sibling("A2")
-        a.prepend_sibling("A0")
+        a = tree.add("A", kind=None)
+        assert a.kind is tree.DEFAULT_CHILD_TYPE
+        a.append_child("a1", kind=None)
+        a.prepend_child("a0", kind=None)
+        a.append_sibling("A2", kind=None)
+        a.prepend_sibling("A0", kind=None)
 
         b = tree.add("B", kind="letter")
-        tree_2 = TypedTree("fixture2").add("X").add("x1").up(2).add("Y").add("y1").tree
-        b.append_child(tree_2)
+        tree_2 = (
+            TypedTree("fixture2")
+            .add("X", kind=None)
+            .add("x1", kind=None)
+            .up(2)
+            .add("Y", kind=None)
+            .add("y1", kind=None)
+            .tree
+        )
+        b.append_child(tree_2, kind=None)
         tree.print()
         assert fixture.check_content(
             tree,
@@ -206,7 +216,7 @@ class TestTypedTree:
         # raise
 
     def test_graph_product2(self):
-        tree = fixture.create_typed_tree()
+        tree = fixture.create_typed_tree_simple()
         tree.print()
         with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name)

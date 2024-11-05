@@ -514,8 +514,30 @@ class Tree(Generic[TData, TNode]):
             node_id=node_id,
         )
 
-    #: Alias for :meth:`add_child`
-    add = add_child
+    # NOTE: mypy cannot handle this alias correctly, so we have to write the
+    #       method signature again:
+    # #: Alias for :meth:`add_child`
+    # add = add_child
+    def add(
+        self,
+        child: TNode | Self | TData,
+        *,
+        before: TNode | bool | int | None = None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id=None,
+    ) -> TNode:
+        """Add a toplevel node (same as shortcut :meth:`add`).
+
+        See Node's :meth:`~nutree.node.Node.add_child` method for details.
+        """
+        return self.system_root.add_child(
+            child,
+            before=before,
+            deep=deep,
+            data_id=data_id,
+            node_id=node_id,
+        )
 
     def copy(
         self,
