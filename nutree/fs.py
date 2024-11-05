@@ -40,7 +40,7 @@ class FileSystemEntry:
         return f"{self.name!r}, {self.size:,} bytes, {mdt}"
 
 
-class FileSystemTree(Tree):
+class FileSystemTree(Tree[FileSystemEntry]):
     DEFAULT_KEY_MAP = {}  # don't replace 's' with 'str'
 
     @classmethod
