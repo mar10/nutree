@@ -3,6 +3,7 @@
 """ """
 # ruff: noqa: T201, T203 `print` found
 # pyright: reportOptionalMemberAccess=false
+# mypy: disable-error-code="annotation-unchecked"
 
 import pytest
 from nutree import Tree

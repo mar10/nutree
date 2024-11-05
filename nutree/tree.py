@@ -502,7 +502,7 @@ class Tree(Generic[TData, TNode]):
         data_id: DataIdType | None = None,
         node_id=None,
     ) -> TNode:
-        """Add a toplevel node.
+        """Add a toplevel node (same as shortcut :meth:`add`).
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """

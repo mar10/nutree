@@ -149,8 +149,8 @@ class TestBasics:
 
 
 class TestNavigate:
-    def setup_method(self):
-        tree = Tree("fixture")
+    def setup_method(self) -> None:
+        tree = Tree[str]("fixture")
         self.tree: Tree = tree
         n = tree.add("Records")
         n.add("Let It Be")

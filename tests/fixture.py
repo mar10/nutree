@@ -3,10 +3,10 @@
 """
 Test helpers.
 """
+# ruff: noqa: T201, T203 `print` found
 
 from __future__ import annotations
 
-# ruff: noqa: T201, T203 `print` found
 import os
 import re
 import tempfile
@@ -15,7 +15,7 @@ import timeit
 import uuid
 from random import randint
 from textwrap import dedent, indent
-from typing import IO, List
+from typing import IO, Any, List
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -26,11 +26,19 @@ def is_running_on_ci() -> bool:
     return bool(os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"))
 
 
-class Person:
-    def __init__(self, name: str, *, age: int, guid: str | None = None) -> None:
+class OrgaUnit:
+    def __init__(self, name: str, *, guid: str | None = None) -> None:
         self.name: str = name
-        self.age: int = age
         self.guid: str = uuid.uuid4().hex if guid is None else guid
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}<{self.name}>"
+
+
+class Person(OrgaUnit):
+    def __init__(self, name: str, *, age: int, guid: str | None = None) -> None:
+        super().__init__(name, guid=guid)
+        self.age: int = age
 
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
@@ -44,13 +52,12 @@ class Person:
     #     )
 
 
-class Department:
+class Department(OrgaUnit):
     def __init__(self, name: str, *, guid: str | None = None) -> None:
-        self.name: str = name
-        self.guid: str = uuid.uuid4().hex if guid is None else guid
+        super().__init__(name, guid=guid)
 
-    def __repr__(self) -> str:
-        return f"Department<{self.name}>"
+    # def __repr__(self) -> str:
+    #     return f"Department<{self.name}>"
 
     # def __eq__(self, other):
     #     return (
@@ -132,14 +139,14 @@ def create_typed_tree(
     style="simple",
     name="fixture",
     clones=False,
-    tree: TypedTree | None = None,
+    tree: TypedTree[Any] | None = None,
     print=True,
 ) -> TypedTree:
     if tree is not None:
         assert not tree, "must be empty"
         assert isinstance(tree, TypedTree)
     else:
-        tree = TypedTree(name)
+        tree = TypedTree[Any](name)
 
     if style == "simple":
         """
@@ -205,7 +212,7 @@ def generate_tree(level_defs: List[int]) -> Tree:
     Example:
         generate_tree([10, 100, 100])
     """
-    tree = Tree()
+    tree = Tree[str]()
 
     def _generate_tree(levels, name: str, root: Node):
         count, *rest = levels

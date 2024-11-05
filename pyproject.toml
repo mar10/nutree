@@ -46,6 +46,21 @@ reportUnnecessaryTypeIgnoreComment = true
 [tool.mypy]
 warn_return_any = true
 warn_unused_configs = true
+# warn_unused_ignores = true
+# warn_redundant_casts = true
+# ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "fabulist",
+  "pydot",
+  "pytest",
+  "pympler",
+  "pympler.asizeof",
+  "rdflib",
+  "rdflib.namespace",
+]
+ignore_missing_imports = true
 
 # --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]

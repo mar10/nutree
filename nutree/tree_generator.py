@@ -3,7 +3,6 @@ Implements a generator that creates a random tree structure from a specification
 
 See :ref:`randomize` for details.
 """
-# mypy: disable-error-code="import-not-found, import-untyped"
 
 from __future__ import annotations
 

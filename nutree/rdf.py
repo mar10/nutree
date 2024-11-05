@@ -11,7 +11,7 @@ Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdfli
 # pyright: reportOptionalMemberAccess=false
 # pyright: reportArgumentType=false
 
-# mypy: disable-error-code="arg-type, assignment, import-not-found, misc, return-value"
+# mypy: disable-error-code="arg-type, assignment, misc, return-value"
 
 from __future__ import annotations
 

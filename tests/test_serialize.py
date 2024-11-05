@@ -3,6 +3,7 @@
 """ """
 # ruff: noqa: T201, T203 `print` found
 # pyright: reportOptionalMemberAccess=false
+# mypy: disable-error-code="attr-defined"
 
 from __future__ import annotations
 
@@ -164,7 +165,7 @@ class TestSerialize:
             return data
 
         # Use a tree
-        tree = Tree(calc_data_id=_calc_id)
+        tree = Tree[fixture.OrgaUnit](calc_data_id=_calc_id)
         fixture.create_tree(style="objects", clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
@@ -232,7 +233,7 @@ class TestSerialize:
 
             # Deserialize
             fp.seek(0)
-            meta_2 = {}
+            meta_2: dict = {}
             tree_2 = Tree.load(fp, mapper=deserialize_mapper, file_meta=meta_2)
             tree_2.name = "tree_2"
             tree_2.print(repr="{node}")
@@ -252,9 +253,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -429,7 +432,7 @@ class TestSerialize:
 
             # Deserialize
             fp.seek(0)
-            meta_2 = {}
+            meta_2: dict = {}
             tree_2 = TypedTree.load(fp, mapper=deserialize_mapper, file_meta=meta_2)
             tree_2.name = "tree_2"
             tree_2.print(repr="{node}")
@@ -449,9 +452,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -509,7 +514,7 @@ class TestSerialize:
             ) -> str | object | None:
                 node_type = data["type"]
                 print("deserialize_mapper", data)
-                res = data
+                res: str | object | None = data
                 if node_type == "person":
                     res = fixture.Person(
                         name=data["name"], age=data["age"], guid=data["data_id"]
@@ -563,9 +568,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -654,6 +661,8 @@ class TestFromDict:
         tree_2 = Tree.from_dict(tree_dict_list)
 
         assert fixture.trees_equal(tree, tree_2)
+        first_node = tree.first_child()
+        assert first_node
         assert type(tree_2.first_child().first_child().data) is type(
             tree.first_child().first_child().data
         )
