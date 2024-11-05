@@ -1,9 +1,20 @@
 # Changelog
 
-## 0.9.1 (unreleased)
+## 0.10.0 (unreleased)
 
-- Passes pyright 'basic' checks.
-- tree.to_rdf() is now available for Tree (not only TypedTree)
+- BREAKING:
+  - `kind` parameter is now mandatory for `add()` and related methods.
+    `kind=None` is still allowed to use the default ('child').
+  - Rename `shadow_attrs` argument to `forward_attrs`.
+  - Enforce that the same object instance is not added multiple times to one parent.
+  - Rename `GenericNodeData` to `DictWrapper` and remove support for attribut access.
+  - Drop support for Python 3.8
+  - mermaid: change mapper signatures and defaults
+- tree.to_rdf() is now available for Tree (not only TypedTree).
+- New method `node.up()` allows method chaining when adding nodes.
+- Pass pyright 'typeCheckingMode = "standard"'.
+- Use generic typing for improved type checking, e.g. use `tree = Tree[Animals]()`
+  to create a type-aware container.
 
 ## 0.9.0 (2024-09-12)
 

@@ -4,27 +4,29 @@ Implements a generator that creates a random tree structure from a specification
 See :ref:`randomize` for details.
 """
 
+from __future__ import annotations
+
 import random
 import sys
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Sequence, Type, Union
+from typing import Any, Sequence, Union
 
-from nutree.common import GenericNodeData
+from nutree.common import DictWrapper
 from nutree.node import Node
+from nutree.tree import Tree
 from nutree.typed_tree import TypedNode
 
 try:
-    from fabulist import Fabulist  # type: ignore
+    from fabulist import Fabulist
 
     fab = Fabulist()
-except ImportError:
+except ImportError:  # pragma: no cover
     # We run without fabulist (with reduced functionality in this case)
     Fabulist = None
     fab = None
 
-if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from nutree.common import TTree
+# TTree = TypeVar("TTree", bound=Tree)
 
 
 # ------------------------------------------------------------------------------
@@ -58,8 +60,8 @@ class RangeRandomizer(Randomizer):
     A randomizer class that generates random values within a specified range.
 
     Args:
-        min_val (Union[float, int]): The minimum value of the range.
-        max_val (Union[float, int]): The maximum value of the range.
+        min_val (float| int): The minimum value of the range.
+        max_val (float| int): The maximum value of the range.
         probability (float, optional): The probability of generating a value.
             Defaults to 1.0.
         none_value (Any, optional): The value to return when skipping generation.
@@ -74,8 +76,8 @@ class RangeRandomizer(Randomizer):
 
     def __init__(
         self,
-        min_val: Union[float, int],
-        max_val: Union[float, int],
+        min_val: float | int,
+        max_val: float | int,
         *,
         probability: float = 1.0,
         none_value: Any = None,
@@ -90,12 +92,12 @@ class RangeRandomizer(Randomizer):
         self.none_value = none_value
         assert self.max > self.min
 
-    def generate(self) -> Union[float, int, None]:
+    def generate(self) -> Union[float, int, Any, None]:
         if self._skip_value():
             return self.none_value
         if self.is_float:
             return random.uniform(self.min, self.max)
-        return random.randrange(self.min, self.max)
+        return random.randrange(self.min, self.max)  # type: ignore
 
 
 class DateRangeRandomizer(Randomizer):
@@ -104,7 +106,7 @@ class DateRangeRandomizer(Randomizer):
 
     Args:
         min_dt (date): The minimum date of the range.
-        max_dt (Union[date, int]): The maximum date of the range.
+        max_dt (date | int): The maximum date of the range.
             Pass an integer to specify the number of days from min_dt.
         as_js_stamp (bool, optional): If True, return the date as a JavaScript
             timestamp. Defaults to True.
@@ -119,7 +121,7 @@ class DateRangeRandomizer(Randomizer):
     def __init__(
         self,
         min_dt: date,
-        max_dt: Union[date, int],
+        max_dt: date | int,
         *,
         as_js_stamp=True,
         probability: float = 1.0,
@@ -144,22 +146,18 @@ class DateRangeRandomizer(Randomizer):
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
 
-    def generate(self) -> Union[date, None]:
+    def generate(self) -> Union[date, float, None]:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
-            # print("SKIP")
-            return
+            return None
         res = self.min + timedelta(days=random.randrange(self.delta_days))
-        # print(res)
+
         if self.as_js_stamp:
             ONE_DAY_SEC = 24 * 60 * 60
             dt = datetime(res.year, res.month, res.day)
-            # print(f"{dt=}")
-            # print(f"{dt=}, {dt.timestamp()=}")
             dt_utc = dt.replace(tzinfo=timezone.utc)
             stamp_ms = (dt_utc.timestamp() + ONE_DAY_SEC) * 1000.0
-            # print(self.min, self.max, self.delta_days, res, stamp_ms)
-            res = stamp_ms
+            return stamp_ms
         return res
 
 
@@ -203,7 +201,7 @@ class SampleRandomizer(Randomizer):
         super().__init__(probability=probability)
         self.sample_list = sample_list
         # TODO: remove this when support for Python 3.8 is removed
-        if sys.version_info < (3, 9) and counts:
+        if sys.version_info < (3, 9) and counts:  # pragma: no cover
             raise RuntimeError("counts argument requires Python 3.9 or later.")
 
         self.counts = counts
@@ -212,7 +210,7 @@ class SampleRandomizer(Randomizer):
         if self._skip_value():
             return
         # TODO: remove this when support for Python 3.8 is removed
-        if sys.version_info < (3, 9) and not self.counts:
+        if sys.version_info < (3, 9) and not self.counts:  # pragma: no cover
             return random.sample(self.sample_list, 1)[0]
         return random.sample(self.sample_list, 1, counts=self.counts)[0]
 
@@ -238,16 +236,16 @@ class TextRandomizer(Randomizer):
             Defaults to 1.0.
     """
 
-    def __init__(self, template: Union[str, list], *, probability: float = 1.0) -> None:
+    def __init__(self, template: str | list[str], *, probability: float = 1.0) -> None:
         super().__init__(probability=probability)
-        if not fab:
+        if not fab:  # pragma: no cover
             raise RuntimeError("Need fabulist installed to generate random text.")
         self.template = template
 
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_quote(self.template)
+        return fab.get_quote(self.template)  # type: ignore[reportOptionalMemberAccess]
 
 
 class BlindTextRandomizer(Randomizer):
@@ -273,15 +271,15 @@ class BlindTextRandomizer(Randomizer):
     def __init__(
         self,
         *,
-        sentence_count: Union[int, tuple] = (2, 6),
+        sentence_count: int | tuple = (2, 6),
         dialect: str = "ipsum",
         entropy: int = 2,
         keep_first: bool = False,
-        words_per_sentence: Union[int, tuple] = (3, 15),
+        words_per_sentence: int | tuple = (3, 15),
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
-        if not fab:
+        if not fab:  # pragma: no cover
             raise RuntimeError("Need fabulist installed to generate random text.")
 
         self.sentence_count = sentence_count
@@ -293,7 +291,7 @@ class BlindTextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_lorem_paragraph(
+        return fab.get_lorem_paragraph(  # type: ignore[reportOptionalMemberAccess]
             sentence_count=self.sentence_count,
             dialect=self.dialect,
             entropy=self.entropy,
@@ -308,7 +306,7 @@ def _resolve_random(val: Any) -> Any:
     return val
 
 
-def _resolve_random_dict(d: dict, *, macros: dict = None) -> None:
+def _resolve_random_dict(d: dict, *, macros: dict | None = None) -> None:
     remove = []
     for key in d.keys():
         val = d[key]
@@ -334,7 +332,7 @@ def _resolve_random_dict(d: dict, *, macros: dict = None) -> None:
 
 
 def _merge_specs(node_type: str, spec: dict, types: dict) -> dict:
-    res = types.get("*", {}).copy()
+    res: dict = types.get("*", {}).copy()
     res.update(types.get(node_type, {}))
     res.update(spec)
     return res
@@ -355,7 +353,7 @@ def _make_tree(
         count = spec.pop(":count", 1)
         count = _resolve_random(count) or 0
         callback = spec.pop(":callback", None)
-        factory = spec.pop(":factory", GenericNodeData)
+        factory = spec.pop(":factory", DictWrapper)
 
         for i in range(count):
             i += 1  # 1-based
@@ -369,10 +367,10 @@ def _make_tree(
             if callback:
                 callback(data)
 
-            node_data = factory(**data)
+            node_data: Node = factory(**data)
 
             if isinstance(parent_node, TypedNode):
-                node = parent_node.add_child(node_data, kind=node_type)
+                node: Node = parent_node.add_child(node_data, kind=node_type)
             else:
                 node = parent_node.add_child(node_data)
 
@@ -389,7 +387,7 @@ def _make_tree(
     return
 
 
-def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTree":
+def build_random_tree(*, tree_class: type[Tree[Any, Any]], structure_def: dict) -> Tree:
     """
     Return a nutree.TypedTree with random data from a specification.
     See :ref:`randomize` for details.
@@ -402,9 +400,9 @@ def build_random_tree(*, tree_class: Type["TTree"], structure_def: dict) -> "TTr
     assert not structure_def, f"found extra data: {structure_def}"
     assert "__root__" in relations, "missing '__root__' relation"
 
-    tree: TTree = tree_class(
+    tree: Tree = tree_class(
         name=name,
-        shadow_attrs=True,
+        forward_attrs=True,
     )
 
     _make_tree(

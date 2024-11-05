@@ -56,6 +56,7 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.napoleon',
 #    'sphinxcontrib.fulltoc',
+    'sphinxcontrib.googleanalytics',
     'sphinxcontrib.mermaid',
 ]
 
@@ -91,6 +92,9 @@ source_suffix = {
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
+
+googleanalytics_id = 'G-NESEWWF02Y'
+# googleanalytics_enabled = False
 
 # MyST Markdown Support
 myst_enable_extensions = [

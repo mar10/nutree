@@ -4,9 +4,11 @@
 Methods and classes to support file system related functionality.
 """
 
+from __future__ import annotations
+
+from datetime import datetime
 from operator import attrgetter, itemgetter
 from pathlib import Path
-from typing import Optional, Union
 
 from nutree.tree import Node, Tree
 
@@ -17,8 +19,8 @@ class FileSystemEntry:
         name: str,
         *,
         is_dir: bool = False,
-        size: Optional[int] = None,
-        mdate: Optional[float] = None,
+        size: int | None = None,
+        mdate: float | None = None,
     ):
         self.name = name
         self.is_dir = is_dir
@@ -33,29 +35,34 @@ class FileSystemEntry:
     def __repr__(self):
         if self.is_dir:
             return f"[{self.name}]"
-        return f"{self.name!r}, {self.size:,} bytes"
+        assert self.mdate is not None
+        mdt = datetime.fromtimestamp(self.mdate).isoformat(sep=" ", timespec="seconds")
+        return f"{self.name!r}, {self.size:,} bytes, {mdt}"
 
 
-class FileSystemTree(Tree):
-    def serialize_mapper(self, node: Node, data: dict):
+class FileSystemTree(Tree[FileSystemEntry]):
+    DEFAULT_KEY_MAP = {}  # don't replace 's' with 'str'
+
+    @classmethod
+    def serialize_mapper(cls, node: Node, data: dict):
         """Callback for use with :meth:`~nutree.tree.Tree.save`."""
         inst = node.data
         if inst.is_dir:
             data.update({"n": inst.name, "d": True})
         else:
-            data.update({"n": inst.name, "s": inst.size})
+            data.update({"n": inst.name, "s": inst.size, "m": inst.mdate})
         return data
 
-    @staticmethod
-    def deserialize_mapper(parent: Node, data: dict):
+    @classmethod
+    def deserialize_mapper(cls, parent: Node, data: dict):
         """Callback for use with :meth:`~nutree.tree.Tree.load`."""
-        v = data["v"]
-        if "d" in v:
-            return FileSystemEntry(v["n"], is_dir=True, size=0)
-        return FileSystemEntry(v["n"], is_dir=False, size=v["s"])
+        # v = data["v"]
+        if "d" in data:
+            return FileSystemEntry(data["n"], is_dir=True)
+        return FileSystemEntry(data["n"], size=data["s"], mdate=data["m"])
 
 
-def load_tree_from_fs(path: Union[str, Path], *, sort: bool = True) -> Tree:
+def load_tree_from_fs(path: str | Path, *, sort: bool = True) -> FileSystemTree:
     """Scan a filesystem folder and store as tree.
 
     Args:

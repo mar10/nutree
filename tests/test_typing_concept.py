@@ -1,93 +1,180 @@
-# (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
-# Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-""" """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportIncompatibleMethodOverride=false
+# mypy: disable-error-code="override"
 
-from typing import Generic, Iterator, TypeVar
+# type: ignore
 
-import pytest
+from __future__ import annotations
 
-pytest.skip(allow_module_level=True)
+from typing import Generic, List, Type, cast
+from uuid import UUID, uuid4
 
-try:
-    from typing import Self
-except ImportError:
-    # from typing_extensions import Self
-    typing_extensions = pytest.importorskip("typing_extensions")
-    Self = typing_extensions.Self
+from typing_extensions import Any, Self, TypeVar, reveal_type
 
-
-ElementType = TypeVar("ElementType", bound="Element")
+TData = TypeVar("TData", bound="Any", default="Any")
+TNode = TypeVar("TNode", bound="Node", default="Node[TData]")
 
 
-class Element:
-    def __init__(self, parent: Self, name: str):
-        self.name = name
-        self.children: list[ElementType] = []
+class Node(Generic[TData]):
+    def __init__(self, data: TData, parent: Self):
+        self.data: TData = data
+        self.parent: Self = parent
+        self.children: List[Self] = []
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.name})"
-
-    def get_pred(self) -> Self:
-        return self.parent.children[0]
-
-
-class AgedElement(Element):
-    def __init__(self, parent: Self, name: str, age: int):
-        super().__init__(parent, name)
-        self.age = age
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.name}, {self.age})"
-
-    def is_adult(self) -> bool:
-        return self.age >= 18
+    def add(self, data: TData) -> Self:
+        node = self.__class__(data, self)
+        self.children.append(node)
+        return node
 
 
-class Container(Generic[ElementType]):
+class Tree(Generic[TData, TNode]):
+    node_factory: Type[TNode] = cast(Type[TNode], Node)
+
+    def __init__(self):
+        self._root: Node = self.node_factory("__root__", None)  # type: ignore
+
+    def add(self, data: TData) -> TNode:
+        node = self.root.add(data)
+        return node
+
+    @property
+    def root(self) -> TNode:
+        return cast(TNode, self._root)
+
+    def first(self) -> TNode:
+        return self.root.children[0]
+
+
+# ----------------------------
+
+
+class TypedNode(Node[TData]):
+    def __init__(self, data: TData, kind: str, parent: Self):
+        super().__init__(data, parent)
+        self.kind: str = kind
+        # self.children: List[TypedNode] = []
+
+    def add(self, data: TData, kind: str) -> Self:
+        node = self.__class__(data, kind, self)
+        self.children.append(node)
+        return node
+
+
+class TypedTree(Tree[TData, TypedNode[TData]]):
+    node_factory = TypedNode
+
+    def __init__(self):
+        self._root = TypedNode("__root__", "__root__", None)  # type: ignore
+
+    def add(self, data: TData, kind: str) -> TypedNode[TData]:
+        node = self.root.add(data, kind)
+        return node
+
+
+# --- Sample data ------------------------------------------------------------
+class OrgaEntry:
     def __init__(self, name: str):
-        # root = Element(None, "__root__")
-        self.name = name
-        self.children: ElementType = []
-
-    def add(self, name: ElementType) -> ElementType:
-        self.children.append(ElementType(self, name))
-
-    def __iter__(self) -> Iterator[ElementType]:
-        return iter(self.children)
-
-    def __repr__(self):
-        return f"{self.__clas__.__name__}({self.name})"
+        self.name: str = name
+        self.guid: UUID = uuid4()
 
 
-class AgedContainer(Container[AgedElement]):
+class Person(OrgaEntry):
+    def __init__(self, name: str, age: int):
+        super().__init__(name)
+        self.age: int = age
+
+
+class Department(OrgaEntry):
     def __init__(self, name: str):
-        self.name = name
-        self.children: ElementType = []
-
-    def add(self, name: str, age: int) -> AgedElement:
-        self.children.append(AgedElement)
-
-    def __iter__(self) -> Iterator[ElementType]:
-        return iter(self.children)
+        super().__init__(name)
 
 
-class TestConcept:
-    def test_concept(self):
-        root = Container[Element]("SimpleContainer")
-        root.add("a")
-        root.add(Element("b"))
-        root.add(Element("c"))
-        root.add(AgedElement("d", 4))
+# --- Test -------------------------------------------------------------------
 
-        for child in root:
-            print(child)
 
-        root2 = Container[AgedElement]("")
-        root2.add(AgedElement("a", 1))
-        root2.add(AgedElement("b", 2))
-        root2.add(AgedElement("c", 3))
-        root2.add(Element("d"))
+class TestTreeTyping:
+    def test_tree(self):
+        tree = Tree()
+        n = tree.add("top")
+        n.add("child")
+        tree.add(42)
+        n.add(42)
+        tree.first().add("child2")
 
-        for child in root2:
-            print(child)
+        reveal_type(tree.root)
+        reveal_type(n)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+
+    def test_str_tree(self):
+        tree = Tree[str]()
+
+        n = tree.add("child")
+        n.add("child2")
+        n.add(42)
+        tree.add(42)
+
+        reveal_type(tree.root)
+        reveal_type(n)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+
+    def test_orga_tree(self):
+        tree = Tree[OrgaEntry]()
+
+        dev = tree.add(Department("Development"))
+        alice = dev.add(Person("Alice", 42))
+        tree.add(42)
+        alice.add(42)
+
+        reveal_type(tree.root)
+        reveal_type(alice)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+        reveal_type(alice)
+        reveal_type(alice.data)
+
+
+class TestTypedTreeTyping:
+    def test_typed_tree(self):
+        tree = TypedTree()
+
+        n = tree.add("child", kind="child")
+        n.add("child2", kind="child")
+        tree.add(42, kind="child")
+
+        tree.first().add("child3", kind="child")
+
+        reveal_type(tree.root)
+        reveal_type(n)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+
+    def test_typed_tree_str(self):
+        tree = TypedTree[str]()
+
+        n = tree.add("child", kind="child")
+        n.add("child2", kind="child")
+        n.add(42, kind="child")
+        tree.add(42, kind="child")
+
+        tree.first().add("child3", kind="child")
+
+        reveal_type(tree.root)
+        reveal_type(n)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+
+    def test_typed_tree_orga(self):
+        tree = TypedTree[OrgaEntry]()
+
+        dev = tree.add(Department("Development"), kind="department")
+        alice = dev.add(Person("Alice", 42), kind="member")
+        tree.add(42, kind="child")
+        alice.add(42, kind="child")
+
+        reveal_type(alice)
+        reveal_type(tree.first())
+        reveal_type(tree.first().data)
+        reveal_type(alice)
+        reveal_type(alice.data)

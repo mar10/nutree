@@ -2,10 +2,12 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportOptionalMemberAccess=false
+# mypy: disable-error-code="annotation-unchecked"
 
 import pytest
 from nutree import Tree
-from nutree.common import GenericNodeData
+from nutree.common import DictWrapper, UniqueConstraintError
 
 
 class Item:
@@ -19,13 +21,14 @@ class Item:
 
 
 class TestObjects:
-    def setup_method(self):
+    def setup_method(self, method):
         self.tree = Tree("fixture")
 
-    def teardown_method(self):
+    def teardown_method(self, method):
         self.tree = None
 
     def test_objects(self):
+        assert self.tree is not None
         tree = self.tree
 
         n = tree.add("Records")
@@ -75,7 +78,7 @@ class TestObjects:
             n.rename("foo")
         assert tree._self_check()
 
-    def test_shadow_attrs_off(self):
+    def test_forward_attrs_off(self):
         tree = Tree("fixture")
 
         records = tree.add("Records")
@@ -85,14 +88,14 @@ class TestObjects:
         assert let_it_be_node.data is let_it_be_item
         assert let_it_be_node.data.name == "Let It Be"
         assert let_it_be_node.data.price == 12.34
-        # Note caveat: `node.name` is not shadowed, but a native property:
+        # Note caveat: `node.name` is not forwarded, but a native property:
         assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
-        # Shadowing is off, so  `node.price` is off
+        # Forwarding is off, so  `node.price` is unknown
         with pytest.raises(AttributeError):
             assert let_it_be_node.price == 12.34
 
-    def test_shadow_attrs_true(self):
-        tree = Tree("fixture", shadow_attrs=True)
+    def test_forward_attrs_true(self):
+        tree = Tree("fixture", forward_attrs=True)
 
         records = tree.add("Records")
         let_it_be_item = Item("Let It Be", 12.34, 17)
@@ -102,20 +105,20 @@ class TestObjects:
         assert let_it_be_node.data.name == "Let It Be"
         assert let_it_be_node.data.price == 12.34
 
-        # Note caveat: `node.name` is not shadowed, but a native property:
+        # Note caveat: `node.name` is not forwardeded, but a native property:
         assert let_it_be_node.name == "Item<'Let It Be', 12.34$>"
         with pytest.raises(AttributeError):
-            let_it_be_node.name = "foo"
+            let_it_be_node.name = "foo"  # type: ignore
 
         # `node.price` is alliased to `node.data.price`
         assert let_it_be_node.price == 12.34
 
-        # Shadow attributes are readonly
+        # forward-attributes are readonly
         with pytest.raises(AttributeError):
-            let_it_be_node.price = 9.99
+            let_it_be_node.price = 9.99  # type: ignore
 
 
-class TestGenericNodeData:
+class TestDictWrapper:
     def setup_method(self):
         self.tree = Tree("fixture")
 
@@ -126,33 +129,34 @@ class TestGenericNodeData:
         d: dict = {"a": 1, "b": 2}
 
         with pytest.raises(TypeError, match="dict_inst must be a dictionary"):
-            _ = GenericNodeData("foo")
+            _ = DictWrapper("foo")  # type: ignore
 
         with pytest.raises(TypeError):
-            _ = GenericNodeData("foo", **d)
+            _ = DictWrapper("foo", **d)  # type: ignore
 
         with pytest.raises(TypeError):
-            _ = GenericNodeData("foo", d)
+            _ = DictWrapper("foo", d)  # type: ignore
 
         with pytest.raises(ValueError):
-            _ = GenericNodeData(d, foo="bar")
+            _ = DictWrapper(d, foo="bar")
 
-        gnd = GenericNodeData(d)
+        gnd = DictWrapper(d)
         assert gnd._dict is d, "dict should be stored as reference"
 
-        assert gnd.a == 1, "GenericNodeData should support attribute access"
         with pytest.raises(AttributeError):
-            _ = gnd.foo
+            _ = gnd.a  # type: ignore
+        with pytest.raises(AttributeError):
+            _ = gnd.foo  # type: ignore
 
-        assert gnd["a"] == 1, "GenericNodeData should support item access"
+        assert gnd["a"] == 1, "DictWrapper should support item read access"
         with pytest.raises(KeyError):
             _ = gnd["foo"]
 
-        gnd = GenericNodeData(**d)
+        gnd = DictWrapper(**d)
         assert gnd._dict is not d, "unpacked dict should be stored as copy"
 
     def test_dict(self):
-        tree = Tree(shadow_attrs=True)
+        tree = Tree(forward_attrs=True)
 
         d: dict = {"a": 1, "b": 2}
 
@@ -160,14 +164,19 @@ class TestGenericNodeData:
         with pytest.raises(TypeError, match="unhashable type: 'dict'"):
             _ = tree.add(d)
 
-        # But we can wrap it in a GenericNodeData instance
-        node = tree.add(GenericNodeData(d))
-
+        # But we can wrap it in a DictWrapper instance
+        node = tree.add(DictWrapper(d))
+        with pytest.raises(UniqueConstraintError):
+            _ = tree.add(DictWrapper(d))
+        tree.print(repr="{node}")
+        # raise
         # The dict is stored as reference
 
-        assert isinstance(node.data, GenericNodeData)
+        assert isinstance(node.data, DictWrapper)
         assert node.data._dict is d, "dict should be stored as reference"
-        assert node.a == 1, "should support attribute access via shadowing"
+
+        with pytest.raises(AttributeError):
+            _ = node.a  # should not support attribute access via forwarding
 
         with pytest.raises(AttributeError):
             # should not allow access to non-existing attributes
@@ -175,46 +184,46 @@ class TestGenericNodeData:
 
         with pytest.raises(TypeError, match="'Node' object is not subscriptable"):
             # should NOT support item access via indexing
-            _ = node["a"]
+            _ = node["a"]  # type: ignore
 
-        assert node.data.a == 1, "should support attribute access via data"
+        with pytest.raises(AttributeError):
+            # should not support attribute access via data
+            _ = node.data.a  # type: ignore
 
         with pytest.raises(AttributeError):
             # should not allow access to non-existing attributes
-            _ = node.data.foo
+            _ = node.data.foo  # type: ignore
 
         assert node.data["a"] == 1, "should support item access via data"
 
         with pytest.raises(AttributeError, match="object has no attribute 'a'"):
-            # Shadowing is read-only
-            _ = node.data.a = 99
+            # Forwarding is read-only
+            _ = node.data.a = 99  # type: ignore
 
-        with pytest.raises(
-            TypeError, match="'GenericNodeData' object does not support item assignment"
-        ):
-            # Index access is read-only
-            _ = node.data["a"] = 99
+        # Index access is writable
+        node.data["a"] = 99
+        assert node.data._dict["a"] == 99, "should reflect changes in dict"
+        assert node.data["a"] == 99, "should reflect changes in dict via item access"
 
-        with pytest.raises(
-            TypeError, match="'GenericNodeData' object does not support item assignment"
-        ):
-            _ = node.data["foo"] = 99
+        node.data["foo"] = "bar"
+        assert node.data._dict["foo"] == "bar"
 
-        # We need to access the dict directly to modify it
-        node.data._dict["a"] = 99
-        assert node.a == 99, "should reflect changes in dict"
+        tree._self_check()
 
-    def test_generic_node_data_unpacked(self):
-        tree = Tree(shadow_attrs=True)
+    def test_wrapped_dict_unpacked(self):
+        tree = Tree(forward_attrs=True)
 
         d: dict = {"a": 1, "b": 2}
 
         # We can also unpack the dict
-        node = tree.add(GenericNodeData(**d))
+        node = tree.add(DictWrapper(**d))
 
         assert node.data._dict is not d, "unpacked dict should be stored as copy"
         assert node.data._dict == {"a": 1, "b": 2}
-        assert node.a == 1, "GenericNodeData should support attribute access"
+        with pytest.raises(AttributeError):
+            _ = node.a
+        assert node.data._dict["a"] == 1
+        assert node.data["a"] == 1
 
     def test_dataclass(self):
         from dataclasses import FrozenInstanceError, dataclass
@@ -231,7 +240,7 @@ class TestGenericNodeData:
             price: float
             count: int
 
-        tree = Tree(shadow_attrs=True)
+        tree = Tree(forward_attrs=True)
 
         # We cannot simply add a dataclass, because it is mutable and unhashable
         with pytest.raises(TypeError, match="unhashable type: 'Item'"):
@@ -243,7 +252,7 @@ class TestGenericNodeData:
 
         # Frozen dataclasses are immutable
         with pytest.raises(FrozenInstanceError):
-            item.count += 1
+            item.count += 1  # type: ignore
 
         # We can also add by passing the data_id as keyword argument:
         _ = tree.add(item, data_id="123-456")
@@ -252,7 +261,9 @@ class TestGenericNodeData:
 
         assert isinstance(dict_node.data, FrozenItem)
         assert dict_node.data is item, "dataclass should be stored as reference"
-        assert dict_node.price == 12.34, "should support attribute access via shadowing"
+        assert (
+            dict_node.price == 12.34
+        ), "should support attribute access via forwardinging"
         with pytest.raises(AttributeError):
             _ = dict_node.foo
 
@@ -275,7 +286,7 @@ class TestGenericNodeData:
                 return hash(data["guid"])
             return hash(data)
 
-        tree = Tree(calc_data_id=_calc_id, shadow_attrs=True)
+        tree = Tree(calc_data_id=_calc_id, forward_attrs=True)
 
         n1 = tree.add(d)
         n2 = tree.add(dc)

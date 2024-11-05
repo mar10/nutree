@@ -2,8 +2,10 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportOptionalMemberAccess=false
 
 import re
+from pathlib import Path
 
 from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree, _SystemRootTypedNode
 
@@ -11,6 +13,7 @@ from . import fixture
 
 
 class TestTypedTree:
+    # def met
     def test_add_child(self):
         tree = TypedTree("fixture")
 
@@ -57,6 +60,7 @@ class TestTypedTree:
             `- function → func2
            """,
         )
+        assert tree.last_child(ANY_KIND).name == "func2"
 
         assert len(fail1.children) == 4
         assert fail1.get_children(kind=ANY_KIND) == fail1.children
@@ -132,11 +136,51 @@ class TestTypedTree:
 
         # Copy node
         assert not fail1.is_clone()
-        func2.add(fail1)
+        func2_clone = func2.add(fail1, kind=None)
+        assert func2_clone.kind == "failure"
         assert fail1.is_clone()
 
         subtree = func2.copy()
         assert isinstance(subtree, TypedTree)
+
+    def test_add_child_2(self):
+        tree = TypedTree("fixture")
+
+        a = tree.add("A", kind=None)
+        assert a.kind is tree.DEFAULT_CHILD_TYPE
+        a.append_child("a1", kind=None)
+        a.prepend_child("a0", kind=None)
+        a.append_sibling("A2", kind=None)
+        a.prepend_sibling("A0", kind=None)
+
+        b = tree.add("B", kind="letter")
+        tree_2 = (
+            TypedTree("fixture2")
+            .add("X", kind=None)
+            .add("x1", kind=None)
+            .up(2)
+            .add("Y", kind=None)
+            .add("y1", kind=None)
+            .tree
+        )
+        b.append_child(tree_2, kind=None)
+        tree.print()
+        assert fixture.check_content(
+            tree,
+            """
+            TypedTree<*>
+            +- child → A0
+            +- child → A
+            |  +- child → a0
+            |  `- child → a1
+            +- child → A2
+            `- letter → B
+               +- child → X
+               |  `- child → x1
+               `- child → Y
+                  `- child → y1           
+            """,
+        )
 
     def test_graph_product(self):
         tree = TypedTree("Pencil")
@@ -171,16 +215,13 @@ class TestTypedTree:
         # tree.print()
         # raise
 
-        # with fixture.WritableTempFile("w", suffix=".png") as temp_file:
+    def test_graph_product2(self):
+        tree = fixture.create_typed_tree_simple()
+        tree.print()
+        with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
+            tree.to_dotfile(temp_file.name)
 
-        #     tree.to_dotfile(
-        #         # temp_file.name,
-        #         "/Users/martin/Downloads/tree_graph_pencil.png",
-        #         format="png",
-        #         graph_attrs={"rankdir": "LR"},
-        #         # add_root=False,
-        #         # node_mapper=node_mapper,
-        #         # edge_mapper=edge_mapper,
-        #         # unique_nodes=False,
-        #     )
-        #     assert False
+            buffer = Path(temp_file.name).read_text()
+
+        print(buffer)
+        assert '[label="func2"]' in buffer

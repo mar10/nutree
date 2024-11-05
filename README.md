@@ -15,16 +15,16 @@
 
 Handle multiple references of single objects ('clones') <br>
 Search by name pattern, id, or object reference <br>
-Unobtrusive handling of arbitrary objects <br>
 Compare two trees and calculate patches <br>
+Unobtrusive handling of arbitrary objects <br>
 Save as DOT file and graphwiz diagram <br>
 Nodes can be plain strings or objects <br>
 (De)Serialize to (compressed) JSON <br>
 Save as Mermaid flow diagram <br>
 Different traversal methods <br>
 Generate random trees <br>
-Fully type annotated <br>
 Convert to RDF graph <br>
+Fully type annotated <br>
 Typed child nodes <br>
 Pretty print <br>
 Navigation <br>

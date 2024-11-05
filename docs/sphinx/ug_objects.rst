@@ -10,7 +10,7 @@ Working with Objects
 
     Nutree allows to store arbitrary objects in its nodes without the
     need to modify them or derive from a common base class. |br|
-    It also supports shadow attributes for direct access to object attributes. |br|
+    It also supports attribute forwarding for direct access to object attributes. |br|
     Some objects like *dicts* or *dataclasses* are unhashable and require special
     handling. 
 
@@ -80,17 +80,17 @@ Lookup works by `data` object or `data_id` as expected::
     assert tree.find(data_id="{123-456}").data is alice
 
 
-.. _shadow-attributes:
+.. _forward-attributes:
 
-Shadow Attributes (Attribute Aliasing)
---------------------------------------
+Forward Attributes (Attribute Aliasing)
+---------------------------------------
 
 When storing arbitrary objects within a tree node, all its attributes must be 
 accessed through the ``node.data`` attribute. |br|
-This can be simplified by using the ``shadow_attrs`` argument, which allows to
+This can be simplified by using the ``forward_attrs`` argument, which allows to
 access ``node.data.age`` as ``node.age`` for example::
 
-    tree = Tree("Persons", shadow_attrs=True)
+    tree = Tree("Persons", forward_attrs=True)
     alice = Person("Alice", age=23, guid="{123-456}")
     alice_node = tree.add(alice)
 
@@ -99,34 +99,40 @@ access ``node.data.age`` as ``node.age`` for example::
     assert alice_node.data.guid == "{123-456}"
     assert alice_node.data.age == 23
 
-    # Direct access using shadowing:
+    # Direct access using attribute forwarding:
     assert alice_node.guid == "{123-456}"
     assert alice_node.age == 23
     
-    # Note also: shadow attributes are readonly:
+    # Note also: forwarded attributes are readonly:
     alice_node.age = 24       # ERROR: raises AttributeError
     
     # But we can still modify the data object directly:
     alice_node.data.age = 24  # OK!
 
-    # Note caveat: `node.name` is not shadowed, but a native property:
+    # Note caveat: `node.name` is not forwarded, because it is also a native property:
     assert alice.data.name == "Alice"
     assert alice.name == "Person<Alice, 23>"
 
+.. note::
+    The `forward_attrs` feature is readonly, so we cannot modify the object
+    through the forwarded attributes. 
+    We need to access the object directly for that, e.g. ``node.data.age = 24``.
+
 .. warning::
-
     Aliasing only works for attribute names that are **not** part of the native 
-    :class:`~nutree.node.Node` data model. So these attributes will always return
-    the native values:
+    :class:`~nutree.node.Node` data model. So the following attributes will 
+    always return the native values:
     `children`, `data_id`, `data`, `kind`, `meta`, `node_id`, `parent`, `tree`, 
-    and all other methods and properties.
+    and all other methods and properties, like `parent`, `name`, etc.
 
-    Note also that shadow attributes are readonly.
+    Use the `forward_attrs` feature with caution, as it can lead to unexpected
+    behavior, especially when new native attributes are added to `Node` in 
+    future releases!
 
 
 .. _generic-node-data:
 
-Dictionaries (GenericNodeData)
+Dictionaries (DictWrapper)
 ------------------------------
 
 Python 
@@ -162,25 +168,25 @@ returns a unique key for the data object::
 Wrapping Dictionaries
 ~~~~~~~~~~~~~~~~~~~~~
 
-Finally, we can use the :class:`~nutree.common.GenericNodeData` which is a simple 
+Finally, we can use the :class:`~nutree.common.DictWrapper` which is a simple 
 wrapper around a dictionary that 
 
 - is hashable, so it can be added to the tree as ``node.data``
 - stores a reference to the original dict internally as ``node.data._dict``
-- allows readonly access to dict keys as shadow attributes, i.e. 
+- allows readonly access to dict keys as forward-attributes, i.e. 
   ``node.data._dict["name"]`` can be accessed as ``node.data.name``. |br|
-  If ``shadow_attrs=True`` is passed to the tree constructor, it can also be
+  If ``forward_attrs=True`` is passed to the tree constructor, it can also be
   accessed as ``node.name``
 - allows readonly access to dict keys by index, i.e. ``node.data["name"]`` 
 
 Examples ::
 
-    from nutree import Tree, GenericNodeData
+    from nutree import Tree, DictWrapper
 
-    tree = Tree(shadow_attrs=True)
+    tree = Tree(forward_attrs=True)
 
     d = {"a": 1, "b": 2}
-    obj = GenericNodeData(d)
+    obj = DictWrapper(d)
     node = tree.add_child(obj)
 
 We can now access the dict keys as attributes::
@@ -191,10 +197,10 @@ We can now access the dict keys as attributes::
     assert node.data.a == 1, "accessible as data attribute"
     assert node.data["a"] == 1, "accessible by index"
 
-    # Since we enabled shadow_attrs, this is also possible:
+    # Since we enabled forward_attrs, this is also possible:
     assert node.a == 1, "accessible as node attribute"
 
-    # Note: shadow attributes are readonly:
+    # Note: forward-attributes are readonly:
     node.a = 99          # ERROR: raises AttributeError
     node.data["a"] = 99  # ERROR: raises TypeError
 
@@ -203,28 +209,29 @@ We can now access the dict keys as attributes::
     assert node.a == 99, "should reflect changes in dict"
 
 
-GenericNodeData can also be initialized with keyword args like this::
+DictWrapper can also be initialized with keyword args like this::
 
-    obj = GenericNodeData(a=1, b=2)
+    obj = DictWrapper(a=1, b=2)
 
-Trees that contain GenericNodeData objects can be serialized and deserialized
+Trees that contain DictWrapper objects can be serialized and deserialized
 using the :meth:`~nutree.tree.Tree.save` and :meth:`~nutree.tree.Tree.load`
 methods::
 
-        tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+        tree.save(file_path, mapper=DictWrapper.serialize_mapper)
         ...
-        tree2 = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+        tree2 = Tree.load(file_path, mapper=DictWrapper.deserialize_mapper)
 
 .. warning::
-    The :class:`~nutree.common.GenericNodeData` provides a hash value because
+    The :class:`~nutree.common.DictWrapper` provides a hash value because
     any class that is hashable, so it can be used as a data object. However, the 
     hash value is NOT based on the internal dict but on the object itself. |br|
-    This means that two instances of GenericNodeData with the same dict content
+    This means that two instances of DictWrapper with the same dict content
     will have different hash values.
 
-.. warning::
-    The `shadow_attrs` feature is readonly, so you cannot modify the dict
-    through the shadow attributes. You need to access the dict directly for that.
+.. note::
+    The `forward_attrs` feature is readonly, so you cannot modify the dict
+    through the forwarded attributes. You need to access the dict directly for 
+    that.
 
 Dataclasses
 -----------

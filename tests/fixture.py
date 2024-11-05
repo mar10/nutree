@@ -5,14 +5,17 @@ Test helpers.
 """
 # ruff: noqa: T201, T203 `print` found
 
+from __future__ import annotations
+
 import os
 import re
 import tempfile
 import time
 import timeit
+import uuid
 from random import randint
 from textwrap import dedent, indent
-from typing import List, Optional, Union
+from typing import IO, Any, List
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -23,11 +26,19 @@ def is_running_on_ci() -> bool:
     return bool(os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"))
 
 
-class Person:
-    def __init__(self, name, *, age, guid=None) -> None:
-        self.name = name
-        self.age = age
-        self.guid = guid
+class OrgaUnit:
+    def __init__(self, name: str, *, guid: str | None = None) -> None:
+        self.name: str = name
+        self.guid: str = uuid.uuid4().hex if guid is None else guid
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}<{self.name}>"
+
+
+class Person(OrgaUnit):
+    def __init__(self, name: str, *, age: int, guid: str | None = None) -> None:
+        super().__init__(name, guid=guid)
+        self.age: int = age
 
     def __repr__(self) -> str:
         return f"Person<{self.name}, {self.age}>"
@@ -41,13 +52,12 @@ class Person:
     #     )
 
 
-class Department:
-    def __init__(self, name, *, guid=None) -> None:
-        self.name = name
-        self.guid = guid
+class Department(OrgaUnit):
+    def __init__(self, name: str, *, guid: str | None = None) -> None:
+        super().__init__(name, guid=guid)
 
-    def __repr__(self) -> str:
-        return f"Department<{self.name}>"
+    # def __repr__(self) -> str:
+    #     return f"Department<{self.name}>"
 
     # def __eq__(self, other):
     #     return (
@@ -58,7 +68,12 @@ class Department:
 
 
 def create_tree(
-    *, style="simple", name="fixture", clones=False, tree=None, print=True
+    *,
+    style="simple",
+    name="fixture",
+    clones=False,
+    tree: Tree | None = None,
+    print=True,
 ) -> Tree:
     if tree is not None:
         assert not tree, "must be empty"
@@ -119,65 +134,82 @@ def create_tree(
     return tree
 
 
-def create_typed_tree(
-    *, style="simple", name="fixture", clones=False, tree=None, print=True
+def create_typed_tree_objects(
+    *,
+    name="fixture",
+    clones=False,
+    tree: TypedTree[OrgaUnit] | None = None,
+    print=True,
+) -> TypedTree[OrgaUnit]:
+    """
+    TypedTree<'*'>
+    ├── org_unit → Department<Development>
+    │   ├── manager → Person<Alice, 23>
+    │   ├── member → Person<Bob, 32>
+    │   ╰── member → Person<Charleen, 43>
+    ╰── department → Department<Marketing>
+        ├── member → Person<Charleen, 43>
+        ╰── manager → Person<Dave, 54>
+    """
+    if tree is None:
+        tree = TypedTree[OrgaUnit](name)
+    assert len(tree) == 0
+
+    dev = tree.add(Department("Development", guid="{012-345}"), kind="org_unit")
+    dev.add(Person("Alice", age=23, guid="{123-456}"), kind="manager")
+    dev.add(Person("Bob", age=32, guid="{234-456}"), kind="member")
+
+    markt = tree.add(Department("Marketing", guid="{345-456}"), kind="org_unit")
+    charleen = markt.add(Person("Charleen", age=43, guid="{345-456}"), kind="member")
+    markt.add(Person("Dave", age=54, guid="{456-456}"), kind="manager")
+
+    if clones:
+        dev.add(charleen, kind="member")
+
+    # Since the output is only displayed when a test fails, it may be handy to
+    # see (unless caller modifies afterwards and then prints):
+    if print:
+        tree.print(repr="{node}")
+    return tree
+
+
+def create_typed_tree_simple(
+    *,
+    name="fixture",
+    clones=False,
+    tree: TypedTree[Any] | None = None,
+    print=True,
 ) -> TypedTree:
+    """
+    TypedTree<*>
+    +- function → func1
+    |  +- failure → fail1
+    |  |  +- cause → cause1
+    |  |  +- cause → cause2
+    |  |  +- effect → eff1
+    |  |  `- effect → eff2
+    |  `- failure → fail2
+    `- function → func2
+    """
     if tree is not None:
         assert not tree, "must be empty"
         assert isinstance(tree, TypedTree)
     else:
-        tree = TypedTree(name)
+        tree = TypedTree[Any](name)
 
-    if style == "simple":
-        """
-        TypedTree<*>
-        +- function → func1
-        |  +- failure → fail1
-        |  |  +- cause → cause1
-        |  |  +- cause → cause2
-        |  |  +- effect → eff1
-        |  |  `- effect → eff2
-        |  `- failure → fail2
-        `- function → func2
-        """
-        func = tree.add("func1", kind="function")
-        fail1 = func.add("fail1", kind="failure")
-        fail1.add("cause1", kind="cause")
-        fail1.add("cause2", kind="cause")
-        fail1.add("eff1", kind="effect")
-        fail1.add("eff2", kind="effect")
-        func.add("fail2", kind="failure")
-        func2 = tree.add("func2", kind="function")
+    func = tree.add("func1", kind="function")
+    fail1 = func.add("fail1", kind="failure")
+    fail1.add("cause1", kind="cause")
+    fail1.add("cause2", kind="cause")
+    fail1.add("eff1", kind="effect")
+    fail1.add("eff2", kind="effect")
+    func.add("fail2", kind="failure")
+    func2 = tree.add("func2", kind="function")
 
-        if clones:
-            func2.add(fail1)
+    if clones:
+        func2.add(fail1, kind=None)
+        # func2.add(fail1, kind="failure")
 
-    elif style == "objects":
-        """
-        TypedTree<'*'>
-        ├── org_unit → Department<Development>
-        │   ├── manager → Person<Alice, 23>
-        │   ├── member → Person<Bob, 32>
-        │   ╰── member → Person<Charleen, 43>
-        ╰── department → Department<Marketing>
-            ├── member → Person<Charleen, 43>
-            ╰── manager → Person<Dave, 54>
-        """
-        dev = tree.add(Department("Development", guid="{012-345}"), kind="org_unit")
-        dev.add(Person("Alice", age=23, guid="{123-456}"), kind="manager")
-        dev.add(Person("Bob", age=32, guid="{234-456}"), kind="member")
-
-        markt = tree.add(Department("Marketing", guid="{345-456}"), kind="org_unit")
-        charleen = markt.add(
-            Person("Charleen", age=43, guid="{345-456}"), kind="member"
-        )
-        markt.add(Person("Dave", age=54, guid="{456-456}"), kind="manager")
-
-        if clones:
-            dev.add(charleen, kind="member")
-
-    else:
-        raise NotImplementedError(style)
     # Since the output is only displayed when a test fails, it may be handy to
     # see (unless caller modifies afterwards and then prints):
     if print:
@@ -186,13 +218,13 @@ def create_typed_tree(
     return tree
 
 
-def generate_tree(level_defs: List[int]) -> "Tree":
+def generate_tree(level_defs: List[int]) -> Tree:
     """Generate a tree.
 
     Example:
         generate_tree([10, 100, 100])
     """
-    tree = Tree()
+    tree = Tree[str]()
 
     def _generate_tree(levels, name: str, root: Node):
         count, *rest = levels
@@ -219,7 +251,10 @@ def flatten_nodes(tree):
 
 
 def canonical_repr(
-    obj: Union[str, Tree, Node], *, repr: Optional[ReprArgType] = None, style="ascii32"
+    obj: str | TypedTree | Tree | Node,
+    *,
+    repr: ReprArgType | None = None,
+    style="ascii32",
 ) -> str:
     if repr is None:
         if isinstance(obj, (TypedTree, TypedNode)):
@@ -240,18 +275,21 @@ canonical_tree_header = "Tree<*>"
 
 
 def _check_content(
-    tree: Union[Tree, Node, str],
+    tree: TypedTree | Tree | Node | str,
     expect_ascii,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
-    style=None,
+    repr: ReprArgType | None = None,
+    style: str | None = None,
 ):
     if style is None:
         if "├── " in expect_ascii or "╰── " in expect_ascii:
             style = "round43"
         else:
             style = "ascii32"
+
+    if isinstance(tree, Tree):
+        assert tree._self_check()
 
     s1 = indent(canonical_repr(tree, repr=repr, style=style), "    ")
     s2 = indent(canonical_repr(expect_ascii, repr=repr, style=style), "    ")
@@ -266,14 +304,14 @@ def _check_content(
 
 
 def check_content(
-    tree: Union[Tree, Node, str],
+    tree: TypedTree | Tree | Node | str,
     expect_ascii,
     *,
     msg="",
     ignore_tree_name=True,
-    repr: Optional[ReprArgType] = None,
+    repr: ReprArgType | None = None,
     style=None,
-):
+) -> bool:
     err = _check_content(tree, expect_ascii, msg, ignore_tree_name, repr, style)
     if err:
         raise AssertionError(err) from None
@@ -281,6 +319,9 @@ def check_content(
 
 
 def trees_equal(tree_1, tree_2, ignore_tree_name=True) -> bool:
+    assert tree_1 is not tree_2
+    if not tree_1 or not tree_2 or (len(tree_1) != len(tree_2)):
+        return False
     return check_content(tree_1, tree_2, ignore_tree_name=ignore_tree_name)
 
 
@@ -406,6 +447,7 @@ def run_timings(
     #     return 1
 
     def format_time(dt):
+        scale = 0
         unit = time_unit
         if unit is not None:
             scale = units[unit]
@@ -464,11 +506,12 @@ class WritableTempFile:
     """
 
     def __init__(self, mode="w", *, encoding=None, suffix=None):
+        self.temp_file: IO[str] = None  # type: ignore
         self.mode = mode
         self.encoding = encoding
         self.suffix = suffix
 
-    def __enter__(self):
+    def __enter__(self) -> IO[str]:
         self.temp_file = tempfile.NamedTemporaryFile(
             self.mode, encoding=self.encoding, suffix=self.suffix, delete=False
         )

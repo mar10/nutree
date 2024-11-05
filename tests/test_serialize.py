@@ -2,19 +2,20 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
+# pyright: reportOptionalMemberAccess=false
+# mypy: disable-error-code="attr-defined"
+
+from __future__ import annotations
 
 import json
 import pprint
-import shutil
 import tempfile
 import zipfile
-from pathlib import Path
-from typing import Tuple
+from typing import Any, Tuple
 
 import pytest
 from nutree import Node, Tree
-from nutree.common import FILE_FORMAT_VERSION
-from nutree.diff import DiffClassification, diff_node_formatter
+from nutree.common import FILE_FORMAT_VERSION, DataIdType
 from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree
 
 from . import fixture
@@ -73,6 +74,7 @@ class TestSerialize:
         assert tree.first_child() == tree_2.first_child()
 
         a11 = tree_2.find("a11")
+        assert a11
         assert a11.is_clone(), "Restored clone"
         assert len(tree_2.find_all("a11")) == 2
 
@@ -132,7 +134,7 @@ class TestSerialize:
             ╰── Node<'Person<Dave, 54>', data_id={456-456}>
         """
 
-        def _calc_id(tree, data):
+        def _calc_id(tree: Tree, data: Any) -> str | int:
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
                 return data.guid
@@ -163,7 +165,7 @@ class TestSerialize:
             return data
 
         # Use a tree
-        tree = Tree(calc_data_id=_calc_id)
+        tree = Tree[fixture.OrgaUnit](calc_data_id=_calc_id)
         fixture.create_tree(style="objects", clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
@@ -231,7 +233,7 @@ class TestSerialize:
 
             # Deserialize
             fp.seek(0)
-            meta_2 = {}
+            meta_2: dict = {}
             tree_2 = Tree.load(fp, mapper=deserialize_mapper, file_meta=meta_2)
             tree_2.name = "tree_2"
             tree_2.print(repr="{node}")
@@ -251,9 +253,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -273,13 +277,13 @@ class TestSerialize:
         self._test_serialize_objects(mode="value_map")
 
     def test_serialize_typed_tree_plain_str(self):
-        tree = fixture.create_typed_tree(clones=True)
+        tree = fixture.create_typed_tree_simple(clones=True)
         assert isinstance(tree, TypedTree)
 
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
             tree.save(fp, meta={"foo": "bar"})
-            _text, _data = _get_fp_result(fp, assert_len=418)
+            _text, _data = _get_fp_result(fp, assert_len=392)
             # Deserialize
             fp.seek(0)
             meta_2 = {}
@@ -300,6 +304,7 @@ class TestSerialize:
         assert tree.first_child(kind=ANY_KIND) == tree_2.first_child(kind=ANY_KIND)
 
         fail1 = tree_2.find("fail1")
+        assert fail1
         assert fail1.is_clone(), "Restored clone"
         assert len(tree_2.find_all("fail1")) == 2
 
@@ -319,7 +324,7 @@ class TestSerialize:
             ╰── TypedNode<kind=manager, Person<Dave, 54>, data_id='{456-456}'>
         """
 
-        def _calc_id(tree, data):
+        def _calc_id(tree: Tree, data: Any) -> DataIdType:
             # print("calc_id", data)
             if isinstance(data, (fixture.Person, fixture.Department)):
                 return data.guid
@@ -351,7 +356,7 @@ class TestSerialize:
 
         # Use a TypedTree
         tree = TypedTree(calc_data_id=_calc_id, name="fixture")
-        fixture.create_typed_tree(style="objects", clones=True, tree=tree)
+        fixture.create_typed_tree_objects(clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
         assert tree["{123-456}"].data.name == "Alice"
@@ -427,7 +432,7 @@ class TestSerialize:
 
             # Deserialize
             fp.seek(0)
-            meta_2 = {}
+            meta_2: dict = {}
             tree_2 = TypedTree.load(fp, mapper=deserialize_mapper, file_meta=meta_2)
             tree_2.name = "tree_2"
             tree_2.print(repr="{node}")
@@ -447,9 +452,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -485,12 +492,13 @@ class TestSerialize:
             }
             DEFAULT_VALUE_MAP = {"type": ["person", "dept"]}
 
-            def calc_data_id(tree, data):
+            def calc_data_id(self, data):
                 if hasattr(data, "guid"):
                     return data.guid
                 return hash(data)
 
-            def serialize_mapper(self, node: Node, data: dict):
+            @classmethod
+            def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
                 if isinstance(node.data, fixture.Department):
                     data["type"] = "dept"
                     data["name"] = node.data.name
@@ -500,22 +508,25 @@ class TestSerialize:
                     data["age"] = node.data.age
                 return data
 
-            @staticmethod
-            def deserialize_mapper(parent: Node, data: dict):
+            @classmethod
+            def deserialize_mapper(
+                cls, parent: Node, data: dict
+            ) -> str | object | None:
                 node_type = data["type"]
                 print("deserialize_mapper", data)
+                res: str | object | None = data
                 if node_type == "person":
-                    data = fixture.Person(
+                    res = fixture.Person(
                         name=data["name"], age=data["age"], guid=data["data_id"]
                     )
                 elif node_type == "dept":
-                    data = fixture.Department(name=data["name"], guid=data["data_id"])
-                print(f"deserialize_mapper -> {data}")
-                return data
+                    res = fixture.Department(name=data["name"], guid=data["data_id"])
+                print(f"deserialize_mapper -> {res}")
+                return res
 
         # Use a TypedTree
         tree = MyTree(name="MyTree")
-        fixture.create_typed_tree(style="objects", clones=True, tree=tree)
+        fixture.create_typed_tree_objects(clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
         assert tree["{123-456}"].data.name == "Alice"
@@ -557,9 +568,11 @@ class TestSerialize:
         # assert tree.first_child() == tree_2.first_child()
 
         alice_2 = tree_2.find(match=".*Alice.*")
+        assert alice_2
         assert alice_2.data.guid == "{123-456}"
 
         charleen_2 = tree_2.find(match=".*Charleen.*")
+        assert charleen_2
         assert charleen_2.is_clone(), "Restored clone"
         # assert len(tree_2.find_all("Charleen")) == 2
 
@@ -569,8 +582,8 @@ class TestSerialize:
     def test_graph(self):
         tree = TypedTree("fixture")
 
-        alice = tree.add("Alice")
-        bob = tree.add("Bob")
+        alice = tree.add("Alice", kind=None)
+        bob = tree.add("Bob", kind=None)
 
         alice.add("Carol", kind="friends")
 
@@ -609,7 +622,7 @@ class TestSerialize:
 
 class TestToDictList:
     def test_to_dict_list(self):
-        tree = fixture.create_typed_tree(clones=True)
+        tree = fixture.create_typed_tree_simple(clones=True)
         d = tree.to_dict_list()
         print(d)
         assert len(d) == 2, "two top nodes"
@@ -648,6 +661,8 @@ class TestFromDict:
         tree_2 = Tree.from_dict(tree_dict_list)
 
         assert fixture.trees_equal(tree, tree_2)
+        first_node = tree.first_child()
+        assert first_node
         assert type(tree_2.first_child().first_child().data) is type(
             tree.first_child().first_child().data
         )
@@ -707,165 +722,3 @@ class TestFromDict:
 
         assert tree._self_check()
         assert tree_2._self_check()
-
-
-class TestDot:
-    def test_serialize_dot(self):
-        """Save/load as  object tree with clones."""
-
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
-
-        # Avoid "Permission denied error" on Windows:
-        # with tempfile.NamedTemporaryFile("w", suffix=".gv") as path:
-        with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
-            tree.to_dotfile(temp_file.name)
-
-        # with tempfile.NamedTemporaryFile("w", suffix=".png") as path:
-        #     tree.to_dotfile(
-        #         path.name,
-        #         # "/Users/martin/Downloads/tree.png",
-        #         format="png",
-        #         add_root=False,
-        #         # unique_nodes=False,
-        #     )
-        #     assert False
-
-        res = [line for line in tree.to_dot()]
-        assert len(res) == 25
-        res = "\n".join(res)
-        print(res)
-        assert '__root__ [label="Root" shape="box"]' in res
-        assert "__root__ -> " in res
-        # assert False
-
-    def test_serialize_dot_2(self):
-        tree_0 = fixture.create_tree(name="T0", print=True)
-
-        tree_1 = fixture.create_tree(name="T1", print=False)
-
-        tree_1["a2"].add("a21")
-        tree_1["a11"].remove()
-        tree_1.add_child("C")
-        tree_1["b1"].move_to(tree_1["C"])
-        tree_1.print()
-
-        tree_2 = tree_0.diff(tree_1, reduce=False)
-
-        tree_2.print(repr=diff_node_formatter)
-
-        def node_mapper(node: Node, attr_def: dict):
-            dc = node.get_meta("dc")
-            if dc == DiffClassification.ADDED:
-                attr_def["color"] = "#00c000"
-            elif dc == DiffClassification.REMOVED:
-                attr_def["color"] = "#c00000"
-
-        def edge_mapper(node: Node, attr_def: dict):
-            # https://renenyffenegger.ch/notes/tools/Graphviz/examples/index
-            # https://graphs.grevian.org/reference
-            # https://graphviz.org/doc/info/attrs.html
-            dc = node.get_meta("dc")
-            if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
-                attr_def["color"] = "#00C000"
-            elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
-                attr_def["style"] = "dashed"
-                attr_def["color"] = "#C00000"
-            # # attr_def["label"] = "\E"
-            # # attr_def["label"] = "child of"
-            # attr_def["color"] = "green"
-            # # attr_def["style"] = "dashed"
-            # attr_def["penwidth"] = 1.0
-            # # attr_def["weight"] = 1.0
-
-        # tree_2.to_dotfile(
-        #     "/Users/martin/Downloads/tree_diff.png",
-        #     format="png",
-        #     # add_root=False,
-        #     # unique_nodes=False,
-        #     graph_attrs={"label": "Diff T0/T1"},
-        #     node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
-        #     edge_attrs={},
-        #     node_mapper=node_mapper,
-        #     edge_mapper=edge_mapper,
-        # )
-        # raise
-
-        res = [
-            line
-            for line in tree_2.to_dot(
-                graph_attrs={"label": "Diff T0/T1"},
-                node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
-                edge_attrs={},
-                node_mapper=node_mapper,
-                edge_mapper=edge_mapper,
-            )
-        ]
-        res = "\n".join(res)
-        print(res)
-        assert 'node  [style="filled" fillcolor="#e0e0e0"]' in res
-        assert '[label="C" color="#00c000"]' in res
-
-
-class TestMermaid:
-    def test_serialize_mermaid(self):
-        """Save/load as object tree with clones."""
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".md") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                # add_root=False,
-                # headers=["classDef default fill:#f9f,stroke:#333,stroke-width:1px;"],
-                # node_mapper=lambda node: f"{node}",
-                # unique_nodes=False,
-                # format="png",
-                # mmdc_options={"--theme": "forest"},
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_1.md",
-                )
-
-    def test_serialize_mermaid_typed(self):
-        """Save/load as  object tree with clones."""
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".md") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                title="Typed Tree",
-                direction="LR",
-                # add_root=False,
-                # node_mapper=lambda node: f"{node}",
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_2.md",
-                )
-
-    # @pytest.mark.xfail(reason="mmdc may not be installed")
-    def test_serialize_mermaid_svg(self):
-        """Save/load as typed object tree with clones."""
-        if not shutil.which("mmdc"):
-            raise pytest.skip("mmdc not installed")
-        KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_typed_tree(style="simple", clones=True, name="Root")
-
-        with fixture.WritableTempFile("w", suffix=".png") as temp_file:
-            tree.to_mermaid_flowchart(
-                temp_file.name,
-                title="Typed Tree",
-                direction="LR",
-                format="svg",
-                # add_root=False,
-                # node_mapper=lambda node: f"{node}",
-            )
-            if KEEP_FILES:  # save to tests/temp/...
-                shutil.copy(
-                    temp_file.name,
-                    Path(__file__).parent / "temp/test_serialize_2.png",
-                )

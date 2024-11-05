@@ -3,17 +3,25 @@
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
+# pragma: exclude-file-from-coverage
+
+# pyright: reportOptionalCall=false
+# pyright: reportInvalidTypeForm=false
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false
+
+# mypy: disable-error-code="arg-type, assignment, misc, return-value"
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 from nutree.common import IterationControl
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
-    # from .typed_tree import TypedNode, TypedTree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
 # Export some common rdflib attributes, so they can be accessed as
 # `from nutree.rdf import Literal` without having to `import rdflib`
@@ -22,15 +30,17 @@ try:
     import rdflib
     from rdflib import Graph, IdentifiedNode, Literal, URIRef
     from rdflib.namespace import RDF, XSD, DefinedNamespace, Namespace
+
 except ImportError:
     rdflib = None
     Graph = IdentifiedNode = Literal = URIRef = None
     RDF = XSD = DefinedNamespace = Namespace = None
-    # raise
+
 
 RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], Union[None, bool]]
 
-if Namespace:
+
+if rdflib:
 
     class NUTREE_NS(DefinedNamespace):
         """
@@ -40,20 +50,20 @@ if Namespace:
         _fail = True
 
         # diff_meta:
-        index: URIRef  #
-        has_child: URIRef  #
-        kind: URIRef  #
+        index: URIRef
+        has_child: URIRef
+        kind: URIRef
         name: URIRef  #
-        system_root: URIRef  #
+        system_root: URIRef
 
         _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
 
-else:  # rdflib unavailable
-    NUTREE_NS = None
+else:  # rdflib unavailable # pragma: no cover
+    NUTREE_NS = None  # type: ignore
 
 
 def _make_graph() -> Graph:
-    if not rdflib:
+    if not rdflib:  # pragma: no cover
         raise RuntimeError("Need rdflib installed.")
     graph = Graph()
 
@@ -118,7 +128,7 @@ def _add_child_nodes(
             index=index,
             node_mapper=node_mapper,
         )
-        if child_tree_node.has_children:
+        if len(child_tree_node.children) > 0:
             _add_child_nodes(graph, cgn, child_tree_node, node_mapper)
 
     return
@@ -155,7 +165,7 @@ def node_to_rdf(
 
 
 def tree_to_rdf(
-    tree: Tree,
+    tree: Tree[Any, Any],
     *,
     node_mapper: RDFMapperCallbackType | None = None,
 ) -> Graph:

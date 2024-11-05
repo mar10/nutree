@@ -6,10 +6,10 @@ Implement diff/merge algorithms.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .tree import Node, Tree
+    from nutree.tree import Node, Tree
 
 from enum import Enum
 
@@ -82,12 +82,14 @@ def diff_node_formatter(node):
     return s
 
 
-def diff_tree(t0: Tree, t1: Tree, *, ordered=False, reduce=False) -> Tree:
+def diff_tree(
+    t0: Tree[Any, Any], t1: Tree[Any, Any], *, ordered=False, reduce=False
+) -> Tree:
     from nutree import Tree
 
-    t2 = Tree(f"diff({t0.name!r}, {t1.name!r})")
-    added_nodes = set()
-    removed_nodes = set()
+    t2 = Tree[Any, Any](f"diff({t0.name!r}, {t1.name!r})")
+    added_nodes = set[int]()
+    removed_nodes = set[int]()
 
     def compare(p0: Node, p1: Node, p2: Node):
         p0_data_ids = set()

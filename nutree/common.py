@@ -4,6 +4,8 @@
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
 modules.
 """
+# MyPy incorrctly flags 'Exception must be derived from BaseException'
+# mypy: disable-error-code="misc"
 
 from __future__ import annotations
 
@@ -24,15 +26,19 @@ from typing import (
     List,
     Literal,
     Type,
-    TypeVar,
     Union,
 )
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
-    from .node import Node
-    from .tree import Tree
+    from nutree.node import Node
+    from nutree.tree import Tree
 
-    TTree = TypeVar("TTree", bound=Tree)
+    # TTree = TypeVar("TTree", bound=Tree)
+    # TNode = TypeVar("TNode", bound=Node)
+
+
+#: A sentinel object that can be used to detect if a parameter was passed.
+# sentinel = unittest.mock.sentinel
 
 #: Used as ID for the system root node
 ROOT_DATA_ID: str = "__root__"
@@ -43,30 +49,6 @@ FILE_FORMAT_VERSION: str = "1.0"
 
 #: Currently used Python version as string
 PYTHON_VERSION = ".".join([str(s) for s in sys.version_info[:3]])
-
-#: Type of ``Node.data_id``
-DataIdType = Union[str, int]
-
-#: Type of ``Tree(..., calc_data_id)```
-CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
-
-#: Type of ``format(..., repr=)```
-ReprArgType = Union[str, Callable[["Node"], str]]
-
-#: Type of ``Tree(..., factory)```
-NodeFactoryType = Type["Node"]
-
-#: A dict of scalar values
-FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
-
-#: Type of ``tree.save(..., key_map)``
-KeyMapType = Dict[str, str]
-
-#: Type of ``tree.save(..., value_map)``
-#: E.g. `{'t': ['person', 'dept']}`
-ValueMapType = Dict[str, List[str]]
-#: E.g. `{'t': {'person': 0, 'dept': 1}}`
-ValueDictMapType = Dict[str, Dict[str, int]]
 
 
 class TreeError(RuntimeError):
@@ -137,6 +119,28 @@ class StopTraversal(IterationControl):
         self.value = value
 
 
+#: Type of ``Node.data_id``
+DataIdType = Union[str, int]
+
+#: Type of ``Tree(..., calc_data_id)```
+CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
+
+#: Type of ``format(..., repr=)```
+ReprArgType = Union[str, Callable[["Node"], str]]
+
+#: A dict of scalar values
+FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
+
+#: Type of ``tree.save(..., key_map)``
+KeyMapType = Dict[str, str]
+
+#: Type of ``tree.save(..., value_map)``
+#: E.g. `{'t': ['person', 'dept']}`
+ValueMapType = Dict[str, List[str]]
+
+#: E.g. `{'t': {'person': 0, 'dept': 1}}`
+ValueDictMapType = Dict[str, Dict[str, int]]
+
 #: Generic callback for `tree.to_dot()`, ...
 MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
 
@@ -147,7 +151,12 @@ SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
 DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
-PredicateCallbackType = Callable[["Node"], Union[None, bool, IterationControl]]
+PredicateCallbackType = Callable[
+    ["Node"], Union[None, bool, IterationControl, Type[IterationControl]]
+]
+
+#:
+MatchArgumentType = Union[str, PredicateCallbackType, list, tuple, Any]
 
 #:
 TraversalCallbackType = Callable[
@@ -155,8 +164,8 @@ TraversalCallbackType = Callable[
     Union[
         None,
         bool,
-        "SkipBranch",
-        "StopTraversal",
+        SkipBranch,
+        StopTraversal,
         Type[SkipBranch],
         Type[StopTraversal],
         Type[StopIteration],
@@ -204,14 +213,14 @@ CONNECTORS = {
 # ------------------------------------------------------------------------------
 
 
-class GenericNodeData:
+class DictWrapper:
     """Wrap a Python dict so it can be added to the tree.
 
     Makes the hashable and exposes the dict values as attributes.
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
-    If the Tree is initialized with `shadow_attrs=True`, the values are also
+    If the Tree is initialized with `forward_attrs=True`, the values are also
     available as attributes of the node like `node.KEY`.
 
     See :ref:`generic-node-data` for details.
@@ -220,44 +229,70 @@ class GenericNodeData:
     __slots__ = ("_dict",)
 
     def __init__(self, dict_inst: dict | None = None, **values) -> None:
+        self._dict: dict = {}
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
             if not isinstance(dict_inst, dict):
-                self._dict = None  # type: ignore
                 raise TypeError("dict_inst must be a dictionary or None")
             if values:
-                self._dict = None  # type: ignore
                 raise ValueError("Cannot pass both dict_inst and **values")
-            self._dict: dict = dict_inst
+            self._dict = dict_inst
         else:
             # Single keyword arguments are passed (probably from unpacked dict):
             # store them in a new dictionary
-            self._dict: dict = values
+            self._dict = values
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self._dict}>"
 
+    def __hash__(self):
+        # We return the id of the dict object, which is unique and stable.
+        # Calculating a hash from the dict content is too expensive and would
+        # not work anyway, since the result is used as a key in a reference map
+        # and would not be adjusted, when the dict content changes.
+        # It is good enough however to detect if the same dict instance is added
+        # multiple times to the same tree.
+        return id(self._dict)
+
+    def __eq__(self, other):
+        if not isinstance(other, DictWrapper):
+            return False
+        return self._dict is other._dict
+
+    def __setitem__(self, key, value):
+        """Allow to access values as items.
+
+        Example::
+
+            `node.data["foo"] = 1` instead of `node.data._dict["foo"] = 1`.
+        """
+        self._dict[key] = value
+
     def __getitem__(self, key):
+        """Allow to access values as items.
+
+        E.g. ``foo = node.data["foo"]`` instead of `` foo = node.data._dict["foo"]``.
+        """
         return self._dict[key]
 
-    def __getattr__(self, name: str) -> Any:
-        """Allow to access values as attributes.
+    # def __getattr__(self, name: str) -> Any:
+    #     """Allow to access values as attributes.
 
-        Assuming the GenericNodeData instance is stored in a Node.data instance,
-        this allows to access the values like this::
+    #     Assuming the DictWrapper instance is stored in a Node.data instance,
+    #     this allows to access the values like this::
 
-                node.data.NAME
+    #             node.data.NAME
 
-        If shadow_attrs is enabled, this also allows to access the values like this::
+    #     If forward_attrs is enabled, this also allows to access the values like this::
 
-                node.NAME
+    #             node.NAME
 
-        See :ref:`generic-node-data`.
-        """
-        try:
-            return self._dict[name]
-        except KeyError:
-            raise AttributeError(name) from None
+    #     See :ref:`generic-node-data`.
+    #     """
+    #     try:
+    #         return self._dict[name]
+    #     except KeyError:
+    #         raise AttributeError(name) from None
 
     @classmethod
     def serialize_mapper(cls, nutree_node: Node, data: dict) -> Union[None, dict]:
@@ -265,9 +300,10 @@ class GenericNodeData:
 
         Example::
 
-            tree.save(file_path, mapper=GenericNodeData.serialize_mapper)
+            tree.save(file_path, mapper=DictWrapper.serialize_mapper)
 
         """
+        assert isinstance(nutree_node.data, DictWrapper)
         return nutree_node.data._dict.copy()
 
     @classmethod
@@ -276,7 +312,7 @@ class GenericNodeData:
 
         Example::
 
-            tree = Tree.load(file_path, mapper=GenericNodeData.deserialize_mapper)
+            tree = Tree.load(file_path, mapper=DictWrapper.deserialize_mapper)
         """
         return cls(**data)
 
@@ -327,6 +363,8 @@ def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
         return None
     try:
         res = fn(node)
+        if res in (SkipBranch, SelectBranch, StopTraversal):
+            return res()
     except IterationControl as e:
         return e  # SkipBranch, SelectBranch, StopTraversal
     except StopIteration as e:  # Also accept this builtin exception
