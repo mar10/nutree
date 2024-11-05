@@ -90,13 +90,13 @@ tree.print()
 ```
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x114bc4140>
-    │   ├── <__main__.Department object at 0x114bc4440>
-    │   │   ╰── <__main__.Person object at 0x114bc4740>
-    │   ╰── <__main__.Person object at 0x114bc46b0>
-    ├── <__main__.Department object at 0x114bc45f0>
-    │   ╰── <__main__.Person object at 0x114bc47a0>
-    ╰── <__main__.Person object at 0x114bc4590>
+    ├── <__main__.Department object at 0x10631fef0>
+    │   ├── <__main__.Department object at 0x105bfb560>
+    │   │   ╰── <__main__.Person object at 0x10643cad0>
+    │   ╰── <__main__.Person object at 0x105bf9850>
+    ├── <__main__.Department object at 0x105bf9430>
+    │   ╰── <__main__.Person object at 0x10643d1c0>
+    ╰── <__main__.Person object at 0x105bfbb60>
 
 
 Tree nodes store a reference to the object in the `node.data` attribute.
@@ -134,7 +134,7 @@ tree[alice]
 
 
 
-    Node<'Person<Alice (25)>', data_id=290178137>
+    Node<'Person<Alice (25)>', data_id=274463670>
 
 
 
@@ -158,9 +158,9 @@ tree.find_all(match=lambda node: "i" in node.data.name)
 
 
 
-    [Node<'Person<Claire (45)>', data_id=290178164>,
-     Node<'Department<Marketing>', data_id=290178143>,
-     Node<'Person<Alice (25)>', data_id=290178137>]
+    [Node<'Person<Claire (45)>', data_id=275004589>,
+     Node<'Department<Marketing>', data_id=274463043>,
+     Node<'Person<Alice (25)>', data_id=274463670>]
 
 
 
@@ -181,8 +181,8 @@ tree_2.print(repr="{node}")
 ```
 
     Tree<'Organization'>
-    ╰── Node<'Department<Development>', data_id=1145f7c6-9a12-4110-a9f7-f84c4d53df77>
-        ╰── Node<'Person<Bob (35)>', data_id=a5adfa10-ebbb-4949-9638-6a99dab6165b>
+    ╰── Node<'Department<Development>', data_id=1cbcccba-6a6d-4d0b-af21-87790cc0da96>
+        ╰── Node<'Person<Bob (35)>', data_id=b37c6bfb-b422-4711-a84c-26157729ffe5>
 
 
 now we could also search by the GUID, for example:
@@ -195,7 +195,7 @@ tree_2.find(data_id=str(bob.guid))
 
 
 
-    Node<'Person<Bob (35)>', data_id=a5adfa10-ebbb-4949-9638-6a99dab6165b>
+    Node<'Person<Bob (35)>', data_id=b37c6bfb-b422-4711-a84c-26157729ffe5>
 
 
 
@@ -260,9 +260,9 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=290178068>
-    │   ╰── Node<'Department<Test>', data_id=290178116>
-    ╰── Node<'Department<Marketing>', data_id=290178143>
+    ├── Node<'Department<Development>', data_id=274931695>
+    │   ╰── Node<'Department<Test>', data_id=274463574>
+    ╰── Node<'Department<Marketing>', data_id=274463043>
 
 
 In-place filtering is also available:
@@ -274,8 +274,8 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=290178068>
-    ╰── Node<'Department<Marketing>', data_id=290178143>
+    ├── Node<'Department<Development>', data_id=274931695>
+    ╰── Node<'Department<Marketing>', data_id=274463043>
 
 
 ## Mutation
@@ -320,14 +320,14 @@ identical data_id:
 tree.print(repr="{node}", title=False)
 ```
 
-    Node<'Department<Development>', data_id=290178068>
-    ├── Node<'Department<Test>', data_id=290178116>
-    │   ╰── Node<'Person<Claire (45)>', data_id=290178164>
-    ╰── Node<'Person<Alice (25)>', data_id=290178137>
-    Node<'Department<Marketing>', data_id=290178143>
-    ├── Node<'Person<Dave (55)>', data_id=290178170>
-    ╰── Node<'Person<Bob (35)>', data_id=290178155>
-    Node<'Person<Alice (25)>', data_id=290178137>
+    Node<'Department<Development>', data_id=274931695>
+    ├── Node<'Department<Test>', data_id=274463574>
+    │   ╰── Node<'Person<Claire (45)>', data_id=275004589>
+    ╰── Node<'Person<Alice (25)>', data_id=274463670>
+    Node<'Department<Marketing>', data_id=274463043>
+    ├── Node<'Person<Dave (55)>', data_id=275004700>
+    ╰── Node<'Person<Bob (35)>', data_id=274463109>
+    Node<'Person<Alice (25)>', data_id=274463670>
 
 
 
@@ -336,8 +336,8 @@ for clone in tree.find_all(alice):
     print(f"{clone}, parent={clone.parent}")
 ```
 
-    Node<'Person<Alice (25)>', data_id=290178137>, parent=None
-    Node<'Person<Alice (25)>', data_id=290178137>, parent=Node<'Department<Development>', data_id=290178068>
+    Node<'Person<Alice (25)>', data_id=274463670>, parent=None
+    Node<'Person<Alice (25)>', data_id=274463670>, parent=Node<'Department<Development>', data_id=274931695>
 
 
 ## Special Data Types
@@ -356,7 +356,7 @@ tree_str.add("B")
 tree_str.print()
 ```
 
-    Tree<'4642856144'>
+    Tree<'4400083696'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -386,11 +386,11 @@ tree.print(repr="{node}")
 # tree.find(d)
 ```
 
-    Tree<'4626598512'>
-    ├── Node<'A', data_id=5473560910289120105>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4628284480>
-    ╰── Node<'B', data_id=5825221258629577999>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4628284480>
+    Tree<'4398245712'>
+    ├── Node<'A', data_id=-5607366909164962165>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4391236800>
+    ╰── Node<'B', data_id=-2780248446825982667>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4391236800>
 
 
 ## Typed Trees
@@ -410,7 +410,7 @@ typed_tree.add("Mia", kind="friend").add("Noah", kind="brother").up().add(
 typed_tree.print()
 ```
 
-    TypedTree<'4626500208'>
+    TypedTree<'4400083744'>
     ╰── friend → Mia
         ├── brother → Noah
         ╰── sister → Olivia
@@ -463,12 +463,33 @@ tree = Tree[OrgaEntry]()
 dev = tree.add(Department("Development"))
 alice = dev.add(Person("Alice", 25))
 
-tree.add(42)  # Flags a typing error in the IDE (but not at runtime)
+tree.add(12345)  # Flags a typing error in the IDE (but not at runtime)
 
 # IDE infers that the type `OrgaEntry` is stored in the `data` attribute
 # and provides code completion
 print(alice.data.guid)
+
+tree.add
 ```
 
-    b871d538-8505-464c-992f-a1bf6a781711
+    22bf4953-5005-44ad-897e-fcbb345f0778
 
+
+
+
+
+    <bound method Tree.add of Tree<'4400087008'>>
+
+
+
+Note that the IDE can now **make better suggestions**
+
+![pylance_autocomlete.png](take_the_tour_files/pylance_autocomlete.png)
+
+**display type info**
+
+![pylance_type_info.png](take_the_tour_files/pylance_type_info.png)
+
+and **detect type errors**:
+
+![pyright_type_error.png](take_the_tour_files/pyright_type_error.png)
