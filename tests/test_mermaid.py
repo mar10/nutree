@@ -15,7 +15,7 @@ class TestMermaid:
     def test_serialize_mermaid_defaults(self):
         """Save/load as object tree with clones."""
         KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".md") as temp_file:
             tree.to_mermaid_flowchart(temp_file.name)
@@ -37,7 +37,7 @@ class TestMermaid:
     def test_serialize_mermaid_mappers(self):
         """Save/load as object tree with clones."""
         KEEP_FILES = not fixture.is_running_on_ci() and False
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         # def node_mapper(n: Node) -> str:
         #     return f"{n.name}"

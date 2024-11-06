@@ -67,66 +67,81 @@ class Department(OrgaUnit):
     #     )
 
 
-def create_tree(
+def create_tree_objects(
     *,
-    style="simple",
+    name="fixture",
+    clones=False,
+    tree: Tree | None = None,
+    print=True,
+) -> Tree[OrgaUnit]:
+    """
+    Tree<'2009255653136'>
+    ├── Node<'Department<Development>', data_id=125578508105>
+    │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
+    │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
+    │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
+    ╰── Node<'Department<Marketing>', data_id=125578508063>
+        ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+        ╰── Node<'Person<Dave, 54>', data_id={456-456}>
+    """
+    if tree is not None:
+        assert not tree, "must be empty"
+        assert isinstance(tree, Tree)
+    else:
+        tree = Tree[OrgaUnit](name)
+
+    dev = tree.add(Department("Development", guid="{012-345}"))
+    dev.add(Person("Alice", age=23, guid="{123-456}"))
+    dev.add(Person("Bob", age=32, guid="{234-456}"))
+    markt = tree.add(Department("Marketing", guid="{012-456}"))
+    charleen = markt.add(Person("Charleen", age=43, guid="{345-456}"))
+    markt.add(Person("Dave", age=54, guid="{456-456}"))
+    if clones:
+        dev.add(charleen)
+
+    # Since the output is only displayed when a test fails, it may be handy to
+    # see (unless caller modifies afterwards and then prints):
+    if print:
+        tree.print(repr="{node}")
+    return tree
+
+
+def create_tree_simple(
+    *,
     name="fixture",
     clones=False,
     tree: Tree | None = None,
     print=True,
 ) -> Tree:
+    """
+    Tree<'fixture'>
+    ├── 'A'
+    │   ├── 'a1'
+    │   │   ├── 'a11'
+    │   │   ╰── 'a12'
+    │   ╰── 'a2'
+    ╰── 'B'
+        ╰── 'b1'
+            ├── 'a11'  <- CLONE
+            ╰── 'b11'
+    """
     if tree is not None:
         assert not tree, "must be empty"
         assert isinstance(tree, Tree)
     else:
         tree = Tree(name)
 
-    if style == "simple":
-        """
-        Tree<'fixture'>
-        ├── 'A'
-        │   ├── 'a1'
-        │   │   ├── 'a11'
-        │   │   ╰── 'a12'
-        │   ╰── 'a2'
-        ╰── 'B'
-            ╰── 'b1'
-                ├── 'a11'  <- CLONE
-                ╰── 'b11'
-        """
-        a = tree.add("A")
-        a1 = a.add("a1")
-        a11 = a1.add("a11")
-        a1.add("a12")
-        a.add("a2")
-        b = tree.add("B")
-        b1 = b.add("b1")
-        b1.add("b11")
-        if clones:
-            b1.prepend_child(a11)
+    a = tree.add("A")
+    a1 = a.add("a1")
+    a11 = a1.add("a11")
+    a1.add("a12")
+    a.add("a2")
+    b = tree.add("B")
+    b1 = b.add("b1")
+    b1.add("b11")
+    if clones:
+        b1.prepend_child(a11)
 
-    elif style == "objects":
-        """
-        Tree<'2009255653136'>
-        ├── Node<'Department<Development>', data_id=125578508105>
-        │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
-        │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
-        │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
-        ╰── Node<'Department<Marketing>', data_id=125578508063>
-            ├── Node<'Person<Charleen, 43>', data_id={345-456}>
-            ╰── Node<'Person<Dave, 54>', data_id={456-456}>
-        """
-        dev = tree.add(Department("Development", guid="{012-345}"))
-        dev.add(Person("Alice", age=23, guid="{123-456}"))
-        dev.add(Person("Bob", age=32, guid="{234-456}"))
-        markt = tree.add(Department("Marketing", guid="{012-456}"))
-        charleen = markt.add(Person("Charleen", age=43, guid="{345-456}"))
-        markt.add(Person("Dave", age=54, guid="{456-456}"))
-        if clones:
-            dev.add(charleen)
-
-    else:
-        raise NotImplementedError(style)
     # Since the output is only displayed when a test fails, it may be handy to
     # see (unless caller modifies afterwards and then prints):
     if print:

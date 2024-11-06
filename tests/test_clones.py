@@ -19,7 +19,7 @@ class TestClones:
 
     def test_clones(self):
         """ """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         # Add another 'a1' below 'B'
         tree["B"].add("a1")
@@ -103,7 +103,7 @@ class TestClones:
 
     def test_dict(self):
         """ """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         d = {"a": 1, "b": 2}
         # Add another 'a1' below 'B'
         n1 = tree["A"].add(DictWrapper(d))

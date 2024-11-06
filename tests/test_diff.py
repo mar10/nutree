@@ -9,9 +9,9 @@ from . import fixture
 
 class TestDiff:
     def test_diff(self):
-        tree_0 = fixture.create_tree(name="T0", print=True)
+        tree_0 = fixture.create_tree_simple(name="T0", print=True)
 
-        tree_1 = fixture.create_tree(name="T1", print=False)
+        tree_1 = fixture.create_tree_simple(name="T1", print=False)
 
         tree_1["a2"].add("a21")
         tree_1["a11"].remove()
