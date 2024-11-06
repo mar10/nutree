@@ -11,7 +11,7 @@ from . import fixture
 
 class TestRDF:
     def test_tree(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         g = tree.to_rdf_graph()
 

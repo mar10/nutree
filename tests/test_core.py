@@ -109,7 +109,7 @@ class TestBasics:
             a11.up(-1)
 
     def test_meta(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         node = tree.first_child()
 
         assert node
@@ -141,7 +141,7 @@ class TestBasics:
         assert node._meta is None
 
     # def test_logger(self):
-    #     tree= fixture.create_tree()
+    #     tree= fixture.create_tree_simple()
     #     logging.basicConfig()
     #     logger = logging.getLogger()
     #     logger.error(tree.format())
@@ -261,7 +261,7 @@ class TestNavigate:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         assert len(tree) == 8
         assert tree.count == 8
@@ -287,7 +287,7 @@ class TestNavigate:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         assert tree["a11"].get_top() is tree["A"]
         assert not tree["a1"].is_top()
@@ -370,7 +370,7 @@ class TestNavigate:
         assert len(res) == 1
 
     def test_clear(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         assert tree.count == 8
         assert tree
@@ -382,7 +382,7 @@ class TestNavigate:
 
 class TestSort:
     def test_reverse_deep(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         tree.sort(reverse=True)
 
@@ -404,7 +404,7 @@ class TestSort:
 
 class TestFormat:
     def test_format(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         assert fixture.check_content(
             tree.format(repr="{node.name}"),
@@ -535,7 +535,7 @@ class TestTraversal:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         # print(tree.format(repr="{node.data}"))
 
@@ -578,7 +578,7 @@ class TestTraversal:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         res = []
 
@@ -608,7 +608,7 @@ class TestTraversal:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         res = []
 
@@ -688,7 +688,7 @@ class TestTraversal:
 
 class TestMutate:
     def test_add(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         b = tree["B"]
         a11 = tree["a11"]
@@ -723,7 +723,7 @@ class TestMutate:
         )
 
     def test_add_tree(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         subtree = Tree()
         subtree.add("x").add("x1").up(2).add("y").add("y1")
@@ -761,7 +761,7 @@ class TestMutate:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["B"].prepend_child("a1")
 
         print(tree.format(repr="{node.data}"))
@@ -786,7 +786,7 @@ class TestMutate:
         assert tree._self_check()
 
         # Reset tree
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["B"].prepend_child("a1")
 
         with pytest.raises(AmbiguousMatchError):  # not allowed for clones
@@ -816,7 +816,7 @@ class TestMutate:
         assert tree._self_check()
 
         # Reset tree
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["B"].prepend_child("a1")
 
         # Rename all occurences:
@@ -854,7 +854,7 @@ class TestMutate:
 
     def test_copy_branch(self):
         # Copy a node
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["A"].add(tree["b1"])
         assert fixture.check_content(
             tree,
@@ -873,7 +873,7 @@ class TestMutate:
         )
 
         # Copy a branch deep
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["A"].add(tree["b1"], deep=True)
         assert fixture.check_content(
             tree,
@@ -893,7 +893,7 @@ class TestMutate:
         )
 
     def test_copy_tree(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         tree_2 = tree["a1"].copy()
         assert isinstance(tree_2, Tree)
@@ -929,7 +929,7 @@ class TestMutate:
             `- b1
                 `- b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         print(tree.format(repr="{node.data}", style="round43"))
 
@@ -964,7 +964,7 @@ class TestMutate:
         assert tree._self_check()
 
         # --- with_clones
-        tree = fixture.create_tree(clones=True)
+        tree = fixture.create_tree_simple(clones=True)
 
         tree.find_first("a11").remove(with_clones=True)
 
@@ -1003,7 +1003,7 @@ class TestMutate:
             before: Node | str | int | None,
             result: str,
         ):
-            tree = fixture.create_tree()
+            tree = fixture.create_tree_simple()
             source_node = tree[source]
             target_node = tree[target]
             before = tree[before] if isinstance(before, str) else before
@@ -1080,7 +1080,7 @@ class TestMutate:
            """,
         )
 
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree["b1"].move_to(tree)
 
         assert fixture.check_content(
@@ -1105,7 +1105,7 @@ class TestMutate:
 
 class TestCopy:
     def test_node_copy(self):
-        tree_1 = fixture.create_tree()
+        tree_1 = fixture.create_tree_simple()
 
         tree_2 = tree_1.copy()
         assert tree_1.count == tree_2.count
@@ -1124,7 +1124,7 @@ class TestCopy:
         assert tree_2._self_check()
 
     def test_tree_copy(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         subtree = tree["a1"].copy()
         assert fixture.check_content(
@@ -1161,7 +1161,7 @@ class TestCopy:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         tree_2 = tree.copy()
         assert fixture.trees_equal(tree, tree_2)
@@ -1231,7 +1231,7 @@ class TestCopy:
         )
 
     def test_node_copy_to(self):
-        tree_1 = fixture.create_tree()
+        tree_1 = fixture.create_tree_simple()
 
         tree_2 = _make_tree_2()
         tree_1["a1"].copy_to(tree_2)  # deep defaults to False
@@ -1276,7 +1276,7 @@ class TestCopy:
         )
 
     def test_tree_copy_to(self):
-        tree_1 = fixture.create_tree()
+        tree_1 = fixture.create_tree_simple()
 
         tree_2 = _make_tree_2()
         tree_1.copy_to(tree_2)  # deep defaults to True
@@ -1323,7 +1323,7 @@ class TestCopy:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         with pytest.raises(ValueError, match="Predicate is required"):
             tree.filter(predicate=None)  # type: ignore
@@ -1335,7 +1335,7 @@ class TestCopy:
             predicate: PredicateCallbackType,
             result: str,
         ):
-            tree = fixture.create_tree()
+            tree = fixture.create_tree_simple()
             tree.filter(predicate=predicate)
             assert fixture.check_content(tree, result)
 
@@ -1432,7 +1432,7 @@ class TestCopy:
             ╰── b1
                 ╰── b11
         """
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         def pred(node):
             return "2" in node.name.lower()

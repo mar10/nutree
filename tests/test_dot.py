@@ -15,7 +15,7 @@ class TestDot:
     def test_dot_default(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         res = list(tree.to_dot())
         assert len(res) == 25
@@ -29,7 +29,7 @@ class TestDot:
     def test_dot_attrs(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         res = tree.to_dot(
             unique_nodes=False,
@@ -48,9 +48,9 @@ class TestDot:
         assert "0 -> " in res
 
     def test_dot_diff(self):
-        tree_0 = fixture.create_tree(name="T0", print=True)
+        tree_0 = fixture.create_tree_simple(name="T0", print=True)
 
-        tree_1 = fixture.create_tree(name="T1", print=False)
+        tree_1 = fixture.create_tree_simple(name="T1", print=False)
 
         tree_1["a2"].add("a21")
         tree_1["a11"].remove()
@@ -117,7 +117,7 @@ class TestDot:
     def test_serialize_dot(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name)
@@ -131,7 +131,7 @@ class TestDot:
     def test_serialize_png(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name, format="png")
