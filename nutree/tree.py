@@ -57,7 +57,7 @@ from nutree.common import (
     open_as_compressed_output_stream,
     open_as_uncompressed_input_stream,
 )
-from nutree.diff import diff_tree
+from nutree.diff import DiffCompareCallbackType, diff_tree
 from nutree.dot import tree_to_dotfile
 from nutree.mermaid import (
     MermaidDirectionType,
@@ -978,7 +978,14 @@ class Tree(Generic[TData, TNode]):
         """
         return tree_to_rdf(self)
 
-    def diff(self, other: Self, *, ordered=False, reduce=False) -> Tree:
+    def diff(
+        self,
+        other: Self,
+        *,
+        compare: DiffCompareCallbackType | bool = True,
+        ordered=False,
+        reduce=False,
+    ) -> Tree:
         """Compare this tree against `other` and return a merged, annotated copy.
 
         The resulting tree contains a union of all nodes from this and the
@@ -988,6 +995,9 @@ class Tree(Generic[TData, TNode]):
         in `other`, will have ``node.get_meta("dc") == DiffClassification.ADDED``
         defined.
 
+        The `compare` callback can be used to customize the comparison of nodes
+        It should return True if the nodes are considered equal, False otherwise.
+
         If `ordered` is true, changes in the child order are also considered a
         change. |br|
         If `reduce` is true, unchanged nodes are removed, leaving a compact tree
@@ -995,7 +1005,7 @@ class Tree(Generic[TData, TNode]):
 
         See :ref:`diff-and-merge` for details.
         """
-        t = diff_tree(self, other, ordered=ordered, reduce=reduce)
+        t = diff_tree(self, other, compare=compare, ordered=ordered, reduce=reduce)
         return t
 
     # def on(self, event_name: str, callback):

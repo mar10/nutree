@@ -15,21 +15,21 @@ class TestDot:
     def test_dot_default(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         res = list(tree.to_dot())
         assert len(res) == 25
         res = "\n".join(res)
-        # print(res)
+        print(res)
         assert 'digraph "Root" {' in res
-        assert '__root__ [label="Root" shape="box"]' in res
+        assert '"__root__" [label="Root" shape="box"]' in res
         assert '[label="b11"]' in res
-        assert res.count("__root__ -> ") == 2
+        assert res.count('"__root__" -> ') == 2
 
     def test_dot_attrs(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         res = tree.to_dot(
             unique_nodes=False,
@@ -44,13 +44,13 @@ class TestDot:
         assert 'graph  [label="Simple Tree"]' in res
         assert 'node  [shape="box"]' in res
         assert 'edge  [color="red"]' in res
-        assert '0 [label="Root" shape="box"]' in res
-        assert "0 -> " in res
+        assert '"0" [label="Root" shape="box"]' in res
+        assert '"0" -> ' in res
 
     def test_dot_diff(self):
-        tree_0 = fixture.create_tree(name="T0", print=True)
+        tree_0 = fixture.create_tree_simple(name="T0", print=True)
 
-        tree_1 = fixture.create_tree(name="T1", print=False)
+        tree_1 = fixture.create_tree_simple(name="T1", print=False)
 
         tree_1["a2"].add("a21")
         tree_1["a11"].remove()
@@ -79,6 +79,7 @@ class TestDot:
             elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
                 attr_def["style"] = "dashed"
                 attr_def["color"] = "#C00000"
+                attr_def["label"] = "X"
             # # attr_def["label"] = "\E"
             # # attr_def["label"] = "child of"
             # attr_def["color"] = "green"
@@ -117,7 +118,7 @@ class TestDot:
     def test_serialize_dot(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name)
@@ -125,13 +126,13 @@ class TestDot:
             buffer = Path(temp_file.name).read_text()
 
         # print(buffer)
-        assert '__root__ [label="Root" shape="box"]' in buffer
-        assert "__root__ -> " in buffer
+        assert '"__root__" [label="Root" shape="box"]' in buffer
+        assert '"__root__" -> ' in buffer
 
     def test_serialize_png(self):
         """Save/load as  object tree with clones."""
 
-        tree = fixture.create_tree(style="simple", clones=True, name="Root")
+        tree = fixture.create_tree_simple(clones=True, name="Root")
 
         with fixture.WritableTempFile("w", suffix=".gv") as temp_file:
             tree.to_dotfile(temp_file.name, format="png")

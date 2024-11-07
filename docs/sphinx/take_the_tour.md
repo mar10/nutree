@@ -90,13 +90,13 @@ tree.print()
 ```
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x10631fef0>
-    │   ├── <__main__.Department object at 0x105bfb560>
-    │   │   ╰── <__main__.Person object at 0x10643cad0>
-    │   ╰── <__main__.Person object at 0x105bf9850>
-    ├── <__main__.Department object at 0x105bf9430>
-    │   ╰── <__main__.Person object at 0x10643d1c0>
-    ╰── <__main__.Person object at 0x105bfbb60>
+    ├── <__main__.Department object at 0x118976c00>
+    │   ├── <__main__.Department object at 0x1189778f0>
+    │   │   ╰── <__main__.Person object at 0x118977ad0>
+    │   ╰── <__main__.Person object at 0x1189776b0>
+    ├── <__main__.Department object at 0x1189774d0>
+    │   ╰── <__main__.Person object at 0x1189765a0>
+    ╰── <__main__.Person object at 0x1189775c0>
 
 
 Tree nodes store a reference to the object in the `node.data` attribute.
@@ -134,11 +134,12 @@ tree[alice]
 
 
 
-    Node<'Person<Alice (25)>', data_id=274463670>
+    Node<'Person<Alice (25)>', data_id=294221660>
 
 
 
-Note that we passed `alice` as index, which is an instance of `Person`, and received an instance of the `Node` container:
+We passed `alice` as index, which is an instance of `Person`, and received an 
+instance of the `Node` container
 
 
 ```python
@@ -146,7 +147,33 @@ from nutree import Node
 
 assert isinstance(tree[alice], Node)
 assert tree[alice].data is alice, "nodes store objects in data attribute"
+tree[alice].data
 ```
+
+
+
+
+    <__main__.Person at 0x1189775c0>
+
+
+
+**💡 Note** <br>
+Even though we did not modify our objects to support a parent/child relationship,
+we can use the tree container to achieve this:
+
+
+```python
+# tree[alice].parent.data
+tree[alice].get_siblings()
+```
+
+
+
+
+    [Node<'Department<Development>', data_id=294221504>,
+     Node<'Department<Marketing>', data_id=294221645>]
+
+
 
 There are other other search methods as well
 
@@ -158,9 +185,9 @@ tree.find_all(match=lambda node: "i" in node.data.name)
 
 
 
-    [Node<'Person<Claire (45)>', data_id=275004589>,
-     Node<'Department<Marketing>', data_id=274463043>,
-     Node<'Person<Alice (25)>', data_id=274463670>]
+    [Node<'Person<Claire (45)>', data_id=294221741>,
+     Node<'Department<Marketing>', data_id=294221645>,
+     Node<'Person<Alice (25)>', data_id=294221660>]
 
 
 
@@ -181,8 +208,8 @@ tree_2.print(repr="{node}")
 ```
 
     Tree<'Organization'>
-    ╰── Node<'Department<Development>', data_id=1cbcccba-6a6d-4d0b-af21-87790cc0da96>
-        ╰── Node<'Person<Bob (35)>', data_id=b37c6bfb-b422-4711-a84c-26157729ffe5>
+    ╰── Node<'Department<Development>', data_id=d04da003-e439-4ceb-b8a5-13b6af342c14>
+        ╰── Node<'Person<Bob (35)>', data_id=2d64c47b-5a10-4513-ac4f-b7ed7c8bac49>
 
 
 now we could also search by the GUID, for example:
@@ -195,7 +222,7 @@ tree_2.find(data_id=str(bob.guid))
 
 
 
-    Node<'Person<Bob (35)>', data_id=b37c6bfb-b422-4711-a84c-26157729ffe5>
+    Node<'Person<Bob (35)>', data_id=2d64c47b-5a10-4513-ac4f-b7ed7c8bac49>
 
 
 
@@ -260,9 +287,9 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=274931695>
-    │   ╰── Node<'Department<Test>', data_id=274463574>
-    ╰── Node<'Department<Marketing>', data_id=274463043>
+    ├── Node<'Department<Development>', data_id=294221504>
+    │   ╰── Node<'Department<Test>', data_id=294221711>
+    ╰── Node<'Department<Marketing>', data_id=294221645>
 
 
 In-place filtering is also available:
@@ -274,8 +301,8 @@ tree_copy.print(repr="{node}")
 ```
 
     Tree<"Copy of Tree<'Organization'>">
-    ├── Node<'Department<Development>', data_id=274931695>
-    ╰── Node<'Department<Marketing>', data_id=274463043>
+    ├── Node<'Department<Development>', data_id=294221504>
+    ╰── Node<'Department<Marketing>', data_id=294221645>
 
 
 ## Mutation
@@ -320,14 +347,14 @@ identical data_id:
 tree.print(repr="{node}", title=False)
 ```
 
-    Node<'Department<Development>', data_id=274931695>
-    ├── Node<'Department<Test>', data_id=274463574>
-    │   ╰── Node<'Person<Claire (45)>', data_id=275004589>
-    ╰── Node<'Person<Alice (25)>', data_id=274463670>
-    Node<'Department<Marketing>', data_id=274463043>
-    ├── Node<'Person<Dave (55)>', data_id=275004700>
-    ╰── Node<'Person<Bob (35)>', data_id=274463109>
-    Node<'Person<Alice (25)>', data_id=274463670>
+    Node<'Department<Development>', data_id=294221504>
+    ├── Node<'Department<Test>', data_id=294221711>
+    │   ╰── Node<'Person<Claire (45)>', data_id=294221741>
+    ╰── Node<'Person<Alice (25)>', data_id=294221660>
+    Node<'Department<Marketing>', data_id=294221645>
+    ├── Node<'Person<Dave (55)>', data_id=294221402>
+    ╰── Node<'Person<Bob (35)>', data_id=294221675>
+    Node<'Person<Alice (25)>', data_id=294221660>
 
 
 
@@ -336,8 +363,8 @@ for clone in tree.find_all(alice):
     print(f"{clone}, parent={clone.parent}")
 ```
 
-    Node<'Person<Alice (25)>', data_id=274463670>, parent=None
-    Node<'Person<Alice (25)>', data_id=274463670>, parent=Node<'Department<Development>', data_id=274931695>
+    Node<'Person<Alice (25)>', data_id=294221660>, parent=None
+    Node<'Person<Alice (25)>', data_id=294221660>, parent=Node<'Department<Development>', data_id=294221504>
 
 
 ## Special Data Types
@@ -356,7 +383,7 @@ tree_str.add("B")
 tree_str.print()
 ```
 
-    Tree<'4400083696'>
+    Tree<'4707573280'>
     ├── 'A'
     │   ├── 'a1'
     │   ╰── 'a2'
@@ -386,11 +413,11 @@ tree.print(repr="{node}")
 # tree.find(d)
 ```
 
-    Tree<'4398245712'>
-    ├── Node<'A', data_id=-5607366909164962165>
-    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4391236800>
-    ╰── Node<'B', data_id=-2780248446825982667>
-        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4391236800>
+    Tree<'4707574048'>
+    ├── Node<'A', data_id=-1299945154458204803>
+    │   ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4713963904>
+    ╰── Node<'B', data_id=1584232329632515111>
+        ╰── Node<"DictWrapper<{'title': 'foo', 'id': 1}>", data_id=4713963904>
 
 
 ## Typed Trees
@@ -410,7 +437,7 @@ typed_tree.add("Mia", kind="friend").add("Noah", kind="brother").up().add(
 typed_tree.print()
 ```
 
-    TypedTree<'4400083744'>
+    TypedTree<'4707548432'>
     ╰── friend → Mia
         ├── brother → Noah
         ╰── sister → Olivia
@@ -427,7 +454,56 @@ Even conversion to and SVG, PNG is possible:
 Read the [User Guide](https://nutree.readthedocs.io/en/latest/ug_serialize.html) 
 for different methods to save, load, or convert a tree to different output formats.
 
-# Type Hints
+
+## Diff
+
+Given two trees, for example
+
+```
+Tree<'T0'>
+├── Node<'Department<Development>', data_id={012-345}>
+│   ├── Node<'Person<Alice, 23>', data_id={123-456}>
+│   ╰── Node<'Person<Bob, 32>', data_id={234-456}>
+╰── Node<'Department<Marketing>', data_id={012-456}>
+    ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+    ╰── Node<'Person<Dave, 54>', data_id={456-456}>
+
+Tree<'T1'>
+├── Node<'Department<Development>', data_id={012-345}>
+│   ╰── Node<'Person<Newman, 67>', data_id={567-567}>
+╰── Node<'Department<Marketing>', data_id={012-456}>
+    ├── Node<'Person<Alicia, 23>', data_id={123-456}>
+    ├── Node<'Person<Charleen, 43>', data_id={345-456}>
+    ╰── Node<'Person<Dave, 55>', data_id={456-456}>
+```
+
+We can generate a merged tree with additional annotations:
+
+```py
+tree_2 = tree_0.diff(tree_1, compare=True, reduce=False)
+tree_2.print(repr=diff_node_formatter)
+```
+
+```
+Tree<"diff('T0', 'T1')">
+├── Department<Development>
+│   ├── Person<Newman, 67> - [Added]
+│   ├── Person<Alice, 23> - [Moved away]
+│   ╰── Person<Bob, 32> - [Removed]
+╰── Department<Marketing>
+    ├── Person<Alicia, 23> - [Moved here], [Modified]
+    ├── Person<Charleen, 43>
+    ╰── Person<Dave, 54> - [Modified]
+```
+
+It is also possible to visualize as png, for example:
+```py
+tree_2.to_dotfile("tree_diff.png", format="png", ...)
+```
+
+![image.png](../sphinx/test_graph_diff_2.png)
+
+## Type Hints
 
 Nutree comes fully typed (passing [pyright](https://microsoft.github.io/pyright/#/) 
 standard checks). This improves type-safety and auto-complete features inside 
@@ -468,18 +544,9 @@ tree.add(12345)  # Flags a typing error in the IDE (but not at runtime)
 # IDE infers that the type `OrgaEntry` is stored in the `data` attribute
 # and provides code completion
 print(alice.data.guid)
-
-tree.add
 ```
 
-    22bf4953-5005-44ad-897e-fcbb345f0778
-
-
-
-
-
-    <bound method Tree.add of Tree<'4400087008'>>
-
+    abf42a2b-e96f-4a71-8312-4688e6d0c5b1
 
 
 Note that the IDE can now **make better suggestions**

@@ -640,7 +640,7 @@ class Node(Generic[TData]):
             n = None
             for n in topnodes:
                 self.add_child(n, before=before, deep=deep)
-            return cast(Self, n)  # need to return a node
+            return cast(Self, n)
 
         factory = self.tree.node_factory
         source_node: Self = None  # type: ignore
@@ -915,7 +915,8 @@ class Node(Generic[TData]):
 
         assert not self._children
         for child in other.children:
-            new_child = self.add_child(child.data, data_id=child._data_id)
+            data_id = child._data_id if child._data_id != hash(child.data) else None
+            new_child = self.add_child(child.data, data_id=data_id)
             if child.children:
                 # if child.has_children():
                 new_child._add_from(child, predicate=None)

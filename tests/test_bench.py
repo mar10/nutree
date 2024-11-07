@@ -23,7 +23,7 @@ class TestBenchmarks:
     def test_bench_index(self, capsys):
         """ """
         results = ["Benchmark results"]
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         results.append(
             fixture.run_timings(
@@ -63,7 +63,7 @@ class TestBenchmarks:
         """ """
 
         results = ["Benchmark results"]
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         node = tree.first_child()
 
         results.append(
@@ -111,7 +111,7 @@ class TestBenchmarks:
         """ """
 
         results = ["Benchmark results"]
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         node = tree.first_child()
 
         results.append(

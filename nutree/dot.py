@@ -83,7 +83,7 @@ def node_to_dot(
             attr_def = {"label": f"{name}", "shape": "box"}
 
         attr_str = _attr_str(attr_def, node_mapper, node)
-        yield f"{indent}{_key(node)}{attr_str}"
+        yield f'{indent}"{_key(node)}"{attr_str}'
 
     for n in node:
         if unique_nodes:
@@ -96,7 +96,7 @@ def node_to_dot(
 
         attr_def = {"label": n.name}
         attr_str = _attr_str(attr_def, node_mapper, n)
-        yield f"{indent}{key}{attr_str}"
+        yield f'{indent}"{key}"{attr_str}'
 
     yield ""
     yield f"{indent}# Edge Definitions"
@@ -105,7 +105,7 @@ def node_to_dot(
             continue
         attr_def = {}
         attr_str = _attr_str(attr_def, edge_mapper, n)
-        yield f"{indent}{_key(n._parent)} -> {_key(n)}{attr_str}"
+        yield f'{indent}"{_key(n._parent)}" -> "{_key(n)}"{attr_str}'
 
     yield "}"
 

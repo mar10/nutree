@@ -43,7 +43,7 @@ class TestSerialize:
         self.tree = None
 
     def test_serialize_plain_str(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         b = tree["B"]
         a11 = tree["a11"]
@@ -82,7 +82,7 @@ class TestSerialize:
         assert tree_2._self_check()
 
     def test_serialize_compressed(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree.add_child("äöüß: \u00e4\u00f6\u00fc\u00df")
         tree.add_child("emoji: 😀")
 
@@ -111,7 +111,7 @@ class TestSerialize:
         assert fixture.trees_equal(tree, tree_2)
 
     def test_serialize_uncompressed(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree.add_child("äöüß: \u00e4\u00f6\u00fc\u00df")
         tree.add_child("emoji: 😀")
 
@@ -166,7 +166,7 @@ class TestSerialize:
 
         # Use a tree
         tree = Tree[fixture.OrgaUnit](calc_data_id=_calc_id)
-        fixture.create_tree(style="objects", clones=True, tree=tree)
+        fixture.create_tree_objects(clones=True, tree=tree)
 
         # print(tree._nodes_by_data_id)
         assert tree["{123-456}"].data.name == "Alice"
@@ -633,7 +633,7 @@ class TestToDictList:
         # assert "kind" in l[0]
 
     def test_serialize_to_dict_list(self):
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
 
         with tempfile.TemporaryFile("r+t") as fp:
             # Serialize
@@ -656,7 +656,7 @@ class TestToDictList:
 class TestFromDict:
     def test_from_dict(self):
         """Save/load a tree with to_dict_list and from_dict with objects."""
-        tree = fixture.create_tree()
+        tree = fixture.create_tree_simple()
         tree_dict_list = tree.to_dict_list()
         tree_2 = Tree.from_dict(tree_dict_list)
 
@@ -708,7 +708,7 @@ class TestFromDict:
 
         # Use a tree
         tree = Tree(calc_data_id=_calc_id)
-        fixture.create_tree(style="objects", tree=tree)
+        fixture.create_tree_objects(tree=tree)
         tree_dict_list = tree.to_dict_list(mapper=serialize_mapper)
         tree_2 = Tree.from_dict(tree_dict_list, mapper=deserialize_mapper)
 
