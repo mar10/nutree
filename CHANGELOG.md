@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.0 (unreleased)
+## 0.11.1 (unreleased)
+
+## 0.11.0 (2024-11-07)
 - Implement check for node modification in `tree.diff()`.
 - `DictWrapper` supports comparision with `==`.
 
