@@ -84,7 +84,7 @@ class TestDiff:
 
     def test_diff_objects(self):
         tree_0 = fixture.create_tree_objects(name="T0", print=True)
-        tree_1 = tree_0.copy()
+        tree_1 = tree_0.copy(name="T1")
 
         # Modify 2nd tree
         bob_node = tree_1.find(match=".*Bob.*")
@@ -98,13 +98,23 @@ class TestDiff:
         alice_node = tree_1.find(match=".*Alice.*")
         assert alice_node
 
-        newman = fixture.Person("Newman", age=65)
+        newman = fixture.Person("Newman", age=67, guid="{567-567}")
 
         bob_node.remove()
-        alice_node.move_to(mkt_node)
-        dev_node.add(newman)
-        dave_node.data.age = 55  # type: ignore
-        tree_1.print()
+        alice_node.move_to(mkt_node, before=True)
+        dev_node.add(newman, data_id=newman.guid)
+        # tree_1 contains nodes thar reference the same data objects as tree_0
+        # In order to simulate a change, we need to instantiate a new Person object
+        # and patch the node.
+        dave_0 = dave_node.data
+        dave_1 = fixture.Person(dave_0.name, guid=dave_0.guid, age=55)
+        dave_node._data = dave_1
+
+        alice_0 = alice_node.data
+        alice_1 = fixture.Person("Alicia", guid=alice_0.guid, age=23)
+        alice_node._data = alice_1
+
+        tree_1.print(repr="{node}")
 
         tree_2 = tree_0.diff(tree_1)
 
@@ -113,35 +123,33 @@ class TestDiff:
         assert fixture.check_content(
             tree_2,
             """
-            Tree<'2009255653136'>
-            ├── Node<'Department<Development>', data_id=125578508105>
-            │   ├── Node<'Person<Alice, 23>', data_id={123-456}>
-            │   ├── Node<'Person<Bob, 32>', data_id={234-456}>
-            │   ╰── Node<'Person<Charleen, 43>', data_id={345-456}>
-            ╰── Node<'Department<Marketing>', data_id=125578508063>
-                ├── Node<'Person<Charleen, 43>', data_id={345-456}>
-                ╰── Node<'Person<Dave, 54>', data_id={456-456}>
+            Tree<*>
+            ├── Department<Development>
+            │   ├── Person<Newman, 67> - [Added]
+            │   ├── Person<Alice, 23> - [Moved away]
+            │   ╰── Person<Bob, 32> - [Removed]
+            ╰── Department<Marketing>
+                ├── Person<Alicia, 23> - [Moved here], [Modified]
+                ├── Person<Charleen, 43>
+                ╰── Person<Dave, 54> - [Modified]
             """,
             repr=diff_node_formatter,
         )
-        raise
+
         tree_2 = tree_0.diff(tree_1, ordered=True)
 
         assert fixture.check_content(
             tree_2,
             """
-            Tree<"diff('T0', 'T1')">
-            ├── A
-            │   ├── a1 - [Renumbered]
-            │   │   ├── a11 - [Removed]
-            │   │   ╰── a12 - [Order -1]
-            │   ╰── a2
-            │       ╰── a21 - [Added]
-            ├── B
-            │   ╰── b1 - [Moved away]
-            ╰── C - [Added]
-                ╰── b1 - [Moved here]
-                    ╰── b11
+            Tree<*>
+            ├── Department<Development>
+            │   ├── Person<Newman, 67> - [Added]
+            │   ├── Person<Alice, 23> - [Moved away]
+            │   ╰── Person<Bob, 32> - [Removed]
+            ╰── Department<Marketing> - [Renumbered]
+                ├── Person<Alicia, 23> - [Moved here], [Modified]
+                ├── Person<Charleen, 43> - [Order +1]
+                ╰── Person<Dave, 54> - [Modified], [Order +1]
             """,
             repr=diff_node_formatter,
         )
@@ -151,16 +159,14 @@ class TestDiff:
         assert fixture.check_content(
             tree_2,
             """
-            Tree<"diff('T0', 'T1')">
-            ├── A
-            │   ├── a1
-            │   │   ╰── a11 - [Removed]
-            │   ╰── a2
-            │       ╰── a21 - [Added]
-            ├── B
-            │   ╰── b1 - [Moved away]
-            ╰── C - [Added]
-                ╰── b1 - [Moved here]
+            Tree<*>
+            ├── Department<Development>
+            │   ├── Person<Newman, 67> - [Added]
+            │   ├── Person<Alice, 23> - [Moved away]
+            │   ╰── Person<Bob, 32> - [Removed]
+            ╰── Department<Marketing>
+                ├── Person<Alicia, 23> - [Moved here], [Modified]
+                ╰── Person<Dave, 54> - [Modified]
             """,
             repr=diff_node_formatter,
         )
