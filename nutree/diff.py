@@ -88,7 +88,7 @@ def diff_node_formatter(node: Node) -> str:
         flags.append("Moved here")  # ←
     elif dc == DC.MOVED_TO:
         flags.append("Moved away")  # ×➡
-    elif dc:
+    elif dc:  # pragma: no cover
         flags.append(f"{dc}")
 
     if modified := meta.get("dc_modified"):

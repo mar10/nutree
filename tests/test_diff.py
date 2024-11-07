@@ -19,7 +19,7 @@ class TestDiff:
         tree_1["b1"].move_to(tree_1["C"])
         tree_1.print()
 
-        tree_2 = tree_0.diff(tree_1)
+        tree_2 = tree_0.diff(tree_1, compare=False)
 
         tree_2.print(repr=diff_node_formatter)
 
@@ -116,7 +116,14 @@ class TestDiff:
 
         tree_1.print(repr="{node}")
 
-        tree_2 = tree_0.diff(tree_1)
+        def compare_cb(node_0, node_1, node_2):
+            if node_0.data.name != node_1.data.name:
+                return True
+            if getattr(node_0.data, "age", None) != getattr(node_1.data, "age", None):
+                return True
+            return False
+
+        tree_2 = tree_0.diff(tree_1, compare=compare_cb)
 
         tree_2.print(repr=diff_node_formatter)
 
