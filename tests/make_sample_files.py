@@ -141,7 +141,7 @@ def write_object_diff_png():
         Path(__file__).parent / "temp/tree_diff_obj.png",
         format="png",
         # add_root=False,
-        # unique_nodes=False,
+        unique_nodes=False,
         graph_attrs={"label": "Diff T0/T1"},
         node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
         edge_attrs={},
