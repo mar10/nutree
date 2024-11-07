@@ -150,12 +150,11 @@ class TestBasics:
 
 class TestNavigate:
     def setup_method(self) -> None:
-        tree = Tree[str]("fixture")
-        self.tree: Tree = tree
-        n = tree.add("Records")
+        self.tree: Tree[str] = Tree[str]("fixture")
+        n = self.tree.add("Records")
         n.add("Let It Be")
         n.add("Get Yer Ya-Ya's Out!")
-        n = tree.add("Books")
+        n = self.tree.add("Books")
         n.add("The Little Prince")
 
     def teardown_method(self):

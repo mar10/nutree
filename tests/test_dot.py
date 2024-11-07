@@ -20,11 +20,11 @@ class TestDot:
         res = list(tree.to_dot())
         assert len(res) == 25
         res = "\n".join(res)
-        # print(res)
+        print(res)
         assert 'digraph "Root" {' in res
-        assert '__root__ [label="Root" shape="box"]' in res
+        assert '"__root__" [label="Root" shape="box"]' in res
         assert '[label="b11"]' in res
-        assert res.count("__root__ -> ") == 2
+        assert res.count('"__root__" -> ') == 2
 
     def test_dot_attrs(self):
         """Save/load as  object tree with clones."""
@@ -44,8 +44,8 @@ class TestDot:
         assert 'graph  [label="Simple Tree"]' in res
         assert 'node  [shape="box"]' in res
         assert 'edge  [color="red"]' in res
-        assert '0 [label="Root" shape="box"]' in res
-        assert "0 -> " in res
+        assert '"0" [label="Root" shape="box"]' in res
+        assert '"0" -> ' in res
 
     def test_dot_diff(self):
         tree_0 = fixture.create_tree_simple(name="T0", print=True)
@@ -79,6 +79,7 @@ class TestDot:
             elif dc in (DiffClassification.REMOVED, DiffClassification.MOVED_TO):
                 attr_def["style"] = "dashed"
                 attr_def["color"] = "#C00000"
+                attr_def["label"] = "X"
             # # attr_def["label"] = "\E"
             # # attr_def["label"] = "child of"
             # attr_def["color"] = "green"
@@ -125,8 +126,8 @@ class TestDot:
             buffer = Path(temp_file.name).read_text()
 
         # print(buffer)
-        assert '__root__ [label="Root" shape="box"]' in buffer
-        assert "__root__ -> " in buffer
+        assert '"__root__" [label="Root" shape="box"]' in buffer
+        assert '"__root__" -> ' in buffer
 
     def test_serialize_png(self):
         """Save/load as  object tree with clones."""

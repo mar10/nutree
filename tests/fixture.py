@@ -88,7 +88,7 @@ def create_tree_objects(
         assert not tree, "must be empty"
         assert isinstance(tree, Tree)
     else:
-        tree = Tree[OrgaUnit](name)
+        tree = Tree[OrgaUnit](name, calc_data_id=lambda tree, data: data.guid)
 
     dev = tree.add(Department("Development", guid="{012-345}"))
     dev.add(Person("Alice", age=23, guid="{123-456}"))

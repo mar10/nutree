@@ -140,20 +140,44 @@ class TestDictWrapper:
         with pytest.raises(ValueError):
             _ = DictWrapper(d, foo="bar")
 
-        gnd = DictWrapper(d)
-        assert gnd._dict is d, "dict should be stored as reference"
+        dw = DictWrapper(d)
+        assert dw._dict is d, "dict should be stored as reference"
 
         with pytest.raises(AttributeError):
-            _ = gnd.a  # type: ignore
+            _ = dw.a  # type: ignore
         with pytest.raises(AttributeError):
-            _ = gnd.foo  # type: ignore
+            _ = dw.foo  # type: ignore
 
-        assert gnd["a"] == 1, "DictWrapper should support item read access"
+        assert dw["a"] == 1, "DictWrapper should support item read access"
         with pytest.raises(KeyError):
-            _ = gnd["foo"]
+            _ = dw["foo"]
 
-        gnd = DictWrapper(**d)
-        assert gnd._dict is not d, "unpacked dict should be stored as copy"
+        dw = DictWrapper(**d)
+        assert dw._dict is not d, "unpacked dict should be stored as copy"
+
+    def test_eq(self):
+        d: dict = {"a": 1, "b": 2}
+        dw = DictWrapper(d)
+
+        assert dw is not d
+        assert dw._dict is d
+
+        assert dw == d
+        assert dw == {"b": 2, "a": 1}
+
+        assert dw != {"a": 1, "b": 3}
+        assert dw != {"a": 1}
+        assert dw != {"a": 1, "b": 2, "c": 3}
+
+        d2: dict = {"a": 1, "b": 2}
+        dw2 = DictWrapper(d2)
+        assert dw._dict is not dw2._dict
+        assert dw == dw2
+        assert dw == DictWrapper({"b": 2, "a": 1})
+
+        assert dw != DictWrapper({"a": 1, "b": 3})
+        assert dw != DictWrapper({"a": 1})
+        assert dw != DictWrapper({"a": 1, "b": 2, "c": 3})
 
     def test_dict(self):
         tree = Tree(forward_attrs=True)
