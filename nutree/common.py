@@ -216,12 +216,11 @@ CONNECTORS = {
 class DictWrapper:
     """Wrap a Python dict so it can be added to the tree.
 
-    Makes the hashable and exposes the dict values as attributes.
+    Makes the dict hashable and comparable with `==`, so it can be used added to
+    the tree and can be checked for modifications during tree diffing.
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
-    If the Tree is initialized with `forward_attrs=True`, the values are also
-    available as attributes of the node like `node.KEY`.
 
     See :ref:`generic-node-data` for details.
     """
@@ -255,9 +254,22 @@ class DictWrapper:
         return id(self._dict)
 
     def __eq__(self, other):
-        if not isinstance(other, DictWrapper):
+        if isinstance(other, DictWrapper):
+            d2 = other._dict
+        elif isinstance(other, dict):
+            d2 = other
+        else:
             return False
-        return self._dict is other._dict
+
+        d = self._dict
+        if d is d2:
+            return True
+        if set(d) != set(d2):
+            return False
+        for k, v in d.items():
+            if d2[k] != v:
+                return False
+        return True
 
     def __setitem__(self, key, value):
         """Allow to access values as items.
