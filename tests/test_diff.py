@@ -133,12 +133,12 @@ class TestDiff:
             Tree<*>
             ├── Department<Development>
             │   ├── Person<Newman, 67> - [Added]
-            │   ├── Person<Alice, 23> - [Moved away]
+            │   ├── Person<Alice, 23> - [Moved away], [Modified]
             │   ╰── Person<Bob, 32> - [Removed]
             ╰── Department<Marketing>
                 ├── Person<Alicia, 23> - [Moved here], [Modified]
                 ├── Person<Charleen, 43>
-                ╰── Person<Dave, 54> - [Modified]
+                ╰── Person<Dave, 55> - [Modified]
             """,
             repr=diff_node_formatter,
         )
@@ -151,12 +151,12 @@ class TestDiff:
             Tree<*>
             ├── Department<Development>
             │   ├── Person<Newman, 67> - [Added]
-            │   ├── Person<Alice, 23> - [Moved away]
+            │   ├── Person<Alice, 23> - [Moved away], [Modified]
             │   ╰── Person<Bob, 32> - [Removed]
             ╰── Department<Marketing> - [Renumbered]
                 ├── Person<Alicia, 23> - [Moved here], [Modified]
                 ├── Person<Charleen, 43> - [Order +1]
-                ╰── Person<Dave, 54> - [Modified], [Order +1]
+                ╰── Person<Dave, 55> - [Modified], [Order +1]
             """,
             repr=diff_node_formatter,
         )
@@ -169,11 +169,11 @@ class TestDiff:
             Tree<*>
             ├── Department<Development>
             │   ├── Person<Newman, 67> - [Added]
-            │   ├── Person<Alice, 23> - [Moved away]
+            │   ├── Person<Alice, 23> - [Moved away], [Modified]
             │   ╰── Person<Bob, 32> - [Removed]
             ╰── Department<Marketing>
                 ├── Person<Alicia, 23> - [Moved here], [Modified]
-                ╰── Person<Dave, 54> - [Modified]
+                ╰── Person<Dave, 55> - [Modified]
             """,
             repr=diff_node_formatter,
         )
