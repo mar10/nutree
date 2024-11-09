@@ -45,3 +45,102 @@ def singleton(cls):
             return instances[cls]
 
     return get_instance
+
+
+def sluggify(text: str) -> str:
+    """
+    Convert a string to a slug by replacing spaces with underscores and
+    removing any non-alphanumeric characters.
+
+    :param text: The input string to be converted to a slug.
+    :return: str: The slug version of the input string.
+    """
+    return "".join(c if c.isalnum() else "_" for c in text).strip("_")
+
+
+time_units: dict[str, float] = {
+    "fsec": 1e-15,  # femto
+    "psec": 1e-12,  # pico
+    "nsec": 1e-9,  # nano
+    "μsec": 1e-6,  # micro
+    "msec": 1e-3,  # milli
+    "sec": 1.0,
+}
+
+
+def format_time(
+    dt: float,
+    *,
+    unit: str | None = None,
+    precision: int = 3,
+) -> str:
+    scale = 0.0
+    if unit is not None:
+        scale = time_units[unit]
+    else:
+        scales = [(scale, unit) for unit, scale in time_units.items()]
+        scales.sort(reverse=True)
+        for scale, unit_2 in scales:
+            if dt >= scale:
+                unit = unit_2
+                break
+
+    # return "%.*g %s" % (precision, dt / scale, unit)
+    return "{secs:,.{prec}f} {unit}".format(prec=precision, secs=dt / scale, unit=unit)
+
+
+def byte_number_string(
+    number: float,
+    thousands_sep: bool = True,
+    partition: bool = True,
+    base1024: bool = False,
+    append_bytes: bool = False,
+    prec: int = 0,
+) -> str:
+    """Convert bytes into human-readable representation."""
+    magsuffix = ""
+    bytesuffix = ""
+    assert append_bytes in (False, True, "short", "iec")
+    if partition:
+        magnitude = 0
+        if base1024:
+            while number >= 1024:
+                magnitude += 1
+                #                 number = number >> 10
+                number /= 1024.0
+        else:
+            while number >= 1000:
+                magnitude += 1
+                number /= 1000.0
+        magsuffix = ["", "K", "M", "G", "T", "P"][magnitude]
+        if magsuffix:
+            magsuffix = " " + magsuffix
+
+    if append_bytes:
+        if append_bytes == "iec" and magsuffix:
+            bytesuffix = "iB" if base1024 else "B"
+        elif append_bytes == "short" and magsuffix:
+            bytesuffix = "B"
+        elif number == 1:
+            bytesuffix = " Byte"
+        else:
+            bytesuffix = " Bytes"
+
+    if thousands_sep and (number >= 1000 or magsuffix):
+        # locale.setlocale(locale.LC_ALL, "")
+        # TODO: make precision configurable
+        if prec > 0:
+            # fs = "%.{}f".format(prec)
+            # snum = locale.format_string(fs, number, thousandsSep)
+            snum = f"{number:,.{prec}g}"
+        else:
+            # snum = locale.format("%d", number, thousandsSep)
+            snum = f"{number:,g}"
+        # Some countries like france use non-breaking-space (hex=a0) as group-
+        # seperator, that's not plain-ascii, so we have to replace the hex-byte
+        # "a0" with hex-byte "20" (space)
+        # snum = hexlify(snum).replace("a0", "20").decode("hex")
+    else:
+        snum = str(number)
+
+    return f"{snum}{magsuffix}{bytesuffix}"

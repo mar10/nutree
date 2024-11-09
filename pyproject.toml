@@ -59,6 +59,7 @@ module = [
   "pympler.asizeof",
   "rdflib",
   "rdflib.namespace",
+  "toml",
 ]
 ignore_missing_imports = true
 

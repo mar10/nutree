@@ -3,62 +3,16 @@
 """ """
 # ruff: noqa: T201, T203 `print` found
 
+import logging
 import time
 import timeit
 from dataclasses import dataclass
 from textwrap import dedent
+from typing import Any
 
+from tests.benchman.util import byte_number_string, format_time
 
-def byte_number_string(
-    number, thousandsSep=True, partition=True, base1024=False, appendBytes=False, prec=0
-):
-    """Convert bytes into human-readable representation."""
-    magsuffix = ""
-    bytesuffix = ""
-    assert appendBytes in (False, True, "short", "iec")
-    if partition:
-        magnitude = 0
-        if base1024:
-            while number >= 1024:
-                magnitude += 1
-                #                 number = number >> 10
-                number /= 1024.0
-        else:
-            while number >= 1000:
-                magnitude += 1
-                number /= 1000.0
-        magsuffix = ["", "K", "M", "G", "T", "P"][magnitude]
-        if magsuffix:
-            magsuffix = " " + magsuffix
-
-    if appendBytes:
-        if appendBytes == "iec" and magsuffix:
-            bytesuffix = "iB" if base1024 else "B"
-        elif appendBytes == "short" and magsuffix:
-            bytesuffix = "B"
-        elif number == 1:
-            bytesuffix = " Byte"
-        else:
-            bytesuffix = " Bytes"
-
-    if thousandsSep and (number >= 1000 or magsuffix):
-        # locale.setlocale(locale.LC_ALL, "")
-        # TODO: make precision configurable
-        if prec > 0:
-            # fs = "%.{}f".format(prec)
-            # snum = locale.format_string(fs, number, thousandsSep)
-            snum = f"{number:,.{prec}g}"
-        else:
-            # snum = locale.format("%d", number, thousandsSep)
-            snum = f"{number:,g}"
-        # Some countries like france use non-breaking-space (hex=a0) as group-
-        # seperator, that's not plain-ascii, so we have to replace the hex-byte
-        # "a0" with hex-byte "20" (space)
-        # snum = hexlify(snum).replace("a0", "20").decode("hex")
-    else:
-        snum = str(number)
-
-    return f"{snum}{magsuffix}{bytesuffix}"
+logger = logging.getLogger("benchman.timings")
 
 
 class Timing:
@@ -80,16 +34,6 @@ class Timing:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.elap = time.monotonic() - self.start
         # print(f"{self}")
-
-
-time_units: dict[str, float] = {
-    "fsec": 1e-15,  # femto
-    "psec": 1e-12,  # pico
-    "nsec": 1e-9,  # nano
-    "μsec": 1e-6,  # micro
-    "msec": 1e-3,  # milli
-    "sec": 1.0,
-}
 
 
 @dataclass
@@ -114,7 +58,7 @@ class TimingsResult:
             self.number,
             "" if self.number == 1 else "s",
             self.repeat,
-            self.format_time(self.best),
+            format_time(self.best, unit=self.time_unit, precision=self.precision),
             byte_number_string(self.number / self.best),
         )
 
@@ -124,52 +68,31 @@ class TimingsResult:
             f"{self.best:.3f} {self.time_unit} per loop>"
         )
 
-    def format_time(self, dt: float) -> str:
-        scale = 0.0
-        unit = self.time_unit
-        if unit is not None:
-            scale = time_units[unit]
-        else:
-            scales = [(scale, unit) for unit, scale in time_units.items()]
-            scales.sort(reverse=True)
-            for scale, unit_2 in scales:
-                if dt >= scale:
-                    unit = unit_2
-                    break
-
-        # return "%.*g %s" % (precision, dt / scale, unit)
-        return "{secs:,.{prec}f} {unit}".format(
-            prec=self.precision, secs=dt / scale, unit=unit
-        )
-
 
 def run_timings(
     name: str,
     stmt: str,
-    setup="pass",
     *,
-    verbose=0,
-    repeat=5,  # timeit.default_repeat,
-    number=0,
-    globals=None,
-    time_unit=None,
+    #: A setup statement to execute before the main statement.
+    setup: str = "pass",
+    #: Verbosity level (0: quiet, 1: normal, 2: verbose)
+    verbose: int = 0,
+    #: Number of times to repeat the test.
+    repeat: int = 5,  # timeit.default_repeat
+    #: Number of loops to run. If 0, `timeit` will determine the number automatically.
+    number: int = 0,
+    #: A dict containing the global variables.
+    globals: dict[str, Any] | None = None,
+    #: Time unit to use for formatting the result.
+    time_unit: str | None = None,
+    #: Use `time.process_time` instead of `time.monotonic` for measuring CPU time.
+    process_time: bool = False,
 ) -> TimingsResult:
     """Taken from Python `timeit.main()` module."""
     timer = timeit.default_timer
-    # if o in ("-p", "--process"):
-    #     timer = time.process_time
-    # number = 0  # auto-determine
-    # repeat = timeit.default_repeat
-    # time_unit = None
-    units = {
-        "fsec": 1e-15,  # femto
-        "psec": 1e-12,  # pico
-        "nsec": 1e-9,  # nano
-        "μsec": 1e-6,  # micro
-        "msec": 1e-3,  # milli
-        "sec": 1.0,
-    }
-    precision = 4 if verbose else 3
+    if process_time:
+        timer = time.process_time
+    precision = 4 if verbose > 0 else 3
 
     stmt = dedent(stmt).strip()
     if isinstance(setup, str):
@@ -181,7 +104,7 @@ def run_timings(
     if number == 0:
         # determine number so that 0.2 <= total time < 2.0
         callback = None  # type: ignore
-        if verbose:
+        if verbose > 0:
 
             def callback(number: int, time_taken: float):
                 msg = "{num} loop{s} -> {secs:.{prec}g} secs"
@@ -212,24 +135,6 @@ def run_timings(
     #     t.print_exc()
     #     return 1
 
-    def format_time(dt):
-        unit = time_unit
-        if unit is not None:
-            scale = units[unit]
-        else:
-            scale = 1.0
-            scales = [(scale, unit) for unit, scale in units.items()]
-            scales.sort(reverse=True)
-            for scale, unit_2 in scales:
-                if dt >= scale:
-                    unit = unit_2
-                    break
-
-        # return "%.*g %s" % (precision, dt / scale, unit)
-        return "{secs:,.{prec}f} {unit}".format(
-            prec=precision, secs=dt / scale, unit=unit
-        )
-
     timings = [dt / number for dt in raw_timings]
 
     best = min(timings)
@@ -238,7 +143,7 @@ def run_timings(
         import warnings
 
         warnings.warn_explicit(
-            "The test results of {name} are likely unreliable. "
+            f"The test results of {name} are likely unreliable. "
             f"The worst time ({format_time(worst)}) was more than four times "
             f"slower than the best time ({format_time(best)}).",
             UserWarning,
