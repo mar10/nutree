@@ -8,7 +8,7 @@ import time
 import timeit
 from dataclasses import dataclass
 from textwrap import dedent
-from typing import Any
+from typing import Any, Optional
 
 from tests.benchman.util import byte_number_string, format_time
 
@@ -41,31 +41,24 @@ class TimingsResult:
     name: str
     number: int
     repeat: int
-    best: float
-    worst: float
     timings: list[float]
-    time_unit: str | None = None
-    precision: int = 3
 
     def __str__(self):
-        # return (
-        #     f"{self.name}: {self.number:,d} loops, best of {self.repeat:,d}: "
-        #     f"{self.best:,.3f} {self.time_unit} per loop"
-        # )
-
+        best = min(self.timings)
         return "{}: {:,d} loop{}, best of {:,}: {} per loop ({} per sec.)".format(
             self.name,
             self.number,
             "" if self.number == 1 else "s",
             self.repeat,
-            format_time(self.best, unit=self.time_unit, precision=self.precision),
-            byte_number_string(self.number / self.best),
+            format_time(best),
+            byte_number_string(self.number / best),
         )
 
     def __repr__(self):
+        best = min(self.timings)
         return (
             f"TimingsResult<{self.name}, {self.number} loops, best of {self.repeat}: "
-            f"{self.best:.3f} {self.time_unit} per loop>"
+            f"{best:.3f} sec. per loop>"
         )
 
 
@@ -82,9 +75,7 @@ def run_timings(
     #: Number of loops to run. If 0, `timeit` will determine the number automatically.
     number: int = 0,
     #: A dict containing the global variables.
-    globals: dict[str, Any] | None = None,
-    #: Time unit to use for formatting the result.
-    time_unit: str | None = None,
+    globals: Optional[dict[str, Any]] = None,
     #: Use `time.process_time` instead of `time.monotonic` for measuring CPU time.
     process_time: bool = False,
 ) -> TimingsResult:
@@ -97,8 +88,7 @@ def run_timings(
     stmt = dedent(stmt).strip()
     if isinstance(setup, str):
         setup = dedent(setup).strip()
-    # print(stmt)
-    # print(setup)
+
     t = timeit.Timer(stmt, setup, timer, globals=globals)
 
     if number == 0:
@@ -119,21 +109,11 @@ def run_timings(
                 )
 
         number, _ = t.autorange(callback)
-        # try:
-        #     number, _ = t.autorange(callback)
-        # except Exception:
-        #     t.print_exc()
-        #     return 1
 
         if verbose:
             print()
 
     raw_timings = t.repeat(repeat, number)
-    # try:
-    #     raw_timings = t.repeat(repeat, number)
-    # except Exception:
-    #     t.print_exc()
-    #     return 1
 
     timings = [dt / number for dt in raw_timings]
 
@@ -154,9 +134,5 @@ def run_timings(
         name=name,
         number=number,
         repeat=repeat,
-        best=best,
-        worst=worst,
         timings=timings,
-        time_unit=time_unit,
-        precision=precision,
     )

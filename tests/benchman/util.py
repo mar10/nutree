@@ -1,5 +1,8 @@
 import os
 import threading
+from typing import Optional
+
+from typing_extensions import Literal
 
 
 def is_running_on_ci() -> bool:
@@ -58,7 +61,8 @@ def sluggify(text: str) -> str:
     return "".join(c if c.isalnum() else "_" for c in text).strip("_")
 
 
-time_units: dict[str, float] = {
+TimeUnitType = Literal["fsec", "psec", "nsec", "μsec", "msec", "sec"]
+time_units: dict[TimeUnitType, float] = {
     "fsec": 1e-15,  # femto
     "psec": 1e-12,  # pico
     "nsec": 1e-9,  # nano
@@ -66,27 +70,33 @@ time_units: dict[str, float] = {
     "msec": 1e-3,  # milli
     "sec": 1.0,
 }
+time_scales: list[tuple[float, TimeUnitType]] = [
+    (scale, unit) for unit, scale in time_units.items()
+]
+time_scales.sort(reverse=True)
+
+
+def get_time_unit(seconds: float) -> tuple[TimeUnitType, float]:
+    for scale, unit in time_scales:
+        if seconds >= scale:
+            return (unit, scale)
+    return ("sec", 1.0)
 
 
 def format_time(
-    dt: float,
+    seconds: float,
     *,
-    unit: str | None = None,
+    unit: Optional[TimeUnitType] = None,
     precision: int = 3,
 ) -> str:
-    scale = 0.0
-    if unit is not None:
-        scale = time_units[unit]
+    if unit is None:
+        unit, scale = get_time_unit(seconds)
     else:
-        scales = [(scale, unit) for unit, scale in time_units.items()]
-        scales.sort(reverse=True)
-        for scale, unit_2 in scales:
-            if dt >= scale:
-                unit = unit_2
-                break
+        scale = time_units[unit]
 
-    # return "%.*g %s" % (precision, dt / scale, unit)
-    return "{secs:,.{prec}f} {unit}".format(prec=precision, secs=dt / scale, unit=unit)
+    return "{secs:,.{prec}f} {unit}".format(
+        prec=precision, secs=seconds / scale, unit=unit
+    )
 
 
 def byte_number_string(

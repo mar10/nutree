@@ -5,11 +5,10 @@
 # ruff: noqa: E501 Line too long
 
 import sys
-from pathlib import Path
 
 import pytest
 
-from tests.benchman.benchman import BenchmarkManager
+from tests import benchman as unused  # noqa: F401
 
 from . import fixture
 
@@ -21,41 +20,38 @@ benchmark = pytest.mark.skipif(
 
 # @benchmark
 class TestBenchManager:
-    def test_bench_index(self, capsys):
+    @pytest.mark.xfail(reason="just testing")
+    def test_bench_index(self, capsys, benchman):
         """ """
-        bm = BenchmarkManager(
-            project_name="nutree", project_root=Path(__file__).parent.parent
-        )
-        results = ["Benchmark results"]
         tree = fixture.create_tree_simple(print=False)
 
-        bm.run_timings(
+        benchman.run_timings(
             "access node",
-            """\
+            variant="by index",
+            stmt="""\
                 _ = tree["a1"]
             """,
             globals=locals(),
-            variant="by index",
         )
-        bm.run_timings(
+        benchman.run_timings(
             "access node",
-            """\
+            variant="find() ",
+            stmt="""\
                 _ = tree.find("a1")
             """,
             globals=locals(),
-            variant="find() ",
         )
-        bm.run_timings(
+        benchman.run_timings(
             "access node",
-            """\
+            variant="find_all() ",
+            stmt="""\
                 _ = tree.find_all("a1")
             """,
             globals=locals(),
-            variant="find_all() ",
         )
 
         with capsys.disabled():
-            print(f"\n{bm}")
-            bm.print_results()
-            # print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
+
         raise

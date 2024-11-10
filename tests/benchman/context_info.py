@@ -16,7 +16,7 @@ from typing import Any
 import toml
 from typing_extensions import Self
 
-from .util import singleton
+from .util import singleton, sluggify
 
 # def get_project_info():
 #     # Get the project name and version from the installed package metadata
@@ -49,7 +49,7 @@ class HWInfo:
     gpu: str
 
     def slug(self) -> str:
-        return f"{self.cpu}_{self.ram}_{self.gpu}"
+        return sluggify(f"{self.cpu}_{self.ram}_{self.gpu}")
 
     def to_dict(self) -> dict[str, Any]:
         return {"cpu": self.cpu, "ram": self.ram, "gpu": self.gpu}
@@ -69,7 +69,7 @@ class ProjectInfo:
     pyproject_toml: dict | None = None
 
     def slug(self) -> str:
-        return f"v{self.version}"
+        return sluggify(f"v{self.version}")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -109,7 +109,7 @@ class OSInfo:
     version: str
 
     def slug(self) -> str:
-        return f"{self.name}_{self.version}"
+        return sluggify(f"{self.name}_{self.version}")
 
     def to_dict(self) -> dict[str, Any]:
         return {"name": self.name, "version": self.version}
@@ -131,7 +131,7 @@ class PythonInfo:
     build: str
 
     def slug(self) -> str:
-        return f"{self.version}_{self.implementation}_{self.compiler}"
+        return sluggify(f"{self.version}_{self.implementation}_{self.compiler}")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -160,7 +160,6 @@ class BaseContextInfo:
     def __init__(self, *, project_name: str, project_root: Path | str) -> None:
         root_path = Path(project_root)
         self.hostname = socket.gethostname()
-        # self.comment = comment
         self.date = datetime.datetime.now()
         self.python: PythonInfo = PythonInfo.create()
         self.os: OSInfo = OSInfo.create()
@@ -170,7 +169,7 @@ class BaseContextInfo:
         )
 
     def __repr__(self):
-        return f"{self.__class__.__name__}<{self.hostname}>"
+        return sluggify(f"{self.__class__.__name__}<{self.hostname}>")
 
     def slug(self) -> str:
         return "$".join(
