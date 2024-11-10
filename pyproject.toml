@@ -1,6 +1,6 @@
 # --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 src = ["nutree", "tests"]
 
 [tool.ruff.lint]

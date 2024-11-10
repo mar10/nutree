@@ -15,15 +15,13 @@ from __future__ import annotations
 import json
 import random
 import threading
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import (
     IO,
     Any,
     Generic,
-    Iterable,
-    Iterator,
     Literal,
-    Type,
     Union,
     cast,
 )
@@ -111,7 +109,7 @@ class Tree(Generic[TData, TNode]):
     **Note:** Use with care, see also :ref:`forward-attributes`.
     """
 
-    node_factory: Type[TNode] = cast(Type[TNode], Node)
+    node_factory: type[TNode] = cast(type[TNode], Node)
     root_node_factory = _SystemRootNode
 
     #: Default connector prefixes ``format(style=...)`` argument.

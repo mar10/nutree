@@ -15,8 +15,9 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, Iterator, Type, cast, final
+from typing import IO, cast, final
 
 # typing.Self requires Python 3.11
 from typing_extensions import Any, Self
@@ -100,7 +101,7 @@ class TypedNode(Node[TData]):
     def kind(self) -> str:
         return self._kind
 
-    def get_children(self, kind: str | Type[ANY_KIND]) -> list[Self]:
+    def get_children(self, kind: str | type[ANY_KIND]) -> list[Self]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -109,7 +110,7 @@ class TypedNode(Node[TData]):
             return all_children
         return list(filter(lambda n: n._kind == kind, all_children))
 
-    def first_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
+    def first_child(self, kind: str | type[ANY_KIND]) -> Self | None:
         """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -122,7 +123,7 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def last_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
+    def last_child(self, kind: str | type[ANY_KIND]) -> Self | None:
         """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -136,7 +137,7 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def has_children(self, kind: str | Type[ANY_KIND]) -> bool:
+    def has_children(self, kind: str | type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
         if kind is ANY_KIND:
             return bool(self._children)
@@ -283,7 +284,7 @@ class TypedNode(Node[TData]):
 
         source_node: Self = None  # type: ignore
         new_node: Self = None  # type: ignore
-        factory: Type[Self] = self._tree.node_factory  # type: ignore
+        factory: type[Self] = self._tree.node_factory  # type: ignore
 
         if isinstance(child, TypedNode):
             if deep is None:
@@ -620,15 +621,15 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             node_id=node_id,
         )
 
-    def first_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
+    def first_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the first toplevel node."""
         return self.system_root.first_child(kind=kind)
 
-    def last_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
+    def last_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the last toplevel node."""
         return self.system_root.last_child(kind=kind)
 
-    def iter_by_type(self, kind: str | Type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
+    def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
             yield from self.iterator()
         for n in self.iterator():

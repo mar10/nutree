@@ -7,8 +7,9 @@ Functions and declarations to support
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterator
+from typing import IO, TYPE_CHECKING, Any
 
 from nutree.common import MapperCallbackType, call_mapper
 
