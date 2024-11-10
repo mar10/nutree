@@ -9,9 +9,10 @@ Functions and declarations to support
 from __future__ import annotations
 
 import io
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
-from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, Literal
+from typing import IO, TYPE_CHECKING, Callable, Literal
 
 from nutree.common import DataIdType
 

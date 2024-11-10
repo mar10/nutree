@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.11.1 (unreleased)
+## 0.11.2 (unreleased)
+
+## 0.11.1 (2024-11-08)
+- `t0.diff(t1, ...)` adds nodes from t1 when possible, so the new status is 
+  used for modified nodes. 
+- `t0.diff(t1, ...)` marks both, source and target nodes, as modified if 
+  applicable.
 
 ## 0.11.0 (2024-11-07)
 - Implement check for node modifications in `tree.diff(..., compare=True)`.

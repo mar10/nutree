@@ -106,24 +106,43 @@ def write_object_diff_png():
 
     tree_2.print(repr=diff_node_formatter)
 
+    UNIQUE_NODES = True
+
     def node_mapper(node: Node, attr_def: dict):
-        if isinstance(node.data, fixture.Person):
-            attr_def["label"] = node.data.name
+        # https://graphviz.org/docs/nodes/
 
         dc = node.get_meta("dc")
+        if isinstance(node.data, fixture.OrgaUnit):
+            attr_def["label"] = str(node.data)
+
+        if (
+            UNIQUE_NODES
+            and node.get_meta("dc_modified")
+            and dc == DiffClassification.MOVED_TO
+        ):
+            # We only display the first node that the iterator hits.
+            # If it is modified, we want to make sure, we display the label of
+            # the new status
+            for n in node.get_clones():
+                if n.get_meta("dc") == DiffClassification.MOVED_HERE:
+                    attr_def["label"] = str(n.data)
+
+        if isinstance(node.data, fixture.Department):
+            attr_def["shape"] = "box"
+
         if dc == DiffClassification.ADDED:
             attr_def["color"] = "#00c000"
+            attr_def["fillcolor"] = "#d0f8d0"
         elif dc == DiffClassification.REMOVED:
             attr_def["color"] = "#c00000"
             attr_def["fillcolor"] = "#f8d0d0"
 
         if node.get_meta("dc_modified"):
-            attr_def["fillcolor"] = "gold"
+            attr_def["fillcolor"] = "#fff0d0"  # "gold" "#FFD700"
 
     def edge_mapper(node: Node, attr_def: dict):
         # https://renenyffenegger.ch/notes/tools/Graphviz/examples/index
-        # https://graphs.grevian.org/reference
-        # https://graphviz.org/doc/info/attrs.html
+        # https://graphviz.org/docs/edges
         dc = node.get_meta("dc")
         if dc in (DiffClassification.ADDED, DiffClassification.MOVED_HERE):
             attr_def["color"] = "#00C000"
@@ -132,18 +151,16 @@ def write_object_diff_png():
             attr_def["color"] = "#C00000"
             # attr_def["label"] = "X"
 
-        # # attr_def["label"] = "\E"
-        # # attr_def["label"] = "child of"
-        # attr_def["penwidth"] = 1.0
-        # # attr_def["weight"] = 1.0
+        if node.get_meta("dc_modified"):
+            attr_def["arrowhead"] = "diamond"
 
     tree_2.to_dotfile(
         Path(__file__).parent / "temp/tree_diff_obj.png",
         format="png",
         # add_root=False,
-        unique_nodes=False,
+        unique_nodes=UNIQUE_NODES,
         graph_attrs={"label": "Diff T0/T1"},
-        node_attrs={"style": "filled", "fillcolor": "#e0e0e0"},
+        node_attrs={"style": "filled", "fillcolor": "#ffffff"},
         edge_attrs={},
         node_mapper=node_mapper,
         edge_mapper=edge_mapper,

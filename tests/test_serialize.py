@@ -11,7 +11,7 @@ import json
 import pprint
 import tempfile
 import zipfile
-from typing import Any, Tuple
+from typing import Any
 
 import pytest
 from nutree import Node, Tree
@@ -21,7 +21,7 @@ from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree
 from . import fixture
 
 
-def _get_fp_result(fp, *, do_print=True, assert_len: int) -> Tuple[str, dict]:
+def _get_fp_result(fp, *, do_print=True, assert_len: int) -> tuple[str, dict]:
     fp.seek(0)
     text = fp.read()
     data = json.loads(text)

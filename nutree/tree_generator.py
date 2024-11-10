@@ -9,8 +9,9 @@ from __future__ import annotations
 import random
 import sys
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Sequence, Union
+from typing import Any, Union
 
 from nutree.common import DictWrapper
 from nutree.node import Node

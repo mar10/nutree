@@ -130,12 +130,18 @@ def diff_tree(
 
     def _diff(p0: Node, p1: Node, p2: Node):
         p0_data_ids = set()
+
         # `p0.children` always returns an (empty) array
         for i0, c0 in enumerate(p0.children):
             p0_data_ids.add(c0._data_id)
             i1, c1 = _find_child(p1.children, c0)
+            # preferably copy from T1 (which should have the current
+            # modification status)
+            if c1:
+                c2 = p2.add(c1, data_id=c1._data_id)
+            else:
+                c2 = p2.add(c0, data_id=c0._data_id)
 
-            c2 = p2.add(c0, data_id=c0._data_id)
             if c1 is None:
                 # t0 node is not found in t1
                 c2.set_meta("dc", DC.REMOVED)
@@ -176,7 +182,7 @@ def diff_tree(
                     # Neither c0 nor c1 have children: Nothing to do
                     pass
 
-        # Collect t1 nodes that are not in t0:
+        # Collect t1 nodes that are NOT in t0:
         for c1 in p1.children:  # `p1.children` always returns an (empty) array
             if c1._data_id not in p0_data_ids:
                 idx = c1.get_index()  # try to maintain the order
@@ -206,7 +212,8 @@ def diff_tree(
             added_node.set_meta("dc", DC.MOVED_HERE)
             for n in removed_clones:
                 n.set_meta("dc", DC.MOVED_TO)
-                _check_modified(n, added_node, added_node, compare)
+                if _check_modified(n, added_node, added_node, compare):
+                    n.set_meta("dc_modified", True)
 
     # Purge unchanged parts from tree
     if reduce:
