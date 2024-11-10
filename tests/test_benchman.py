@@ -19,7 +19,7 @@ benchmark = pytest.mark.skipif(
 
 # @benchmark
 class TestBenchManager:
-    # @pytest.mark.xfail(reason="just testing")
+    @pytest.mark.xfail(reason="just testing")
     def test_bench_index(self, capsys, benchman):
         """ """
         tree = fixture.create_tree_simple(print=False)

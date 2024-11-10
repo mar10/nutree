@@ -1,5 +1,4 @@
-[project]
-name = "nutree"
+# Name and vefrsion are stitored in setup.cfg for now
 
 # --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
