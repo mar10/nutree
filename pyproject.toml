@@ -1,3 +1,6 @@
+[project]
+name = "nutree"
+
 # --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
 target-version = "py38"
@@ -59,7 +62,6 @@ module = [
   "pympler.asizeof",
   "rdflib",
   "rdflib.namespace",
-  "toml",
 ]
 ignore_missing_imports = true
 
