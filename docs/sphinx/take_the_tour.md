@@ -493,7 +493,7 @@ Tree<"diff('T0', 'T1')">
 ╰── Department<Marketing>
     ├── Person<Alicia, 23> - [Moved here], [Modified]
     ├── Person<Charleen, 43>
-    ╰── Person<Dave, 54> - [Modified]
+    ╰── Person<Dave, 55> - [Modified]
 ```
 
 It is also possible to visualize as png, for example:

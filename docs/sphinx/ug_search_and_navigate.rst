@@ -181,7 +181,7 @@ prevent visiting of the descendant nodes. |br|
 The callback may return (or raise) :class:`~nutree.common.StopTraversal` to 
 stop traversal immediately. An optional return value may be passed to the 
 constructor. |br|
-See `Iteration Callbacks <ug_advanced>`_ for details.
+See :ref:`iteration-callbacks` for details.
 
 ::
 
