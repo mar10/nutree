@@ -1,5 +1,3 @@
-# Name and vefrsion are stitored in setup.cfg for now
-
 # --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
 target-version = "py39"
@@ -105,6 +103,7 @@ exclude_also = [
     # "\\A(?s:.*# pragma: exclude file.*)\\Z",
     "\\A(?s:.*# pragma: exclude-file-from-coverage.*)\\Z",
     ]
+
 [tool.coverage.html]
 directory = "build/coverage"
 

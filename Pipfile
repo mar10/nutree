@@ -8,7 +8,6 @@ fabulist="*"
 ipykernel = "*"
 mypy = "*"
 notebook = "*"
-# pandoc = "*" # jupyter nbconvert --to rst
 pre-commit = "*"
 pydot = "*"
 pyright = "*"
@@ -25,7 +24,7 @@ twine = "*"
 wheel = "*"
 yabs = "*"
 nutree = {path = ".",editable = true}
-benchman = {path = "../benchman",editable = true}
+benchman = {path = "../benchman_pre",editable = true}
 
 [packages]
 typing_extensions = "*"

@@ -1,6 +1,6 @@
 # see also pytest.ini
 import pytest
-from benchman import BenchmarkManager, get_or_create_benchman
+from benchman import BenchmarkManager
 
 
 def pytest_addoption(parser):
@@ -9,4 +9,4 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def benchman() -> BenchmarkManager:
-    return get_or_create_benchman(path=__file__)
+    return BenchmarkManager.singleton()

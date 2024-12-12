@@ -20,165 +20,142 @@ benchmark = pytest.mark.skipif(
 
 @benchmark
 class TestBenchmarks:
-    def test_bench_index(self, capsys):
+    def test_bench_index(self, benchman, capsys):
         """ """
-        results = ["Benchmark results"]
-        tree = fixture.create_tree_simple()
+        tree = fixture.create_tree_simple(print=False)
+        size = len(tree)
 
-        results.append(
-            fixture.run_timings(
-                "access tree[key]",
-                """\
-            _ = tree["a1"]
-        """,
-                globals=locals(),
-                time_unit="nsec",
-            )
+        benchman.run_timings(
+            "search",
+            variant="by index",
+            stmt="""\
+                _ = tree["a1"]
+            """,
+            sample_size=size,
+            globals=locals(),
         )
-
-        results.append(
-            fixture.run_timings(
-                "tree.find()",
-                """\
-            _ = tree.find("a1")
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "search",
+            variant="find() ",
+            stmt="""\
+                _ = tree.find("a1")
+            """,
+            sample_size=size,
+            globals=locals(),
         )
-
-        results.append(
-            fixture.run_timings(
-                "tree.find_all()",
-                """\
-            _ = tree.find_all("a1")
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "search s",
+            variant="find_all() ",
+            stmt="""\
+                _ = tree.find_all("a1")
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
         with capsys.disabled():
-            print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
 
-    def test_bench_properties(self, capsys):
+    def test_bench_properties(self, benchman, capsys):
         """ """
-
-        results = ["Benchmark results"]
         tree = fixture.create_tree_simple()
         node = tree.first_child()
 
-        results.append(
-            fixture.run_timings(
-                "access node.data (property)",
-                """\
-            _ = node.data
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "access node.data",
+            variant="node.data (property)",
+            stmt="""\
+                _ = node.data
+            """,
+            globals=locals(),
         )
 
-        results.append(
-            fixture.run_timings(
-                "access node._data (attribute)",
-                """\
-            _ = node._data
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "access node.data",
+            variant="node._data (attr)",
+            stmt="""\
+                _ = node._data
+            """,
+            globals=locals(),
         )
 
         with capsys.disabled():
-            print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
 
-    # def test_pybench_access_node_data_prop(self, benchmark):
-    #     tree = fixture.create_tree()
-    #     node = tree.first_child()
-
-    #     def func():
-    #         _ = node.data
-
-    #     benchmark(func)
-
-    # def test_pybench_access_node_data_attr(self, benchmark):
-    #     tree = fixture.create_tree()
-    #     node = tree.first_child()
-
-    #     def func():
-    #         _ = node._data
-
-    #     benchmark(func)
-
-    def test_bench_iter(self, capsys):
+    def test_bench_iter(self, benchman, capsys):
         """ """
-
-        results = ["Benchmark results"]
         tree = fixture.create_tree_simple()
         node = tree.first_child()
+        size = len(tree)
 
-        results.append(
-            fixture.run_timings(
-                "for _ in tree: ...",
-                """\
-            for _ in tree: pass
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant="for _ in tree: ...",
+            stmt="""\
+                for _ in tree: pass
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
-        results.append(
-            fixture.run_timings(
-                "for _ in tree.iterator(): ...",
-                """\
-            for _ in tree.iterator(): pass
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant="for _ in tree.iterator(): ...",
+            stmt="""\
+                for _ in tree.iterator(): pass
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
         ORDER = IterMethod.LEVEL_ORDER
-        results.append(
-            fixture.run_timings(
-                f"for _ in tree.iterator({ORDER}): ...",
-                """\
-            for _ in tree.iterator(ORDER): pass
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant=f"for _ in tree.iterator({ORDER}): ...",
+            stmt="""\
+                for _ in tree.iterator(ORDER): pass
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
         ORDER = IterMethod.RANDOM_ORDER
-        results.append(
-            fixture.run_timings(
-                f"for _ in tree.iterator({ORDER}): ...",
-                """\
-            for _ in tree.iterator(ORDER): pass
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant=f"for _ in tree.iterator({ORDER}): ...",
+            stmt="""\
+                for _ in tree.iterator(ORDER): pass
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
         ORDER = IterMethod.UNORDERED
-        results.append(
-            fixture.run_timings(
-                f"for _ in tree.iterator({ORDER}): ...",
-                """\
-            for _ in tree.iterator(ORDER): pass
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant=f"for _ in tree.iterator({ORDER}): ...",
+            stmt="""\
+                for _ in tree.iterator(ORDER): pass
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
-        results.append(
-            fixture.run_timings(
-                "tree.visit(lambda node, memo: None)",
-                """\
-            tree.visit(lambda node, memo: None)
-        """,
-                globals=locals(),
-            )
+        benchman.run_timings(
+            "iterate",
+            variant="tree.visit(lambda node, memo: None)",
+            stmt="""\
+                tree.visit(lambda node, memo: None)
+            """,
+            sample_size=size,
+            globals=locals(),
         )
 
         with capsys.disabled():
-            print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
 
 
 @benchmark
@@ -194,118 +171,118 @@ class TestCompress:
     ZIP_LZMA ('.lzma')     |       44.347 |       2.13 |    0.38
     """
 
-    def test_bench_serialize(self, capsys):
+    def test_bench_serialize(self, benchman, capsys):
         import zipfile  # noqa: F401
 
-        results = ["Benchmark results"]
         directory = Path("~").expanduser()
         # with WritableTempFile("w", suffix=".gz") as temp_file:
 
         tree = fixture.generate_tree([10, 100, 100])
+        size = len(tree)
 
         path = directory / "test.json"
-        results.append(
-            fixture.run_timings(
-                f"tree.save({path}, compression=False, nodes={len(tree):,})",
-                f"""\
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.save({path}, compression=False, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.save("{path}", compression=False)
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
-        results.append(
-            fixture.run_timings(
-                f"tree.load({path}, nodes={len(tree):,})",
-                f"""\
+
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.load({path}, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.load("{path}")
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
+
         # --- ZIP
         path = directory / "test.zip"
-        results.append(
-            fixture.run_timings(
-                f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
-                f"""\
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_DEFLATED)
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
-        results.append(
-            fixture.run_timings(
-                f"tree.load({path}, nodes={len(tree):,})",
-                f"""\
+
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.load({path}, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.load("{path}")
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
+
         # --- ZIP
         path = directory / "test.bz2"
-        results.append(
-            fixture.run_timings(
-                f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
-                f"""\
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_BZIP2)
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
-        results.append(
-            fixture.run_timings(
-                f"tree.load({path}, nodes={len(tree):,})",
-                f"""\
+
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.load({path}, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.load("{path}")
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
+
         # --- ZIP
         path = directory / "test.lzma"
-        results.append(
-            fixture.run_timings(
-                f"tree.save({path}, compression=LZMA, nodes={len(tree):,})",
-                f"""\
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.save({path}, compression=LZMA, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_LZMA)
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
-        results.append(
-            fixture.run_timings(
-                f"tree.load({path}, nodes={len(tree):,})",
-                f"""\
+
+        benchman.run_timings(
+            "serialize",
+            variant=f"tree.load({path}, nodes={len(tree):,})",
+            stmt=f"""\
                 tree.load("{path}")
-                """,
-                repeat=1,
-                number=1,
-                globals=locals(),
-            )
+            """,
+            repeat=1,
+            number=1,
+            globals=locals(),
         )
 
         with capsys.disabled():
-            print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
 
 
 @benchmark
 class TestMemory:
-    def test_bench_node_size(self, capsys):
+    def test_bench_node_size(self, benchman, capsys):
         """ """
 
         try:
@@ -341,7 +318,8 @@ class TestMemory:
             f"node-size: {node_size:.1f} bytes"
         )
         with capsys.disabled():
-            print("\n  - ".join(results))
+            print(f"\n{benchman}")
+            benchman.print_results()
 
     # def test_bench_tree_mem(self, capsys):
     #     """ """
