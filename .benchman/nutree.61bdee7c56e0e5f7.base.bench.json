@@ -1,0 +1,1371 @@
+{
+  "combine_date": "2024-12-14T21:29:19.918828+00:00",
+  "context": {
+    "client": "61bdee7c56e0e5f7",
+    "debug_mode": false,
+    "project": "0.11.2a1"
+  },
+  "data": [
+    {
+      "elap": 0.3569267499999995,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 23.104140375,
+      "timings": [
+        0.3567920419999986
+      ],
+      "variant": "tree.save(/Users/martin/test.bz2, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 0.221682791976491,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243092.392471833,
+      "timings": [
+        0.19456479101791047
+      ],
+      "variant": "tree.load(/Users/martin/test.lzma, nodes=101,010)"
+    },
+    {
+      "elap": 0.18997241597389802,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243148.709181,
+      "timings": [
+        0.1615322089928668
+      ],
+      "variant": "tree.load(/Users/martin/test.lzma, nodes=101,010)"
+    },
+    {
+      "elap": 0.2860493329999976,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 22.069946333,
+      "timings": [
+        0.28554312500000023
+      ],
+      "variant": "tree.save(/Users/martin/test.json, compression=False, nodes=101,010)"
+    },
+    {
+      "elap": 1.7177074169999997,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 11.003765333,
+      "timings": [
+        2.4745895799999927e-06,
+        2.484081249999992e-06,
+        2.530215000000009e-06,
+        2.5003170899999995e-06,
+        2.4953937499999943e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.1688553339918144,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243117.946436041,
+      "timings": [
+        0.14249404100701213
+      ],
+      "variant": "tree.load(/Users/martin/test.zip, nodes=101,010)"
+    },
+    {
+      "elap": 2.587691624998115,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243082.292325083,
+      "timings": [
+        1.8682485399767757e-06,
+        1.894968959968537e-06,
+        1.8690641700231935e-06,
+        1.8530064550577663e-06,
+        1.840635834960267e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 0.287587375001749,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243090.146098125,
+      "timings": [
+        0.28739762501209043
+      ],
+      "variant": "tree.save(/Users/martin/test.json, compression=False, nodes=101,010)"
+    },
+    {
+      "elap": 1.8154885839999997,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 3.013656416,
+      "timings": [
+        2.6405954200000003e-07,
+        2.612210829999997e-07,
+        2.6351375000000043e-07,
+        2.637123749999999e-07,
+        2.6216954200000053e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.016311332990881,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243144.67455225,
+      "timings": [
+        1.452683954994427e-06,
+        1.4333591698959935e-06,
+        1.4609945849224459e-06,
+        1.4623627049149946e-06,
+        1.4563506250851788e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 0.181811624992406,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243147.513951083,
+      "timings": [
+        0.15354249998927116
+      ],
+      "variant": "tree.load(/Users/martin/test.zip, nodes=101,010)"
+    },
+    {
+      "elap": 1.8611915410147049,
+      "iterations": 2000000,
+      "name": "search s",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243099.527557,
+      "timings": [
+        1.3385837500391064e-07,
+        1.3295118749374525e-07,
+        1.3392791700607632e-07,
+        1.3560743749258108e-07,
+        1.343852709978819e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 2.3254607080016285,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243152.170064125,
+      "timings": [
+        3.3614958298858255e-07,
+        3.4221254201838745e-07,
+        3.348131249949802e-07,
+        3.405352080008015e-07,
+        3.346009580127429e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 2.019779082998866,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243076.875189958,
+      "timings": [
+        2.9091412498382852e-08,
+        2.9085333299008198e-08,
+        2.9322408299776726e-08,
+        2.9360254199127666e-08,
+        2.9216966600506568e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.586004792014137,
+      "iterations": 1000000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243111.891383458,
+      "timings": [
+        3.720683339925017e-07,
+        3.7633983299019747e-07,
+        3.7600687498343175e-07,
+        3.743535410030745e-07,
+        3.7380629099789076e-07
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.UNORDERED): ..."
+    },
+    {
+      "elap": 0.27252974998555146,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243117.673438083,
+      "timings": [
+        0.27237120899371803
+      ],
+      "variant": "tree.save(/Users/martin/test.zip, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 1.7306915420000006,
+      "iterations": 1000000,
+      "name": "search s",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 4.829761666,
+      "timings": [
+        2.5093362500000006e-07,
+        2.496567910000005e-07,
+        2.491797499999997e-07,
+        2.5166008400000006e-07,
+        2.512580839999998e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 2.6359852079767734,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243114.478031875,
+      "timings": [
+        1.8830572949082126e-06,
+        1.9144360400969164e-06,
+        1.912181670049904e-06,
+        1.9006868750147987e-06,
+        1.8850408350408543e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 2.3532900419959333,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243109.537669791,
+      "timings": [
+        1.6825039550894872e-06,
+        1.7890227099996992e-06,
+        1.6855958350060974e-06,
+        1.6823710400785786e-06,
+        1.6772541699174325e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 0.3220426670159213,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243090.650415458,
+      "timings": [
+        0.3218947499990463
+      ],
+      "variant": "tree.save(/Users/martin/test.zip, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 2.307228624995332,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243168.218768666,
+      "timings": [
+        1.6601943749992642e-06,
+        1.6701772950182203e-06,
+        1.6717672899540048e-06,
+        1.6620000000693836e-06,
+        1.6467883299628738e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 1.850466250005411,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243172.739595333,
+      "timings": [
+        1.3394912501098588e-06,
+        1.313691459945403e-06,
+        1.3481947898981161e-06,
+        1.338427500013495e-06,
+        1.3320158350688871e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 1.6153113750042394,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243166.60300625,
+      "timings": [
+        1.1679062500479631e-06,
+        1.1573435450554826e-06,
+        1.1628733298857697e-06,
+        1.1666499999410006e-06,
+        1.166104375006398e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 1.6091914999997243,
+      "iterations": 500000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243086.57594775,
+      "timings": [
+        4.751014999928884e-07,
+        4.7293633403023705e-07,
+        4.7462624998297544e-07,
+        4.751375000341795e-07,
+        4.757158340071328e-07
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.UNORDERED): ..."
+    },
+    {
+      "elap": 2.0094688340032008,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243154.496102416,
+      "timings": [
+        1.4469906251179055e-07,
+        1.4381004199094605e-07,
+        1.440536459995201e-07,
+        1.449647084955359e-07,
+        1.4502127050946002e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.775513417000184,
+      "iterations": 50000000,
+      "name": "access node.data",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243130.660542583,
+      "timings": [
+        8.13863500021398e-09,
+        8.2132874999661e-09,
+        8.22832165984437e-09,
+        8.208711660117842e-09,
+        8.125915820128285e-09
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 0.18248004198540002,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243147.075984833,
+      "timings": [
+        0.1551759590220172
+      ],
+      "variant": "tree.load(/Users/martin/test.json, nodes=101,010)"
+    },
+    {
+      "elap": 0.2159534160164185,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243090.434001625,
+      "timings": [
+        0.19189237500540912
+      ],
+      "variant": "tree.load(/Users/martin/test.json, nodes=101,010)"
+    },
+    {
+      "elap": 2.2326036670128815,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243133.437642791,
+      "timings": [
+        1.6009743748873007e-06,
+        1.6136287500557955e-06,
+        1.633707084984053e-06,
+        1.6146627100533807e-06,
+        1.5944760398997459e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.3041454169724602,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243118.115885458,
+      "timings": [
+        0.30396495800232515
+      ],
+      "variant": "tree.save(/Users/martin/test.bz2, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 1.7530729160062037,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243088.1854995,
+      "timings": [
+        2.5261933301226235e-06,
+        2.5135716699878687e-06,
+        2.5508991701644847e-06,
+        2.5468024998554027e-06,
+        2.5919504099874756e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 1.7011259169999988,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 20.162819291,
+      "timings": [
+        2.469472080000017e-06,
+        2.473452499999986e-06,
+        2.481319589999984e-06,
+        2.471642910000007e-06,
+        2.490502919999997e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 0.17463612501160242,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243175.365572833,
+      "timings": [
+        0.1465875409776345
+      ],
+      "variant": "tree.load(/Users/martin/test.zip, nodes=101,010)"
+    },
+    {
+      "elap": 0.3536898329912219,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243091.195036708,
+      "timings": [
+        0.3535459999984596
+      ],
+      "variant": "tree.save(/Users/martin/test.bz2, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 2.0808792079915293,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243162.512712375,
+      "timings": [
+        1.4597895799670367e-06,
+        1.458322499966016e-06,
+        1.461060000001453e-06,
+        1.4629414600494784e-06,
+        1.7365985400101636e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.5341074579919223,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243148.17471975,
+      "timings": [
+        0.533934125007363
+      ],
+      "variant": "tree.save(/Users/martin/test.lzma, compression=LZMA, nodes=101,010)"
+    },
+    {
+      "elap": 0.30370312500000196,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 22.578952916,
+      "timings": [
+        0.30357000000000056
+      ],
+      "variant": "tree.save(/Users/martin/test.zip, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 2.2364768339903094,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243122.554652166,
+      "timings": [
+        3.2465658301953225e-07,
+        3.2221874999231657e-07,
+        3.227819160092622e-07,
+        3.2375116701587104e-07,
+        3.2434995801304465e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 1.674784459,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 1.338365541,
+      "timings": [
+        4.901811680000004e-07,
+        4.912097499999994e-07,
+        4.911013339999997e-07,
+        4.928267499999999e-07,
+        5.009304999999999e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 1.5587357920012437,
+      "iterations": 1000000,
+      "name": "search s",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243072.739224708,
+      "timings": [
+        2.2667141701094807e-07,
+        2.2448358399560674e-07,
+        2.254745840036776e-07,
+        2.2816349999629893e-07,
+        2.2439083398785442e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 0.5984230840113014,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243091.793707791,
+      "timings": [
+        0.5982588749902789
+      ],
+      "variant": "tree.save(/Users/martin/test.lzma, compression=LZMA, nodes=101,010)"
+    },
+    {
+      "elap": 1.7009867090091575,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243080.590836541,
+      "timings": [
+        2.4787129199830817e-06,
+        2.4575104197720066e-06,
+        2.470817500143312e-06,
+        2.481093749811407e-06,
+        2.4715529198874718e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.23483016699901782,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243117.272977833,
+      "timings": [
+        0.23457208299078047
+      ],
+      "variant": "tree.save(/Users/martin/test.json, compression=False, nodes=101,010)"
+    },
+    {
+      "elap": 0.5644675000000028,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 23.691777,
+      "timings": [
+        0.5643237919999997
+      ],
+      "variant": "tree.save(/Users/martin/test.lzma, compression=LZMA, nodes=101,010)"
+    },
+    {
+      "elap": 2.202768292016117,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243135.670718166,
+      "timings": [
+        1.5876454149838538e-06,
+        1.5851049999764654e-06,
+        1.5978439600439741e-06,
+        1.592353540036129e-06,
+        1.5742662500997539e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.2298788750000007,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 23.461426333,
+      "timings": [
+        0.1980454999999992
+      ],
+      "variant": "tree.load(/Users/martin/test.bz2, nodes=101,010)"
+    },
+    {
+      "elap": 1.6266519589989912,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243071.112049666,
+      "timings": [
+        2.405719159869477e-07,
+        2.3487870799726808e-07,
+        2.346843749983236e-07,
+        2.3466162499971688e-07,
+        2.3456358301336878e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 0.2215925419877749,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243090.972972958,
+      "timings": [
+        0.19472687499364838
+      ],
+      "variant": "tree.load(/Users/martin/test.zip, nodes=101,010)"
+    },
+    {
+      "elap": 0.17206675000488758,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243119.16051525,
+      "timings": [
+        0.1446003339951858
+      ],
+      "variant": "tree.load(/Users/martin/test.lzma, nodes=101,010)"
+    },
+    {
+      "elap": 0.1745185410254635,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243176.513911125,
+      "timings": [
+        0.14561233299900778
+      ],
+      "variant": "tree.load(/Users/martin/test.lzma, nodes=101,010)"
+    },
+    {
+      "elap": 2.6187679590075277,
+      "iterations": 1000000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243142.055332541,
+      "timings": [
+        3.798089160118252e-07,
+        3.8346129201818256e-07,
+        3.817832499917131e-07,
+        3.7846099998569117e-07,
+        3.812055420130491e-07
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.UNORDERED): ..."
+    },
+    {
+      "elap": 2.4697027090000008,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 6.562233791,
+      "timings": [
+        7.303683339999995e-08,
+        7.297104999999994e-08,
+        7.238460820000014e-08,
+        7.267857499999977e-08,
+        7.227994999999971e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 1.756374082993716,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243137.874453,
+      "timings": [
+        1.2722497900540475e-06,
+        1.2547554200864396e-06,
+        1.2722364600631408e-06,
+        1.2700602051336318e-06,
+        1.270557915122481e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 1.6988857499999988,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 16.8221315,
+      "timings": [
+        2.45738750000001e-06,
+        2.459592079999986e-06,
+        2.4793804199999768e-06,
+        2.472578330000026e-06,
+        2.45425749999999e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 0.1916311249951832,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243175.8108085,
+      "timings": [
+        0.16324858399457298
+      ],
+      "variant": "tree.load(/Users/martin/test.bz2, nodes=101,010)"
+    },
+    {
+      "elap": 1.980147374997614,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243097.546782958,
+      "timings": [
+        1.4284712501103058e-07,
+        1.4178872949560173e-07,
+        1.4336516700859647e-07,
+        1.4326697950309608e-07,
+        1.4340906249708496e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 1.5920784159970935,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243158.508532875,
+      "timings": [
+        4.7072008403483776e-08,
+        4.6833016601158306e-08,
+        4.7213566600112244e-08,
+        4.704834160511382e-08,
+        4.7072683402802795e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 0.5104474579857197,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243176.003108125,
+      "timings": [
+        0.5102801659959368
+      ],
+      "variant": "tree.save(/Users/martin/test.lzma, compression=LZMA, nodes=101,010)"
+    },
+    {
+      "elap": 1.9998242919973563,
+      "iterations": 2000000,
+      "name": "search s",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243156.506252041,
+      "timings": [
+        1.5300208299595398e-07,
+        1.4274549999390728e-07,
+        1.421553750114981e-07,
+        1.4262014599808027e-07,
+        1.418746460112743e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 0.5572476249944884,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243118.602937833,
+      "timings": [
+        0.5570997500035446
+      ],
+      "variant": "tree.save(/Users/martin/test.lzma, compression=LZMA, nodes=101,010)"
+    },
+    {
+      "elap": 2.0572390829911456,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243124.791719083,
+      "timings": [
+        1.590775000076974e-07,
+        1.4599622899550013e-07,
+        1.4682160450320225e-07,
+        1.467971249949187e-07,
+        1.4666183349618224e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.4101292920240667,
+      "iterations": 50000000,
+      "name": "access node.data",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243160.101086291,
+      "timings": [
+        7.21754250000231e-09,
+        7.1227658400312065e-09,
+        7.139875839930028e-09,
+        7.0939999999245625e-09,
+        7.04390584025532e-09
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.008404916006839,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243164.594073,
+      "timings": [
+        1.441831039992394e-06,
+        1.4419879150227645e-06,
+        1.442503959988244e-06,
+        1.4463414599595125e-06,
+        1.44709978994797e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.2218793330000004,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 22.356339625,
+      "timings": [
+        0.1908778340000019
+      ],
+      "variant": "tree.load(/Users/martin/test.json, nodes=101,010)"
+    },
+    {
+      "elap": 0.2399986660166178,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243175.125235875,
+      "timings": [
+        0.2398129999928642
+      ],
+      "variant": "tree.save(/Users/martin/test.zip, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 0.19889262499054894,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243174.728026541,
+      "timings": [
+        0.19779866698081605
+      ],
+      "variant": "tree.save(/Users/martin/test.json, compression=False, nodes=101,010)"
+    },
+    {
+      "elap": 1.7341636669880245,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243128.925953208,
+      "timings": [
+        4.94489582022652e-08,
+        4.935089180362411e-08,
+        4.977210819488391e-08,
+        4.979525840026326e-08,
+        4.957567499950528e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 0.25463362500886433,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243147.258962791,
+      "timings": [
+        0.2544627499883063
+      ],
+      "variant": "tree.save(/Users/martin/test.zip, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 0.24303870799485594,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243091.549049083,
+      "timings": [
+        0.21321295798406936
+      ],
+      "variant": "tree.load(/Users/martin/test.bz2, nodes=101,010)"
+    },
+    {
+      "elap": 1.9683097919999994,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 9.034042458,
+      "timings": [
+        2.842463750000004e-08,
+        2.8481995799999992e-08,
+        2.84314792e-08,
+        2.8836279200000093e-08,
+        2.877293749999996e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 1.8774931670050137,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243095.668795541,
+      "timings": [
+        2.717190830153413e-07,
+        2.715439590101596e-07,
+        2.7145358300185764e-07,
+        2.71669917012332e-07,
+        2.730697500228416e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 0.22069420800000117,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 22.882953083,
+      "timings": [
+        0.18984454099999937
+      ],
+      "variant": "tree.load(/Users/martin/test.zip, nodes=101,010)"
+    },
+    {
+      "elap": 1.3955026250041556,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243106.051115416,
+      "timings": [
+        2.018051659979392e-06,
+        2.031025420001242e-06,
+        1.998550829885062e-06,
+        2.019942920014728e-06,
+        2.044421250175219e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 2.4020277499999985,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 14.419679708,
+      "timings": [
+        1.7258118750000051e-06,
+        1.7193295849999935e-06,
+        1.7238710400000113e-06,
+        1.7474095850000105e-06,
+        1.7327962499999927e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 1.4451454170048237,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243103.191510916,
+      "timings": [
+        2.094535419892054e-08,
+        2.10120374977123e-08,
+        2.0961279101902618e-08,
+        2.0955216701258905e-08,
+        2.1068191700032912e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 1.800855874986155,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243101.390204958,
+      "timings": [
+        5.3267699998104944e-08,
+        5.259086659643799e-08,
+        5.334237499628216e-08,
+        5.317657500272617e-08,
+        5.3190199995879085e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 2.089861167012714,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243107.447050541,
+      "timings": [
+        1.5089312499912922e-06,
+        1.4987756249320228e-06,
+        1.5078081250248942e-06,
+        1.504581454937579e-06,
+        1.4942729150061496e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 0.19725891700363718,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243174.927275583,
+      "timings": [
+        0.1429669999924954
+      ],
+      "variant": "tree.load(/Users/martin/test.json, nodes=101,010)"
+    },
+    {
+      "elap": 0.1821106669958681,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243118.420341791,
+      "timings": [
+        0.155685874982737
+      ],
+      "variant": "tree.load(/Users/martin/test.bz2, nodes=101,010)"
+    },
+    {
+      "elap": 0.2694779169978574,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 243175.540909208,
+      "timings": [
+        0.26931070801219903
+      ],
+      "variant": "tree.save(/Users/martin/test.bz2, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 0.164577207993716,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 243117.5081805,
+      "timings": [
+        0.1379098749894183
+      ],
+      "variant": "tree.load(/Users/martin/test.json, nodes=101,010)"
+    },
+    {
+      "elap": 1.6940287080069538,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243078.896402708,
+      "timings": [
+        2.467132500023581e-06,
+        2.4331349998828955e-06,
+        2.4520145799033344e-06,
+        2.5010770800872706e-06,
+        2.466504579933826e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.21032308400026523,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243146.865348416,
+      "timings": [
+        0.2100867920089513
+      ],
+      "variant": "tree.save(/Users/martin/test.json, compression=False, nodes=101,010)"
+    },
+    {
+      "elap": 0.28466816601576284,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243147.6964545,
+      "timings": [
+        0.284505249990616
+      ],
+      "variant": "tree.save(/Users/martin/test.bz2, compression=ZIP, nodes=101,010)"
+    },
+    {
+      "elap": 1.412851667002542,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 243104.637850416,
+      "timings": [
+        2.0562254200922324e-06,
+        2.0614708299399356e-06,
+        2.021170830121264e-06,
+        2.0517341600498183e-06,
+        2.0448312498047017e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 1.6404878750000016,
+      "iterations": 500000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 18.52138375,
+      "timings": [
+        4.822839160000001e-07,
+        4.841863340000004e-07,
+        4.927483319999979e-07,
+        4.777040839999955e-07,
+        4.788763340000059e-07
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.UNORDERED): ..."
+    },
+    {
+      "elap": 2.074695999996038,
+      "iterations": 2000000,
+      "name": "search s",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243126.849497458,
+      "timings": [
+        1.4959112499491313e-07,
+        1.485689584951615e-07,
+        1.4990670850966125e-07,
+        1.4932822949776893e-07,
+        1.5173925000999588e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 2.2127106249972712,
+      "iterations": 1000000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 243170.5264555,
+      "timings": [
+        3.410969579999801e-07,
+        3.1783691700547933e-07,
+        3.1984862498939037e-07,
+        3.193511250137817e-07,
+        3.160953330225311e-07
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.UNORDERED): ..."
+    },
+    {
+      "elap": 0.24127433399999987,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 24.256558666,
+      "timings": [
+        0.20856041599999742
+      ],
+      "variant": "tree.load(/Users/martin/test.lzma, nodes=101,010)"
+    },
+    {
+      "elap": 0.19269941598759033,
+      "iterations": 1,
+      "name": "serialize",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 243147.9814515,
+      "timings": [
+        0.16426562500419095
+      ],
+      "variant": "tree.load(/Users/martin/test.bz2, nodes=101,010)"
+    },
+    {
+      "elap": 2.423008000012487,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 243139.631442041,
+      "timings": [
+        1.742915414943127e-06,
+        1.751503124978626e-06,
+        1.758501250005793e-06,
+        1.7437175000668503e-06,
+        1.7320985400874632e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 2.5743283330230042,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 243074.300450583,
+      "timings": [
+        7.601005840115249e-08,
+        7.568399180308915e-08,
+        7.547619179822504e-08,
+        7.5410749996081e-08,
+        7.64284583972767e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 1.6949737909890246,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243084.880485125,
+      "timings": [
+        2.6558362497598865e-06,
+        2.430951250134967e-06,
+        2.4233199999434875e-06,
+        2.4391529097920284e-06,
+        2.434390419803094e-06
+      ],
+      "variant": "for _ in tree.iterator(IterMethod.RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 1.6972965420000001,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 12.721997208,
+      "timings": [
+        2.4469333299999896e-06,
+        2.4415691700000155e-06,
+        2.464556669999993e-06,
+        2.442800839999997e-06,
+        2.483552080000013e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 1.5749718330043834,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 243069.536370375,
+      "timings": [
+        4.6840100002009423e-07,
+        4.6347308199619874e-07,
+        4.600243340246379e-07,
+        4.643057499779388e-07,
+        4.591468319995329e-07
+      ],
+      "variant": "by index"
+    }
+  ],
+  "tag": "base"
+}

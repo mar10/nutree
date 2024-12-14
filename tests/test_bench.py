@@ -53,9 +53,9 @@ class TestBenchmarks:
             globals=locals(),
         )
 
-        with capsys.disabled():
-            print(f"\n{benchman}")
-            benchman.print_results()
+        # with capsys.disabled():
+        #     print(f"\n{benchman}")
+        #     benchman.print_results()
 
     def test_bench_properties(self, benchman, capsys):
         """ """
@@ -80,9 +80,9 @@ class TestBenchmarks:
             globals=locals(),
         )
 
-        with capsys.disabled():
-            print(f"\n{benchman}")
-            benchman.print_results()
+        # with capsys.disabled():
+        #     print(f"\n{benchman}")
+        #     benchman.print_results()
 
     def test_bench_iter(self, benchman, capsys):
         """ """
@@ -153,9 +153,9 @@ class TestBenchmarks:
             globals=locals(),
         )
 
-        with capsys.disabled():
-            print(f"\n{benchman}")
-            benchman.print_results()
+        # with capsys.disabled():
+        #     print(f"\n{benchman}")
+        #     benchman.print_results()
 
 
 @benchmark
@@ -178,7 +178,7 @@ class TestCompress:
         # with WritableTempFile("w", suffix=".gz") as temp_file:
 
         tree = fixture.generate_tree([10, 100, 100])
-        size = len(tree)
+        # size = len(tree)
 
         path = directory / "test.json"
         benchman.run_timings(
@@ -188,7 +188,7 @@ class TestCompress:
                 tree.save("{path}", compression=False)
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -199,7 +199,7 @@ class TestCompress:
                 tree.load("{path}")
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -212,7 +212,7 @@ class TestCompress:
                 tree.save("{path}", compression=zipfile.ZIP_DEFLATED)
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -223,7 +223,7 @@ class TestCompress:
                 tree.load("{path}")
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -236,7 +236,7 @@ class TestCompress:
                 tree.save("{path}", compression=zipfile.ZIP_BZIP2)
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -247,7 +247,7 @@ class TestCompress:
                 tree.load("{path}")
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -260,7 +260,7 @@ class TestCompress:
                 tree.save("{path}", compression=zipfile.ZIP_LZMA)
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
@@ -271,13 +271,13 @@ class TestCompress:
                 tree.load("{path}")
             """,
             repeat=1,
-            number=1,
+            iterations=1,
             globals=locals(),
         )
 
-        with capsys.disabled():
-            print(f"\n{benchman}")
-            benchman.print_results()
+        # with capsys.disabled():
+        #     print(f"\n{benchman}")
+        #     benchman.print_results()
 
 
 @benchmark

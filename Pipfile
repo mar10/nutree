@@ -24,7 +24,7 @@ twine = "*"
 wheel = "*"
 yabs = "*"
 nutree = {path = ".",editable = true}
-benchman = {path = "../benchman_pre",editable = true}
+benchman = {file = "../benchman_pre", editable = true}
 
 [packages]
 typing_extensions = "*"
