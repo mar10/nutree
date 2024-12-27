@@ -13,6 +13,7 @@ Declare the :class:`~nutree.node.Node` class.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Iterator
 from operator import attrgetter
 from pathlib import Path
 from typing import (
@@ -20,8 +21,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Generic,
-    Iterable,
-    Iterator,
     cast,
 )
 

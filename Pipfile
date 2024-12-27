@@ -4,11 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+benchman = "*"
+# benchman = {file = "../benchman", editable = true}
 fabulist="*"
 ipykernel = "*"
 mypy = "*"
 notebook = "*"
-# pandoc = "*" # jupyter nbconvert --to rst
 pre-commit = "*"
 pydot = "*"
 pyright = "*"

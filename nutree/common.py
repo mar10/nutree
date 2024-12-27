@@ -13,6 +13,7 @@ import io
 import sys
 import warnings
 import zipfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
@@ -21,11 +22,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
-    Iterator,
-    List,
     Literal,
-    Type,
     Union,
 )
 
@@ -129,17 +126,17 @@ CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 ReprArgType = Union[str, Callable[["Node"], str]]
 
 #: A dict of scalar values
-FlatJsonDictType = Dict[str, Union[str, int, float, bool, None]]
+FlatJsonDictType = dict[str, Union[str, int, float, bool, None]]
 
 #: Type of ``tree.save(..., key_map)``
-KeyMapType = Dict[str, str]
+KeyMapType = dict[str, str]
 
 #: Type of ``tree.save(..., value_map)``
 #: E.g. `{'t': ['person', 'dept']}`
-ValueMapType = Dict[str, List[str]]
+ValueMapType = dict[str, list[str]]
 
 #: E.g. `{'t': {'person': 0, 'dept': 1}}`
-ValueDictMapType = Dict[str, Dict[str, int]]
+ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
 MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
@@ -152,7 +149,7 @@ DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
 PredicateCallbackType = Callable[
-    ["Node"], Union[None, bool, IterationControl, Type[IterationControl]]
+    ["Node"], Union[None, bool, IterationControl, type[IterationControl]]
 ]
 
 #:
@@ -166,9 +163,9 @@ TraversalCallbackType = Callable[
         bool,
         SkipBranch,
         StopTraversal,
-        Type[SkipBranch],
-        Type[StopTraversal],
-        Type[StopIteration],
+        type[SkipBranch],
+        type[StopTraversal],
+        type[StopIteration],
     ],
 ]
 #: Callback for `tree.sort(key=...)`
