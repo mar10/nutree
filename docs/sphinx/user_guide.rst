@@ -26,3 +26,4 @@ capabilities of the library, if you haven't already.
     ug_graphs
     ug_randomize
     ug_advanced
+    ug_benchmarks.md
