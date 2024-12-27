@@ -16,7 +16,7 @@ NOTE:
 """
 
 # flake8: noqa
-__version__ = "0.11.2-a1"
+__version__ = "1.0.0"
 
 from nutree.common import (
     AmbiguousMatchError,
