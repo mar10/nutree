@@ -5,7 +5,6 @@
 # ruff: noqa: E501 Line too long
 
 import sys
-from pathlib import Path
 
 import pytest
 from nutree import IterMethod
@@ -23,139 +22,110 @@ class TestBenchmarks:
     def test_bench_index(self, benchman, capsys):
         """ """
         tree = fixture.create_tree_simple(print=False)
-        size = len(tree)
+        bmr = benchman.make_runner(
+            name="search",
+            sample_size=len(tree),
+            globals=locals(),
+        )
 
-        benchman.run_timings(
-            "search",
+        bmr.run(
             variant="by index",
             stmt="""\
                 _ = tree["a1"]
             """,
-            sample_size=size,
-            globals=locals(),
         )
-        benchman.run_timings(
-            "search",
+        bmr.run(
             variant="find() ",
             stmt="""\
                 _ = tree.find("a1")
             """,
-            sample_size=size,
-            globals=locals(),
         )
-        benchman.run_timings(
-            "search s",
+        bmr.run(
             variant="find_all() ",
             stmt="""\
                 _ = tree.find_all("a1")
             """,
-            sample_size=size,
-            globals=locals(),
         )
 
-        # with capsys.disabled():
-        #     print(f"\n{benchman}")
-        #     benchman.print_results()
+        with capsys.disabled():
+            bmr.print()
 
     def test_bench_properties(self, benchman, capsys):
         """ """
         tree = fixture.create_tree_simple()
         node = tree.first_child()
+        bmr = benchman.make_runner(
+            name="access node.data",
+            globals=locals(),
+        )
 
-        benchman.run_timings(
-            "access node.data",
+        bmr.run(
             variant="node.data (property)",
             stmt="""\
                 _ = node.data
             """,
-            globals=locals(),
         )
 
-        benchman.run_timings(
-            "access node.data",
+        bmr.run(
             variant="node._data (attr)",
             stmt="""\
                 _ = node._data
             """,
-            globals=locals(),
         )
 
-        # with capsys.disabled():
-        #     print(f"\n{benchman}")
-        #     benchman.print_results()
+        with capsys.disabled():
+            bmr.print()
 
     def test_bench_iter(self, benchman, capsys):
         """ """
         tree = fixture.create_tree_simple()
         node = tree.first_child()
         size = len(tree)
+        bmr = benchman.make_runner(
+            name="iterate",
+            sample_size=len(tree),
+            globals=locals(),
+        )
 
-        benchman.run_timings(
-            "iterate",
+        bmr.run(
             variant="for _ in tree: ...",
             stmt="""\
                 for _ in tree: pass
             """,
-            sample_size=size,
-            globals=locals(),
         )
 
-        benchman.run_timings(
-            "iterate",
+        bmr.run(
             variant="for _ in tree.iterator(): ...",
             stmt="""\
                 for _ in tree.iterator(): pass
             """,
-            sample_size=size,
-            globals=locals(),
         )
 
-        ORDER = IterMethod.LEVEL_ORDER
-        benchman.run_timings(
-            "iterate",
-            variant=f"for _ in tree.iterator({ORDER}): ...",
-            stmt="""\
-                for _ in tree.iterator(ORDER): pass
-            """,
-            sample_size=size,
-            globals=locals(),
-        )
+        ORDER_LIST = [
+            IterMethod.LEVEL_ORDER,
+            IterMethod.PRE_ORDER,
+            IterMethod.POST_ORDER,
+            IterMethod.RANDOM_ORDER,
+            IterMethod.UNORDERED,
+        ]
+        for ORDER in ORDER_LIST:
+            bmr.run(
+                variant=f"for _ in tree.iterator({ORDER.name}): ...",
+                stmt="""\
+                    for _ in tree.iterator(ORDER): pass
+                """,
+                globals=locals(),
+            )
 
-        ORDER = IterMethod.RANDOM_ORDER
-        benchman.run_timings(
-            "iterate",
-            variant=f"for _ in tree.iterator({ORDER}): ...",
-            stmt="""\
-                for _ in tree.iterator(ORDER): pass
-            """,
-            sample_size=size,
-            globals=locals(),
-        )
-
-        ORDER = IterMethod.UNORDERED
-        benchman.run_timings(
-            "iterate",
-            variant=f"for _ in tree.iterator({ORDER}): ...",
-            stmt="""\
-                for _ in tree.iterator(ORDER): pass
-            """,
-            sample_size=size,
-            globals=locals(),
-        )
-
-        benchman.run_timings(
-            "iterate",
+        bmr.run(
             variant="tree.visit(lambda node, memo: None)",
             stmt="""\
                 tree.visit(lambda node, memo: None)
             """,
-            sample_size=size,
-            globals=locals(),
         )
 
-        # with capsys.disabled():
-        #     print(f"\n{benchman}")
-        #     benchman.print_results()
+        with capsys.disabled():
+            bmr.print()
 
 
 @benchmark
@@ -171,113 +141,95 @@ class TestCompress:
     ZIP_LZMA ('.lzma')     |       44.347 |       2.13 |    0.38
     """
 
-    def test_bench_serialize(self, benchman, capsys):
+    def test_bench_serialize(self, benchman, tmp_path, capsys):
         import zipfile  # noqa: F401
 
-        directory = Path("~").expanduser()
-        # with WritableTempFile("w", suffix=".gz") as temp_file:
+        # directory = Path("~").expanduser()
+        directory = tmp_path
 
         tree = fixture.generate_tree([10, 100, 100])
-        # size = len(tree)
 
-        path = directory / "test.json"
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.save({path}, compression=False, nodes={len(tree):,})",
-            stmt=f"""\
-                tree.save("{path}", compression=False)
-            """,
+        bmr_load = benchman.make_runner(
+            name="serialize_load",
+            # sample_size=len(tree),
+            repeat=1,
+            iterations=1,
+            globals=locals(),
+        )
+        bmr_save = benchman.make_runner(
+            name="serialize_save",
+            # sample_size=len(tree),
             repeat=1,
             iterations=1,
             globals=locals(),
         )
 
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.load({path}, nodes={len(tree):,})",
+        path = directory / "test.json"
+        bmr_save.run(
+            variant="uncompressed ('.json')",
+            stmt=f"""\
+                tree.save("{path}", compression=False)
+            """,
+        )
+
+        bmr_load.run(
+            variant="uncompressed ('.json')",
             stmt=f"""\
                 tree.load("{path}")
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
         # --- ZIP
         path = directory / "test.zip"
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+        bmr_save.run(
+            variant="ZIP_DEFLATED ('.zip') ",
             stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_DEFLATED)
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.load({path}, nodes={len(tree):,})",
+        bmr_load.run(
+            variant="ZIP_DEFLATED ('.zip') ",
             stmt=f"""\
                 tree.load("{path}")
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
         # --- ZIP
         path = directory / "test.bz2"
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.save({path}, compression=ZIP, nodes={len(tree):,})",
+        bmr_save.run(
+            variant="ZIP_BZIP2 ('.bz2') ",
             stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_BZIP2)
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.load({path}, nodes={len(tree):,})",
+        bmr_load.run(
+            variant="ZIP_BZIP2 ('.bz2') ",
             stmt=f"""\
                 tree.load("{path}")
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
         # --- ZIP
         path = directory / "test.lzma"
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.save({path}, compression=LZMA, nodes={len(tree):,})",
+        bmr_save.run(
+            variant="ZIP_LZMA ('.lzma') ",
             stmt=f"""\
                 tree.save("{path}", compression=zipfile.ZIP_LZMA)
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
-        benchman.run_timings(
-            "serialize",
-            variant=f"tree.load({path}, nodes={len(tree):,})",
+        bmr_load.run(
+            variant="ZIP_LZMA ('.lzma') ",
             stmt=f"""\
                 tree.load("{path}")
             """,
-            repeat=1,
-            iterations=1,
-            globals=locals(),
         )
 
-        # with capsys.disabled():
-        #     print(f"\n{benchman}")
-        #     benchman.print_results()
+        with capsys.disabled():
+            bmr_save.print()
+            bmr_load.print()
 
 
 @benchmark

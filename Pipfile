@@ -4,6 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+benchman = "*"
+# benchman = {file = "../benchman", editable = true}
 fabulist="*"
 ipykernel = "*"
 mypy = "*"
@@ -24,7 +26,6 @@ twine = "*"
 wheel = "*"
 yabs = "*"
 nutree = {path = ".",editable = true}
-benchman = {file = "../benchman_pre", editable = true}
 
 [packages]
 typing_extensions = "*"
