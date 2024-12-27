@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.11.2 (unreleased)
+## 1.0.1 (unreleased)
+
+## 1.0.0 (2024-12-27)
 - Add benchmarks (using [Benchman](https://github.com/mar10/benchman)).
+- Drop support for Python 3.8
 
 ## 0.11.1 (2024-11-08)
 - `t0.diff(t1, ...)` adds nodes from t1 when possible, so the new status is 
