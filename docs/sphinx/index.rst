@@ -52,6 +52,7 @@ Nutree Facts
   * :ref:`Pretty print <pretty-print>`
   * :ref:`Navigation <navigate>`
   * :ref:`Filtering <mutation>`
+  * `Fast <benchmarks.html>`_
 
 
 

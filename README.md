@@ -29,6 +29,7 @@ Typed child nodes <br>
 Pretty print <br>
 Navigation <br>
 Filtering <br>
+Fast <br>
 
 **Example**
 
