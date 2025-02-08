@@ -27,6 +27,7 @@ from nutree.common import (
     ROOT_NODE_ID,
     DataIdType,
     DeserializeMapperType,
+    IterMethod,
     KeyMapType,
     MapperCallbackType,
     PredicateCallbackType,
@@ -136,6 +137,22 @@ class TypedNode(Node[TData]):
             if n._kind == kind:
                 return n
         return None
+
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        add_self=False,
+        kind: str | type[ANY_KIND] = ANY_KIND,
+    ) -> Iterator[TypedNode[TData]]:
+        """Return an iterator that walks the tree in the specified order."""
+        if kind is ANY_KIND:
+            yield from super().iterator(method=method, add_self=add_self)
+        if add_self and self.kind == kind:
+            yield self
+        for n in super().iterator(method=method, add_self=False):
+            if n.kind == kind:
+                yield n
 
     def has_children(self, kind: str | type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
@@ -630,9 +647,18 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         return self.system_root.last_child(kind=kind)
 
     def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
+        """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
+        yield from self.iterator(kind=kind)
+
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        kind: str | type[ANY_KIND],
+    ) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
-            yield from self.iterator()
-        for n in self.iterator():
+            yield from super().iterator(method=method)
+        for n in super().iterator(method=method):
             if n._kind == kind:
                 yield n
         return

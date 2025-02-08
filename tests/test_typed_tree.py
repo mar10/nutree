@@ -96,6 +96,7 @@ class TestTypedTree:
         assert cause2.parent is fail1
 
         assert len(list(tree.iter_by_type("cause"))) == 2
+        assert len(list(tree.iterator(kind="cause"))) == 2
 
         assert cause2.get_children("undefined") == []
 
