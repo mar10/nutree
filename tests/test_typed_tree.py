@@ -95,6 +95,13 @@ class TestTypedTree:
 
         assert cause2.parent is fail1
 
+        assert tree.count == 8
+        assert tree.count_descendants() == 8
+        tree.print()
+        assert tree.count_descendants(leaves_only=True) == 6
+        assert tree.count_descendants(kind="cause") == 2
+        assert tree.count_descendants(leaves_only=True, kind="failure") == 1
+
         assert len(list(tree.iter_by_type("cause"))) == 2
         assert len(list(tree.iterator(kind="cause"))) == 2
 

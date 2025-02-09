@@ -160,6 +160,19 @@ class TypedNode(Node[TData]):
             return bool(self._children)
         return len(self.get_children(kind)) > 1
 
+    def count_descendants(
+        self, *, leaves_only=False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of descendant nodes, not counting self."""
+        if kind is ANY_KIND:
+            return super().count_descendants(leaves_only=leaves_only)
+        all = not leaves_only
+        i = 0
+        for node in self.iterator():
+            if (all or not node._children) and node.kind == kind:
+                i += 1
+        return i
+
     def get_siblings(self, *, add_self=False, any_kind=False) -> list[Self]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
@@ -654,7 +667,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         self,
         method: IterMethod = IterMethod.PRE_ORDER,
         *,
-        kind: str | type[ANY_KIND],
+        kind: str | type[ANY_KIND] = ANY_KIND,
     ) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
             yield from super().iterator(method=method)
@@ -662,6 +675,12 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             if n._kind == kind:
                 yield n
         return
+
+    def count_descendants(
+        self, *, leaves_only=False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of nodes, optionally restricted to type."""
+        return self.system_root.count_descendants(leaves_only=leaves_only, kind=kind)
 
     def save(
         self,
