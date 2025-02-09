@@ -1,7 +1,12 @@
 # Changelog
 
-## 1.0.1 (unreleased)
+## 1.1.0 (unreleased)
 
+- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(.., kind)`instead.
+- New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
+  `TypedNode.iterator(..., kind=ANY_KIND)`,
+  and `TypedTree.count_descendants(leaves_only=False, kind=ANY_KIND)`
+ 
 ## 1.0.0 (2024-12-27)
 - Add benchmarks (using [Benchman](https://github.com/mar10/benchman)).
 - Drop support for Python 3.8

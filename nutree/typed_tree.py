@@ -27,6 +27,7 @@ from nutree.common import (
     ROOT_NODE_ID,
     DataIdType,
     DeserializeMapperType,
+    IterMethod,
     KeyMapType,
     MapperCallbackType,
     PredicateCallbackType,
@@ -137,11 +138,43 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        add_self=False,
+        kind: str | type[ANY_KIND] = ANY_KIND,
+    ) -> Iterator[TypedNode[TData]]:
+        """Return an iterator that walks the tree in the specified order."""
+        if kind is ANY_KIND:
+            yield from super().iterator(method=method, add_self=add_self)
+            return
+
+        if add_self and self.kind == kind:
+            yield self
+        for n in super().iterator(method=method, add_self=False):
+            if n.kind == kind:
+                yield n
+        return
+
     def has_children(self, kind: str | type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
         if kind is ANY_KIND:
             return bool(self._children)
         return len(self.get_children(kind)) > 1
+
+    def count_descendants(
+        self, *, leaves_only=False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of descendant nodes, not counting self."""
+        if kind is ANY_KIND:
+            return super().count_descendants(leaves_only=leaves_only)
+        all = not leaves_only
+        i = 0
+        for node in self.iterator():
+            if (all or not node._children) and node.kind == kind:
+                i += 1
+        return i
 
     def get_siblings(self, *, add_self=False, any_kind=False) -> list[Self]:
         """Return a list of all sibling entries of self (excluding self) if any."""
@@ -630,12 +663,29 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         return self.system_root.last_child(kind=kind)
 
     def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
+        """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
+        yield from self.iterator(kind=kind)
+
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        kind: str | type[ANY_KIND] = ANY_KIND,
+    ) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
-            yield from self.iterator()
-        for n in self.iterator():
+            yield from super().iterator(method=method)
+            return
+
+        for n in super().iterator(method=method):
             if n._kind == kind:
                 yield n
         return
+
+    def count_descendants(
+        self, *, leaves_only=False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of nodes, optionally restricted to type."""
+        return self.system_root.count_descendants(leaves_only=leaves_only, kind=kind)
 
     def save(
         self,

@@ -43,9 +43,9 @@ class Randomizer(ABC):
     """
 
     def __init__(self, *, probability: float = 1.0) -> None:
-        assert (
-            isinstance(probability, float) and 0.0 <= probability <= 1.0
-        ), f"probality must be in the range [0.0 .. 1.0]: {probability}"
+        assert isinstance(probability, float) and 0.0 <= probability <= 1.0, (
+            f"probality must be in the range [0.0 .. 1.0]: {probability}"
+        )
         self.probability = probability
 
     def _skip_value(self) -> bool:
@@ -84,9 +84,9 @@ class RangeRandomizer(Randomizer):
         none_value: Any = None,
     ) -> None:
         super().__init__(probability=probability)
-        assert type(min_val) is type(
-            max_val
-        ), f"min_val and max_val must be of the same type: {min_val}, {max_val}"
+        assert type(min_val) is type(max_val), (
+            f"min_val and max_val must be of the same type: {min_val}, {max_val}"
+        )
         self.is_float = isinstance(min_val, float)
         self.min = min_val
         self.max = max_val
@@ -129,9 +129,9 @@ class DateRangeRandomizer(Randomizer):
     ) -> None:
         super().__init__(probability=probability)
         assert isinstance(min_dt, date), f"min_dt must be a date: {min_dt}"
-        assert isinstance(
-            max_dt, (date, int)
-        ), f"max_dt must be a date or int: {max_dt}"
+        assert isinstance(max_dt, (date, int)), (
+            f"max_dt must be a date or int: {max_dt}"
+        )
 
         if isinstance(max_dt, int):
             self.delta_days = max_dt
@@ -139,9 +139,9 @@ class DateRangeRandomizer(Randomizer):
         else:
             self.delta_days = (max_dt - min_dt).days
 
-        assert (
-            max_dt > min_dt
-        ), f"max_dt must be greater than min_dt: {min_dt}, {max_dt}"
+        assert max_dt > min_dt, (
+            f"max_dt must be greater than min_dt: {min_dt}, {max_dt}"
+        )
 
         self.min = min_dt
         self.max = max_dt

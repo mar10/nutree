@@ -1022,9 +1022,9 @@ class Tree(Generic[TData, TNode]):
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
-            assert (
-                node._children is None or len(node._children) > 0
-            ), f"{node}: {node._children}"
+            assert node._children is None or len(node._children) > 0, (
+                f"{node}: {node._children}"
+            )
 
         assert len(self._node_by_id) == len(node_list)
 

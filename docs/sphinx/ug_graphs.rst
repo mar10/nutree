@@ -356,7 +356,7 @@ Navigation methods are type-aware now::
     assert cause1.get_index() == 0
     assert cause1.get_index(any_kind=True) == 2
 
-    assert len(list(tree.iter_by_type("effect"))) == 3
+    assert len(list(tree.iterator(kind="effect"))) == 3
 
 Keep in mind that a tree node is unique within a tree, but may reference identical
 data objects, so these `clones` could exist at different locations of tree. 
