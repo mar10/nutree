@@ -148,11 +148,14 @@ class TypedNode(Node[TData]):
         """Return an iterator that walks the tree in the specified order."""
         if kind is ANY_KIND:
             yield from super().iterator(method=method, add_self=add_self)
+            return
+
         if add_self and self.kind == kind:
             yield self
         for n in super().iterator(method=method, add_self=False):
             if n.kind == kind:
                 yield n
+        return
 
     def has_children(self, kind: str | type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
@@ -671,6 +674,8 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     ) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
             yield from super().iterator(method=method)
+            return
+
         for n in super().iterator(method=method):
             if n._kind == kind:
                 yield n

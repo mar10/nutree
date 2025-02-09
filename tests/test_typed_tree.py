@@ -101,9 +101,15 @@ class TestTypedTree:
         assert tree.count_descendants(leaves_only=True) == 6
         assert tree.count_descendants(kind="cause") == 2
         assert tree.count_descendants(leaves_only=True, kind="failure") == 1
+        assert tree.system_root.count_descendants(kind="failure") == 2
 
         assert len(list(tree.iter_by_type("cause"))) == 2
         assert len(list(tree.iterator(kind="cause"))) == 2
+        assert len(list(tree.iterator())) == 8
+
+        assert len(list(tree.system_root.iterator(add_self=True))) == 9
+        assert len(list(tree.system_root.iterator(kind="cause"))) == 2
+        assert len(list(tree.system_root.iterator(kind="cause", add_self=True))) == 2
 
         assert cause2.get_children("undefined") == []
 
