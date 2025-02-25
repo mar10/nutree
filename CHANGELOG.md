@@ -1,6 +1,8 @@
 # Changelog
 
-## 1.1.0 (unreleased)
+## 1.1.1 (unreleased)
+
+## 1.1.0 (2025-02-09)
 
 - DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(.., kind)`instead.
 - New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
