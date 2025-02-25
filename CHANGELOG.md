@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.1 (unreleased)
+## 1.2.0 (unreleased)
 
 ## 1.1.0 (2025-02-09)
 

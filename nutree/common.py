@@ -52,8 +52,24 @@ class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
 
 
-class UniqueConstraintError(TreeError):
-    """Thrown when trying to add the same node_id to the same parent"""
+class StructureError(TreeError):
+    """Base class for errors thrown when the tree structure is invalid."""
+
+    def __init__(self, message: str, node: Node | None = None):
+        super().__init__(message)
+        self.node = node
+
+
+class DuplicateNodeIdError(StructureError):
+    """Thrown when trying to add the same node_id to the tree."""
+
+
+class UniqueConstraintError(StructureError):
+    """Thrown when trying to add the same ref_key to the same parent."""
+
+
+class CycleDetectedError(StructureError):
+    """Thrown when trying to add the same ref_key to the same ancestor chain."""
 
 
 class AmbiguousMatchError(TreeError):

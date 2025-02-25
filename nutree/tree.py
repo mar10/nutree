@@ -37,6 +37,7 @@ from nutree.common import (
     CalcIdCallbackType,
     DataIdType,
     DeserializeMapperType,
+    DuplicateNodeIdError,
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
@@ -107,6 +108,9 @@ class Tree(Generic[TData, TNode]):
     Set `forward_attrs` to true, to enable aliasing of node attributes,
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
+
+    `structure_guard` enables checks to prevent node structures that would
+    violate the Directed Acyclic Graph (DAG) format.
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -129,6 +133,7 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
+        structure_guard: bool = True,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
@@ -141,6 +146,8 @@ class Tree(Generic[TData, TNode]):
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
         # Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
+        # Enable cycle detection in add_child()
+        self.structure_guard = structure_guard
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -222,9 +229,15 @@ class Tree(Generic[TData, TNode]):
             return self._calc_data_id_hook(self, data)  # type: ignore
         return hash(data)
 
+    def _check_insert(self, parent: TNode, node: TNode):
+        """Raise error if inserting a node would violate restrictions."""
+        if node._node_id in self._node_by_id:
+            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
+        if parent._node_id in self._node_by_id:
+            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
+
     def _register(self, node: TNode) -> None:
         assert node._tree is self
-        # node._tree = self
         assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
         self._node_by_id[node._node_id] = node
         try:

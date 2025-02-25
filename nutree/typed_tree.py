@@ -83,11 +83,12 @@ class TypedNode(Node[TData]):
         node_id: int | None = None,
         meta: dict | None = None,
     ):
-        self._kind: str = kind  # tree._register() checks for this attribute
+        # tree._register() checks for this attribute in the next line:
+        self._kind: str = kind
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
-        assert isinstance(kind, str) and kind != ANY_KIND, f"Unsupported `kind`: {kind}"
+        assert isinstance(kind, str), f"Unsupported `kind`: {kind}"
 
         # del self._children
         # self._child_map: Dict[Node] = None

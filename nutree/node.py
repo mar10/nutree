@@ -564,6 +564,21 @@ class Node(Generic[TData]):
             res.reverse()
         return res
 
+    def parent_iterator(self, *, add_self=False, bottom_up=False) -> Iterator[Self]:
+        """Generator that walks the parent chain.
+
+        Note: This is mostly efficient for `bottom_up=True`, because for
+        `bottom_up=False` we convert to a list and revert.
+        """
+        if not bottom_up:
+            yield from self.get_parent_list(add_self=add_self, bottom_up=False)
+            return
+        # Bottom-up iteration:
+        parent = self if add_self else self._parent
+        while parent is not None and parent._parent is not None:
+            yield parent
+            parent = parent._parent
+
     def get_path(
         self, *, add_self: bool = True, separator: str = "/", repr: str = "{node.name}"
     ) -> str:
