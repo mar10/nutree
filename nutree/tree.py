@@ -235,14 +235,14 @@ class Tree(Generic[TData, TNode]):
         # We can assume that node.parent is set and that node already has at
         # least one clone registered in self._nodes_by_data_id, when this is
         # called from _register()
-        ref_key = node._data_id
+        data_id = node._data_id
         if node._parent._children:
             for sibling in node._parent._children:
-                if sibling._data_id == ref_key:
+                if sibling._data_id == data_id:
                     raise UniqueConstraintError(
-                        f"Node with data_id {ref_key} already exists under same parent"
+                        f"Node with data_id {data_id} already exists under same parent"
                     )
-        for n in self._nodes_by_data_id[ref_key]:
+        for n in self._nodes_by_data_id[data_id]:
             if node.is_descendant_of(n):
                 raise CycleDetectedError(
                     f"Inserting {node} would create a cycle with {n}"
@@ -254,15 +254,15 @@ class Tree(Generic[TData, TNode]):
         if node._node_id in self._node_by_id:
             raise DuplicateNodeIdError(f"Node ID already registered: {node}")
 
-        self._node_by_id[node._node_id] = node
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
             # if we get here, we are adding a clone and should check DAG compliance
-            if self.structure_checks and node.parent:
+            if self.structure_checks and node._parent:
                 self._check_insert(node)
             clone_list.append(node)
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
+        self._node_by_id[node._node_id] = node
 
     def _unregister(self, node: TNode, *, clear: bool = True) -> None:
         """Unlink node from this tree (children must be unregistered first)."""

@@ -84,12 +84,11 @@ class TypedNode(Node[TData]):
         node_id: int | None = None,
         meta: dict | None = None,
     ):
-        # # tree._register() checks for this attribute in the next line:
-        # self._kind: str = kind
+        # tree._register() checks for this attribute in __init__():
+        self._kind: str = kind
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
-        self._kind: str = kind
         assert isinstance(kind, str), f"Unsupported `kind`: {kind}"
 
         # del self._children
@@ -617,9 +616,10 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         kind = node._kind
         if node._parent._children:
             for sibling in node._parent._children:
-                if sibling._ref_key == ref_key and sibling._kind == kind:
+                if sibling._data_id == ref_key and sibling._kind == kind:
                     raise UniqueConstraintError(
-                        f"Node with data_id {ref_key} and kind {kind} already exists"
+                        f"Node with data_id {ref_key} and kind {kind} "
+                        f"already exists in parent {node._parent}"
                     )
         for n in self._nodes_by_data_id[ref_key]:
             if node.is_descendant_of(n) and n._kind == kind:

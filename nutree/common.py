@@ -65,11 +65,24 @@ class DuplicateNodeIdError(StructureError):
 
 
 class UniqueConstraintError(StructureError):
-    """Thrown when trying to add the same ref_key to the same parent."""
+    """Thrown when trying to add the same data_id to the same parent.
+
+    This would violate the constraint of the tree being a 'SIMPLE directed
+    acyclic graph'.
+    Note that the tree allows to add the same data_id to different parent nodes.
+    In TypedTrees, the data_id may be added to the same parent twice, as long as
+    it has a different kind.
+    """
 
 
 class CycleDetectedError(StructureError):
-    """Thrown when trying to add the same ref_key to the same ancestor chain."""
+    """Thrown when trying to add the same data_id to the same ancestor chain.
+
+    This would violate the constraint of the tree being a 'simple directed
+    ACYCLIC graph' and create a cycle.
+    In TypedTrees, the data_id may be added to the same ancestor chain more than
+    once, as long as it has a different kind.
+    """
 
 
 class AmbiguousMatchError(TreeError):

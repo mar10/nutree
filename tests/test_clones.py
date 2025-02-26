@@ -5,7 +5,11 @@
 
 import pytest
 from nutree import AmbiguousMatchError, Node, Tree
-from nutree.common import DictWrapper, UniqueConstraintError
+from nutree.common import (
+    CycleDetectedError,
+    DictWrapper,
+    UniqueConstraintError,
+)
 
 from . import fixture
 
@@ -39,11 +43,13 @@ class TestClones:
         with pytest.raises(AmbiguousMatchError):
             tree["a1"]
 
-        # # Not allowed to add two clones to same parent
+        # Not allowed to add two clones to same parent
         with pytest.raises(UniqueConstraintError):
             tree.add("A")
         with pytest.raises(UniqueConstraintError):
             tree.add(tree["A"])
+        with pytest.raises(CycleDetectedError):
+            tree["a2"].add(tree["A"])
 
         res = tree.find("a1")
         assert res
@@ -93,12 +99,19 @@ class TestClones:
         assert tree.count_unique == 8
 
         fail1 = tree["fail1"]
-        # Not allowed to add two clones to same parent
+        # Not allowed to add two clones with the same kind to same parent
         with pytest.raises(UniqueConstraintError):
             fail1.add("cause1", kind="cause")
         fail1.add("cause1", kind="other")
+
+        # Not allowed to add two clones with the same kind to ancestor chain
+        eff2 = tree["eff2"]
+        with pytest.raises(CycleDetectedError):
+            eff2.add("func1", kind="function")
+        eff2.add("func1", kind="other")
+
         tree.print()
-        assert tree.count == 9
+        assert tree.count == 10
         assert tree.count_unique == 8
 
     def test_dict(self):
