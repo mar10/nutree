@@ -35,6 +35,7 @@ from nutree.common import (
     ROOT_NODE_ID,
     AmbiguousMatchError,
     CalcIdCallbackType,
+    CycleDetectedError,
     DataIdType,
     DeserializeMapperType,
     DuplicateNodeIdError,
@@ -109,8 +110,8 @@ class Tree(Generic[TData, TNode]):
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
 
-    `structure_guard` enables checks to prevent node structures that would
-    violate the Directed Acyclic Graph (DAG) format.
+    `structure_checks` enables validations to ensure that the node structure is
+    compliant with Directed Acyclic Graphs (DAG).
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -133,7 +134,7 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
-        structure_guard: bool = True,
+        structure_checks: bool = True,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
@@ -147,7 +148,7 @@ class Tree(Generic[TData, TNode]):
         # Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
         # Enable cycle detection in add_child()
-        self.structure_guard = structure_guard
+        self.structure_checks = structure_checks
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -229,30 +230,36 @@ class Tree(Generic[TData, TNode]):
             return self._calc_data_id_hook(self, data)  # type: ignore
         return hash(data)
 
-    def _check_insert(self, parent: TNode, node: TNode):
-        """Raise error if inserting a node would violate restrictions."""
-        if node._node_id in self._node_by_id:
-            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
-        if parent._node_id in self._node_by_id:
-            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
+    def _check_insert(self, node: TNode):
+        """Raise error if inserting a node would violate DAG restrictions."""
+        # We can assume that node.parent is set and that node already has at
+        # least one clone registered in self._nodes_by_data_id, when this is
+        # called from _register()
+        ref_key = node._data_id
+        if node._parent._children:
+            for sibling in node._parent._children:
+                if sibling._data_id == ref_key:
+                    raise UniqueConstraintError(
+                        f"Node with data_id {ref_key} already exists under same parent"
+                    )
+        for n in self._nodes_by_data_id[ref_key]:
+            if node.is_descendant_of(n):
+                raise CycleDetectedError(
+                    f"Inserting {node} would create a cycle with {n}"
+                )
 
     def _register(self, node: TNode) -> None:
         assert node._tree is self
-        assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
+        assert node._node_id is not None
+        if node._node_id in self._node_by_id:
+            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
+
         self._node_by_id[node._node_id] = node
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
-            for clone in clone_list:
-                if clone.parent is node.parent:
-                    is_same_kind = getattr(clone, "kind", None) == getattr(
-                        node, "kind", None
-                    )
-                    if is_same_kind:
-                        del self._node_by_id[node._node_id]
-                        raise UniqueConstraintError(
-                            f"Node.data already exists in parent: {clone=}, "
-                            f"{clone.parent=}"
-                        )
+            # if we get here, we are adding a clone and should check DAG compliance
+            if self.structure_checks and node.parent:
+                self._check_insert(node)
             clone_list.append(node)
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]

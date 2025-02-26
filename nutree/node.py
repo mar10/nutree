@@ -554,21 +554,26 @@ class Node(Generic[TData]):
         return None
 
     def get_parent_list(self, *, add_self=False, bottom_up=False) -> list[Self]:
-        """Return ordered list of all parent nodes."""
+        """Return an ordered list of all parent nodes (top-down by default)."""
         res = []
         parent = self if add_self else self._parent
         while parent is not None and parent._parent is not None:
             res.append(parent)
             parent = parent._parent
         if not bottom_up:
+            # Note: it is more efficient to reverse the list than to append
+            # in reverse order!
             res.reverse()
         return res
 
-    def parent_iterator(self, *, add_self=False, bottom_up=False) -> Iterator[Self]:
-        """Generator that walks the parent chain.
+    def parent_iterator(self, *, add_self=False, bottom_up=True) -> Iterator[Self]:
+        """Generator that walks the parent chain bottom-up.
 
-        Note: This is mostly efficient for `bottom_up=True`, because for
-        `bottom_up=False` we convert to a list and revert.
+        Note: top-down requires to convert to a list and revert anyway,
+        so it can also be implemented as
+        ```py
+        for p in self.get_parent_list(add_self=add_self, bottom_up=False):
+        ```
         """
         if not bottom_up:
             yield from self.get_parent_list(add_self=add_self, bottom_up=False)
