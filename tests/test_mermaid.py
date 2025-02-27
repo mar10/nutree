@@ -3,6 +3,7 @@
 """ """
 # ruff: noqa: T201, T203 `print` found
 
+import io
 import shutil
 from pathlib import Path
 
@@ -75,6 +76,16 @@ class TestMermaid:
         assert '8[/"b11"/]' in buffer
         assert '7-. "1" .->8' in buffer
         assert "classDef default fill" in buffer
+
+    def test_serialize_mermaid_errors(self):
+        """Save/load as  object tree with clones."""
+        tree = fixture.create_typed_tree_simple(clones=True, name="Root")
+
+        with pytest.raises(ValueError, match="target must be a Path, str, or"):
+            tree.to_mermaid_flowchart(15)  # type: ignore
+
+        with pytest.raises(RuntimeError, match="Need a filepath to"):
+            tree.to_mermaid_flowchart(io.StringIO("x"), format="png")
 
     def test_serialize_mermaid_typed(self):
         """Save/load as  object tree with clones."""
