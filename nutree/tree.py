@@ -110,8 +110,9 @@ class Tree(Generic[TData, TNode]):
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
 
-    `structure_checks` enables validations to ensure that the node structure is
-    compliant with Directed Acyclic Graphs (DAG).
+    `check_dag` enables validations to ensure that the node structure is
+    compliant with Directed Acyclic Graphs (DAG). This means that no nodes
+    with the same data_id cannot be added as descendants of each other.
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -134,7 +135,7 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
-        structure_checks: bool = True,
+        check_dag: bool = True,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
@@ -145,10 +146,10 @@ class Tree(Generic[TData, TNode]):
         # Optional callback that calculates data_ids from data objects
         # hash(data) is used by default
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
-        # Enable aliasing when accessing node instances.
+        #: Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
-        # Enable cycle detection in add_child()
-        self.structure_checks = structure_checks
+        #: Enable cycle detection in add_child()
+        self.check_dag = check_dag
 
     def __repr__(self):
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -241,11 +242,15 @@ class Tree(Generic[TData, TNode]):
                 if sibling._data_id == data_id:
                     raise UniqueConstraintError(
                         f"Node with data_id {data_id} already exists under same parent"
+                        "Pass `check_dag=False` to the tree constructor to suppress "
+                        "this restriction."
                     )
         for n in self._nodes_by_data_id[data_id]:
             if node.is_descendant_of(n):
                 raise CycleDetectedError(
                     f"Inserting {node} would create a cycle with {n}"
+                    "Pass `check_dag=False` to the tree constructor to suppress "
+                    "this restriction."
                 )
 
     def _register(self, node: TNode) -> None:
@@ -259,7 +264,7 @@ class Tree(Generic[TData, TNode]):
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
             # if we get here, we are adding a clone and should check DAG compliance
-            if self.structure_checks and node._parent:
+            if self.check_dag and node._parent:
                 self._check_insert(node)
             clone_list.append(node)
         except KeyError:

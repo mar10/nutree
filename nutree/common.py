@@ -71,6 +71,8 @@ class UniqueConstraintError(StructureError):
     Note that the tree allows to add the same data_id to different parent nodes.
     In TypedTrees, the data_id may be added to the same parent twice, as long as
     it has a different kind.
+
+    Pass `check_dag=False` to the tree constructor to suppress this restriction.
     """
 
 
@@ -81,6 +83,8 @@ class CycleDetectedError(StructureError):
     ACYCLIC graph' and create a cycle.
     In TypedTrees, the data_id may be added to the same ancestor chain more than
     once, as long as it has a different kind.
+
+    Pass `check_dag=False` to the tree constructor to suppress this restriction.
     """
 
 

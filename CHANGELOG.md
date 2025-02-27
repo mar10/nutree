@@ -3,7 +3,7 @@
 ## 1.2.0 (unreleased)
 
 - New method `node.parent_iterator()`.
-- New option `Tree(..., structure_checks=True)` to enforce DAG compliance.
+- New option `Tree(..., check_dag=True)` to enforce DAG compliance.
 
 ## 1.1.0 (2025-02-09)
 
