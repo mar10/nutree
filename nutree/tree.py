@@ -252,7 +252,9 @@ class Tree(Generic[TData, TNode]):
         assert node._tree is self
         assert node._node_id is not None
         if node._node_id in self._node_by_id:
-            raise DuplicateNodeIdError(f"Node ID already registered: {node}")
+            raise DuplicateNodeIdError(
+                f"Node ID already registered: {node}"
+            )  # pragma: no cover
 
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError

@@ -55,9 +55,8 @@ class TreeError(RuntimeError):
 class StructureError(TreeError):
     """Base class for errors thrown when the tree structure is invalid."""
 
-    def __init__(self, message: str, node: Node | None = None):
+    def __init__(self, message: str):
         super().__init__(message)
-        self.node = node
 
 
 class DuplicateNodeIdError(StructureError):
