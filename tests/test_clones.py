@@ -22,7 +22,7 @@ class TestClones:
         self.tree = None
 
     def test_clones(self):
-        """ """
+        """Test clone functionality in the tree."""
         tree = fixture.create_tree_simple()
 
         # Add another 'a1' below 'B'
@@ -115,7 +115,7 @@ class TestClones:
         assert tree.count_unique == 8
 
     def test_dict(self):
-        """ """
+        """Test dictionary wrapper functionality in the tree."""
         tree = fixture.create_tree_simple()
         d = {"a": 1, "b": 2}
         # Add another 'a1' below 'B'

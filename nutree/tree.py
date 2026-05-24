@@ -135,7 +135,7 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
-        check_dag: bool = True,
+        check_dag: bool = False,
     ):
         self._lock = threading.RLock()
         #: Tree name used for logging
