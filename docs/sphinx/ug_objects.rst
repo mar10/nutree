@@ -147,7 +147,7 @@ Adding Native Dictionaries
 
 We can handle this by explicitly setting the `data_id` when adding the dict::
     
-    node = tree.add({d, data_id="{123-456}")
+    node = tree.add(d, data_id="{123-456}")
 
     assert node.data is d
     assert node.data["a"] == 1

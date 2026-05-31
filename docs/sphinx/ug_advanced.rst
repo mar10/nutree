@@ -16,6 +16,34 @@ Advanced
         tree.on("change", on_change)
 
 
+.. _meta-data:
+
+Memory Efficiency and Meta Data
+-------------------------------
+
+:class:`~nutree.node.Node` uses 
+`__slots__ <https://docs.python.org/3/reference/datamodel.html?highlight=__slots__#slots>`_ 
+for improved performance and memory efficiency.
+
+As a side effect, it is not possible to assign new attributes to a node instance.
+
+The `meta` slot can be used to attach arbitrary key/value pairs to a node. |br|
+Use :meth:`~nutree.node.Node.get_meta`, :meth:`~nutree.node.Node.set_meta`, 
+:meth:`~nutree.node.Node.update_meta`, and :meth:`~nutree.node.Node.clear_meta`,  
+to modify this node meta data::
+
+    node.set_meta("foo", 42)
+    assert node.get_meta("foo") == 42
+    node.set_meta("bar", "baz")
+
+    assert node._meta == {"foo": 42, "bar": "baz"}
+
+Values are stored in a single dict ``node._meta``, and is not used internally by nutree.
+However we should not access it directly, but use the provided methods instead. |br|
+The dict stores values _sparse_, i.e. only values != `None` are stored.
+This means that if you set a value to `None`, it will be removed from the dict. |br|
+If the dict is empty, ``node._meta`` will be set to `None` to save memory.
+
 .. _iteration-callbacks:
 
 Iteration Callbacks
@@ -118,8 +146,8 @@ This is slow and should not be done in production::
     assert tree._self_check()
 
 
-Performance
------------
+Performance Optimization
+------------------------
 
 Most :class:`~nutree.node.Node` attributes are exposed as readonly properties.
 The real attribute is prefixed by an underscore. |br|
