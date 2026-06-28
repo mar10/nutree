@@ -583,7 +583,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     See :ref:`typed-tree` for details.
     """
 
-    node_factory = TypedNode
+    node_factory: type[TypedNode] = cast(type[TypedNode], TypedNode)
     root_node_factory = _SystemRootTypedNode
 
     #: Default value for ``key_map`` argument when saving
