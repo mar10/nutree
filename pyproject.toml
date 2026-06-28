@@ -69,7 +69,6 @@ dev = [
     "PyYAML",
     "rdflib",
     "ruff>=0.15",
-    # "setuptools >=42",
     "Sphinx",
     "furo",
     "myst-parser[linkify]",
@@ -78,7 +77,7 @@ dev = [
     "sphinx-rtd-theme",
     "tox",
     "tox-uv",
-    "twine",
+    # "twine",
     "yabs",
 ]
 
