@@ -694,6 +694,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         self,
         target: IO[str] | str | Path,
         *,
+        compression: bool | int = False,
         mapper: SerializeMapperType | None = None,
         meta: dict | None = None,
         key_map: KeyMapType | bool = True,
@@ -722,6 +723,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
         return super().save(
             target,
+            compression=compression,
             mapper=mapper,
             meta=meta,
             key_map=key_map,

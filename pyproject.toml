@@ -68,8 +68,8 @@ dev = [
     "pytest-html",
     "PyYAML",
     "rdflib",
-    "ruff>=0.9",
-    "setuptools>=42",
+    "ruff>=0.15",
+    # "setuptools >=42",
     "Sphinx",
     "furo",
     "myst-parser[linkify]",
@@ -105,8 +105,10 @@ Download = "https://github.com/mar10/nutree/releases/latest"
 [tool.ruff]
 target-version = "py310"
 src = ["nutree", "tests"]
+
+[tool.ruff.lint]
 select = [
-  "B",  # bugbear
+  "B", # bugbear
   # "D",   # pydocstyle
   "E",  # pycodestyle
   "F",  # pyflakes
@@ -115,14 +117,12 @@ select = [
   "T",  # print, ...
   "UP", # pyupgrade
 ]
+
 ignore = [
-  # # We need the old syntax for python <= 3.9
-  # "UP006", # Use `list` instead of `List` for type annotations (since Py39)
-  # "UP007", # Use `X | Y` for type annotations (since Py310)
   "E721",  #  Do not compare types, use `isinstance()`
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Jupyter Notebooks
 "*.ipynb" = [
   "T20",  # print statement
@@ -190,7 +190,7 @@ markers = [
 # branch = true
 omit = [
     "tests/*",
-    "setup.py",
+    # "setup.py",
     # nutree/leaves_cli.py
     # nutree/cli_common.py
     # nutree/monitor/*  

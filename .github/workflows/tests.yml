@@ -49,8 +49,8 @@ jobs:
       - name: Lint with ruff
         run: |
           ruff -V
-          ruff check  --output-format=github nutree tests setup.py
-          ruff format --check nutree tests setup.py
+          ruff check  --output-format=github nutree tests
+          ruff format --check nutree tests
 
       - name: Test with pytest
         run: |
