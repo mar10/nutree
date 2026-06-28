@@ -907,11 +907,11 @@ class Tree(Generic[TData, TNode]):
         format=None,
         add_root=True,
         unique_nodes=True,
-        graph_attrs=None,
-        node_attrs=None,
-        edge_attrs=None,
-        node_mapper=None,
-        edge_mapper=None,
+        graph_attrs: dict | None = None,
+        node_attrs: dict | None = None,
+        edge_attrs: dict | None = None,
+        node_mapper: MapperCallbackType | None = None,
+        edge_mapper: MapperCallbackType | None = None,
     ):
         """Serialize a DOT formatted graph representation.
 
