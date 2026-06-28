@@ -36,17 +36,26 @@ ignore = [
 # --- Pyright Settings ---------------------------------------------------------
 [tool.pyright]
 typeCheckingMode = "standard"
-reportMissingImports = "none"
 include = ["nutree", "tests"]
+reportMissingImports = "none"
+deprecateTypingAliases = true
 
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 reportUnnecessaryTypeIgnoreComment = true
+
+# executionEnvironments = [
+#   { root = "nutree", typeCheckingMode = "strict" },
+#   { root = "tests", typeCheckingMode = "standard", reportUnnecessaryTypeIgnoreComment = false },
+# ]
+
+
 
 # --- Mypy Settings ------------------------------------------------------------
 [tool.mypy]
 warn_return_any = true
 warn_unused_configs = true
-# warn_unused_ignores = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
 # warn_redundant_casts = true
 # ignore_missing_imports = true
 

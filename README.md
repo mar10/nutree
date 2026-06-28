@@ -28,6 +28,7 @@ Generate random trees <br>
 Convert to RDF graph <br>
 Fully type annotated <br>
 Typed child nodes <br>
+Memory efficient <br>
 Pretty print <br>
 Navigation <br>
 Filtering <br>
