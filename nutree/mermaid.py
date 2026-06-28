@@ -84,14 +84,18 @@ def _node_to_mermaid_flowchart_iter(
     if isinstance(edge_mapper, str):
         edge_templ = edge_mapper
 
-        def edge_mapper(from_id, from_node, to_id, to_node):
+        def edge_mapper(
+            from_id: int, from_node: Node, to_id: int, to_node: Node
+        ) -> str:
             return edge_templ.format(
                 from_id=from_id, from_node=from_node, to_id=to_id, to_node=to_node
             )
 
     elif edge_mapper is None:
 
-        def edge_mapper(from_id, from_node, to_id, to_node):
+        def edge_mapper(
+            from_id: int, from_node: Node, to_id: int, to_node: Node
+        ) -> str:
             kind = getattr(to_node, "kind", None)
             templ = DEFAULT_EDGE_TYPED if kind else DEFAULT_EDGE
             return templ.format(
@@ -101,6 +105,7 @@ def _node_to_mermaid_flowchart_iter(
                 to_node=to_node,
                 kind=kind,
             )
+
     elif not callable(edge_mapper):  # pragma: no cover
         raise ValueError("edge_mapper must be str or callable")
 
@@ -180,7 +185,7 @@ def node_to_mermaid_flowchart(
     if mmdc_options is None:
         mmdc_options = {}
 
-    def _write(fp):
+    def _write(fp: IO[str]) -> None:
         for line in _node_to_mermaid_flowchart_iter(
             node=node,
             as_markdown=as_markdown,

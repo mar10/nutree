@@ -95,7 +95,7 @@ class SkipBranch(IterationControl):
     If `and_self` is false, some iterators will consider the node's children only.
     """
 
-    def __init__(self, *, and_self=None):
+    def __init__(self, *, and_self: bool | None = None) -> None:
         self.and_self = and_self
 
 
@@ -112,7 +112,7 @@ class StopTraversal(IterationControl):
     ``StopTraversal(None)`` exception.
     """
 
-    def __init__(self, value=None):
+    def __init__(self, value: Any = None) -> None:
         self.value = value
 
 
@@ -173,7 +173,9 @@ SortKeyType = Callable[["Node"], Any]
 # SortKeyType = Callable[[Node], SupportsLess]
 
 #: Node connector prefixes, for use with ``format(style=...)`` argument.
-CONNECTORS = {
+CONNECTORS: dict[
+    str, tuple[str, str, str, str] | tuple[str, str, str, str, str, str]
+] = {
     "space1": (" ", " ", " ", " "),
     "space2": ("  ", "  ", "  ", "  "),
     "space3": ("   ", "   ", "   ", "   "),
@@ -224,7 +226,7 @@ class DictWrapper:
 
     __slots__ = ("_dict",)
 
-    def __init__(self, dict_inst: dict | None = None, **values) -> None:
+    def __init__(self, dict_inst: dict | None = None, **values: Any) -> None:
         self._dict: dict = {}
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
@@ -238,10 +240,10 @@ class DictWrapper:
             # store them in a new dictionary
             self._dict = values
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self._dict}>"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # We return the id of the dict object, which is unique and stable.
         # Calculating a hash from the dict content is too expensive and would
         # not work anyway, since the result is used as a key in a reference map
@@ -250,7 +252,7 @@ class DictWrapper:
         # multiple times to the same tree.
         return id(self._dict)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, DictWrapper):
             d2 = other._dict
         elif isinstance(other, dict):
@@ -268,7 +270,7 @@ class DictWrapper:
                 return False
         return True
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         """Allow to access values as items.
 
         Example::
@@ -277,7 +279,7 @@ class DictWrapper:
         """
         self._dict[key] = value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         """Allow to access values as items.
 
         E.g. ``foo = node.data["foo"]`` instead of `` foo = node.data._dict["foo"]``.

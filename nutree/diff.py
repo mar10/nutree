@@ -128,7 +128,7 @@ def diff_tree(
     added_nodes = set[int]()
     removed_nodes = set[int]()
 
-    def _diff(p0: Node, p1: Node, p2: Node):
+    def _diff(p0: Node, p1: Node, p2: Node) -> None:
         p0_data_ids = set()
 
         # `p0.children` always returns an (empty) array
@@ -218,7 +218,7 @@ def diff_tree(
     # Purge unchanged parts from tree
     if reduce:
 
-        def pred(node):
+        def pred(node: Node) -> bool:
             return bool(
                 node.get_meta("dc")
                 or node.get_meta("dc_modified")

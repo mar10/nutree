@@ -124,7 +124,7 @@ class DateRangeRandomizer(Randomizer):
         min_dt: date,
         max_dt: date | int,
         *,
-        as_js_stamp=True,
+        as_js_stamp: bool = True,
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
@@ -197,7 +197,11 @@ class SampleRandomizer(Randomizer):
     """
 
     def __init__(
-        self, sample_list: Sequence, *, counts=None, probability: float = 1.0
+        self,
+        sample_list: Sequence,
+        *,
+        counts: list | None = None,
+        probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
         self.sample_list = sample_list
@@ -346,7 +350,7 @@ def _make_tree(
     types: dict,
     relations: dict,
     prefix: str,
-):
+) -> None:
     child_specs = relations[parent_type]
 
     for node_type, spec in child_specs.items():
