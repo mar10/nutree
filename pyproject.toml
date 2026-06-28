@@ -1,3 +1,106 @@
+# --- Build System -------------------------------------------------------------
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# --- Project Metadata ---------------------------------------------------------
+[project]
+name = "nutree"
+dynamic = ["version"]
+description = "A Python library for tree data structures with an intuitive, yet powerful, API."
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "Martin Wendt", email = "nutree@wwwendt.de"},
+]
+maintainers = [
+    {name = "Martin Wendt", email = "nutree@wwwendt.de"},
+]
+keywords = ["tree", "data structure", "digraph", "graph", "nodes", "hierarchy", "treelib"]
+classifiers = [
+    # "Development Status :: 3 - Alpha",
+    # "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    # "Programming Language :: Python :: 3.7  # EOL 2023-06-27",
+    # "Programming Language :: Python :: 3.8  # EOL 2024-10",
+    # "Programming Language :: Python :: 3.9", # EOL 2025-10
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "typing_extensions>=4.0",
+]
+
+[project.optional-dependencies]
+graph = ["pydot", "rdflib", "graphviz"]
+random = ["fabulist"]
+all = ["pydot", "rdflib", "graphviz", "fabulist"]
+
+[tool.uv.sources]
+benchman = {path = "../benchman", editable = true}
+
+[dependency-groups]
+dev = [
+    "benchman",
+    "fabulist",
+    "ipykernel",
+    "lxml",
+    "mypy",
+    "notebook",
+    "pre-commit",
+    "pydot",
+    "pyright",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
+    "PyYAML",
+    "rdflib",
+    "ruff>=0.9",
+    "setuptools>=42",
+    "Sphinx",
+    "furo",
+    "myst-parser[linkify]",
+    "sphinxcontrib-googleanalytics",
+    "sphinxcontrib-mermaid",
+    "sphinx-rtd-theme",
+    "tox",
+    "tox-uv",
+    "twine",
+    "yabs",
+]
+
+[project.urls]
+Homepage = "https://github.com/mar10/nutree/"
+"Bug Tracker" = "https://github.com/mar10/nutree/issues"
+"Source Code" = "https://github.com/mar10/nutree"
+Documentation = "https://nutree.readthedocs.io/"
+Download = "https://github.com/mar10/nutree/releases/latest"
+
+# --- Setuptools Configuration -------------------------------------------------
+# [tool.setuptools.dynamic]
+# version = {attr = "nutree.__version__"}
+
+# [tool.setuptools.packages.find]
+# where = ["."]
+# exclude = ["tests*"]
+
+# [tool.setuptools.package-data]
+# nutree = ["py.typed"]
+
+
 # --- Ruff Settings ------------------------------------------------------------
 [tool.ruff]
 target-version = "py310"

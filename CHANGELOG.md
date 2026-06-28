@@ -3,7 +3,7 @@
 ## 1.2.0 (unreleased)
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
-- 
+- Use [uv](https://docs.astral.sh/uv/)
 
 ## 1.1.0 (2025-02-09)
 
