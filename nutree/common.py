@@ -13,18 +13,11 @@ import io
 import sys
 import warnings
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Literal,
-    Union,
-)
+from typing import IO, TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
@@ -117,16 +110,16 @@ class StopTraversal(IterationControl):
 
 
 #: Type of ``Node.data_id``
-DataIdType = Union[str, int]
+DataIdType = str | int
 
 #: Type of ``Tree(..., calc_data_id)```
 CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 
-#: Type of ``format(..., repr=)```
-ReprArgType = Union[str, Callable[["Node"], str]]
+#: Type of ``format(..., repr=)``
+ReprArgType = str | Callable[["Node"], str]
 
 #: A dict of scalar values
-FlatJsonDictType = dict[str, Union[str, int, float, bool, None]]
+FlatJsonDictType = dict[str, str | int | float | bool | None]
 
 #: Type of ``tree.save(..., key_map)``
 KeyMapType = dict[str, str]
@@ -139,34 +132,32 @@ ValueMapType = dict[str, list[str]]
 ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
-MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
+MapperCallbackType = Callable[["Node", dict], None | Any]
 
 #: Callback for `tree.save()`
-SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
+SerializeMapperType = Callable[["Node", dict], None | dict]
 
 #: Callback for `tree.load()`
-DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
+DeserializeMapperType = Callable[["Node", dict], str | object]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
 PredicateCallbackType = Callable[
-    ["Node"], Union[None, bool, IterationControl, type[IterationControl]]
+    ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
 #:
-MatchArgumentType = Union[str, PredicateCallbackType, list, tuple, Any]
+MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 
 #:
 TraversalCallbackType = Callable[
     ["Node", Any],
-    Union[
-        None,
-        bool,
-        SkipBranch,
-        StopTraversal,
-        type[SkipBranch],
-        type[StopTraversal],
-        type[StopIteration],
-    ],
+    None
+    | bool
+    | SkipBranch
+    | StopTraversal
+    | type[SkipBranch]
+    | type[StopTraversal]
+    | type[StopIteration],
 ]
 #: Callback for `tree.sort(key=...)`
 SortKeyType = Callable[["Node"], Any]
@@ -306,7 +297,7 @@ class DictWrapper:
     #         raise AttributeError(name) from None
 
     @classmethod
-    def serialize_mapper(cls, nutree_node: Node, data: dict) -> Union[None, dict]:
+    def serialize_mapper(cls, nutree_node: Node, data: dict) -> None | dict:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -318,7 +309,7 @@ class DictWrapper:
         return nutree_node.data._dict.copy()
 
     @classmethod
-    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> Union[str, object]:
+    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> str | object:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -334,7 +325,7 @@ def get_version() -> str:
     return __version__
 
 
-def check_python_version(min_version: tuple[Union[str, int], Union[str, int]]) -> bool:
+def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     """Check for deprecated Python version."""
     if sys.version_info < min_version:
         min_ver = ".".join([str(s) for s in min_version[:3]])

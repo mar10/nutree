@@ -1,6 +1,9 @@
 # Changelog
 
-## 1.1.1 (unreleased)
+## 1.2.0 (unreleased)
+- Drop Python 3.9 (EOL 2025-10)
+- Support Python 3.14, 3.15
+- 
 
 ## 1.1.0 (2025-02-09)
 

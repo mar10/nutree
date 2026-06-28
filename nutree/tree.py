@@ -22,7 +22,6 @@ from typing import (
     Any,
     Generic,
     Literal,
-    Union,
     cast,
 )
 
@@ -704,7 +703,7 @@ class Tree(Generic[TData, TNode]):
         mapper: SerializeMapperType | None = None,
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
-    ) -> Iterator[tuple[DataIdType, Union[FlatJsonDictType, str, int]]]:
+    ) -> Iterator[tuple[DataIdType, FlatJsonDictType | str | int]]:
         """Yield a parent-referencing list of child nodes."""
         yield from self.system_root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map

@@ -6,8 +6,9 @@ Implement diff/merge algorithms.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.tree import Node, Tree
@@ -26,7 +27,7 @@ DC = DiffClassification
 #: Callback for `tree.diff(compare=...)`
 #: Return `False` if nodes are considered equal, `False` if different, or any
 #: value to indicate a custom classification.
-DiffCompareCallbackType = Callable[["Node", "Node", "Node"], Union[bool, Any]]
+DiffCompareCallbackType = Callable[["Node", "Node", "Node"], bool | Any]
 
 
 def _find_child(child_list: list[Node], child: Node) -> tuple[int, Node | None]:

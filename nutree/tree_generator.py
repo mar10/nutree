@@ -11,7 +11,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Union
+from typing import Any
 
 from nutree.common import DictWrapper
 from nutree.node import Node
@@ -93,7 +93,7 @@ class RangeRandomizer(Randomizer):
         self.none_value = none_value
         assert self.max > self.min
 
-    def generate(self) -> Union[float, int, Any, None]:
+    def generate(self) -> float | int | Any | None:
         if self._skip_value():
             return self.none_value
         if self.is_float:
@@ -147,7 +147,7 @@ class DateRangeRandomizer(Randomizer):
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
 
-    def generate(self) -> Union[date, float, None]:
+    def generate(self) -> date | float | None:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
             return None
