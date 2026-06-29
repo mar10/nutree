@@ -112,3 +112,89 @@ Create a Pull Request
 .. todo::
 
     	TODO
+
+
+Release Process
+===============
+
+The authoritative release mechanism is the tag-driven GitHub Actions workflow
+(`.github/workflows/release.yml`). Pushing a version tag to GitHub triggers
+the full pipeline automatically.
+
+Release Steps
+-------------
+
+1. **Prepare changelog**
+
+   Edit ``CHANGELOG.md``: move items from *Unreleased* into a new section
+   with the target version and today's date::
+
+       ## 1.2.0 (2026-06-29)
+       ...
+
+2. **Set the release version**
+
+   Edit ``nutree/__init__.py`` and set the final version (PEP 440, no ``-``
+   separators)::
+
+       __version__ = "1.2.0"      # final release
+       __version__ = "1.2.0rc1"   # release candidate (optional)
+
+   Version format rules:
+
+   - Pre-release: ``1.2.0a1``, ``1.2.0b1``, ``1.2.0rc1``
+   - Final:       ``1.2.0``
+   - Development: ``1.2.1.dev1``  (never publish ``dev`` builds to PyPI)
+
+3. **Run quality checks locally** (optional but recommended)::
+
+       $ tox -e lint,pyright,mypy
+       $ tox
+
+4. **Commit and tag**
+
+   The tag **must match** the version string exactly (strip the ``v`` prefix)::
+
+       $ git add CHANGELOG.md nutree/__init__.py
+       $ git commit -m "Release 1.2.0"
+       $ git tag v1.2.0
+       $ git push origin main --tags
+
+5. **Monitor the workflow**
+
+   Open *Actions → Release* on GitHub and watch the jobs:
+
+   - ``validate``        – checks tag/version match, runs lint + tests
+   - ``build``           – builds ``sdist`` and ``wheel``
+   - ``github-release``  – attaches artifacts to the GitHub Release
+   - ``pypi-publish``    – publishes to PyPI via Trusted Publisher
+   - ``post-release-bump`` – opens a PR bumping source to next ``.dev1``
+
+6. **Merge the post-release bump PR**
+
+   After the release is confirmed, merge the automated PR (e.g.
+   ``post-release/v1.2.1.dev1``) that was opened against ``main``.
+
+PyPI Trusted Publisher Setup
+-----------------------------
+
+The workflow uses `OIDC Trusted Publisher
+<https://docs.pypi.org/trusted-publishers/>`_ — no API token is needed.
+The trust relationship must be configured **once** on pypi.org:
+
+.. code-block:: text
+
+   Publisher:       GitHub Actions
+   Owner:           mar10
+   Repository:      nutree
+   Workflow file:   release.yml
+   Environment:     pypi
+
+Local / Manual Releases
+-----------------------
+
+``yabs`` is kept as an optional local tool for experimentation. It no longer
+represents the authoritative release path. Run it only when you need a quick
+local dry-run of the version-bump sequence::
+
+    $ yabs run --inc patch --dry-run

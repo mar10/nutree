@@ -1,36 +1,43 @@
-# Yabs Workflow Definition
+# Yabs Workflow Definition (LOCAL FALLBACK ONLY)
 # See https://github.com/mar10/yabs
+#
+# NOTE: The authoritative release process is the tag-driven GitHub Actions
+# workflow at .github/workflows/release.yml.  Use this file only for local
+# experimentation or dry-run version-bump testing:
+#
+#   $ yabs run --inc patch --dry-run
+#
 
 file_version: yabs#1
 
 config:
-  repo: 'mar10/nutree'
+  repo: "mar10/nutree"
   gh_auth:
     oauth_token_var: GITHUB_OAUTH_TOKEN
   version:
-    - type: __version__        # First entry is main for synchronizing
+    - type: __version__ # First entry is main for synchronizing
       file: nutree/__init__.py
   max_increment: minor
-  branches:                  # Allowed git branches
+  branches: # Allowed git branches
     - main
 
 tasks:
   # 'check': Assert preconditons and fail otherwise
   - task: check
-    python: ">=3.11"        # SemVer specifier
+    python: ">=3.11" # SemVer specifier
 
   # 'run': Run arbitrary shell command
   - task: exec
-    args: ["tox", "-e", "lint,pyright,mypy"]     # shell command and optional arguments
-    always: true            # `true`: run even in dry-run mode
-    silent: true            # `true`: suppress output
-    ignore_errors: false    # `true`: show warning, but proceed on errors (exit code != 0)
+    args: ["tox", "-e", "lint,pyright,mypy"] # shell command and optional arguments
+    always: true # `true`: run even in dry-run mode
+    silent: true # `true`: suppress output
+    ignore_errors: false # `true`: show warning, but proceed on errors (exit code != 0)
 
   - task: exec
-    args: ["tox"]           # shell command and optional arguments
-    always: true            # `true`: run even in dry-run mode
-    silent: true            # `true`: suppress output
-    ignore_errors: false    # `true`: show warning, but proceed on errors (exit code != 0)
+    args: ["tox"] # shell command and optional arguments
+    always: true # `true`: run even in dry-run mode
+    silent: true # `true`: suppress output
+    ignore_errors: false # `true`: show warning, but proceed on errors (exit code != 0)
 
   # 'bump': version by `--inc` argument
   - task: bump
@@ -38,8 +45,8 @@ tasks:
 
     # 'commit': Commit modified files
   - task: commit
-    add: []                 # Also `git add` these files ('.' for all)
-    add_known: true         # Commit with -a flag
+    add: [] # Also `git add` these files ('.' for all)
+    add_known: true # Commit with -a flag
     message: |
       Bump version to {version}
 
@@ -72,14 +79,14 @@ tasks:
 
   # 'github_release': Create a release on GitHub
   - task: github_release
-    name: 'v{version}'
+    name: "v{version}"
     message: |
       Released {version}
-    
+
       [Changelog](https://github.com/{repo}/blob/master/CHANGELOG.md),
       [Commit details](https://github.com/{repo}/compare/{org_tag_name}...{tag_name}).
     # draft: true
-    prerelease: null  # null: guess from version number format
+    prerelease: null # null: guess from version number format
     upload:
       - sdist
       - bdist_wheel

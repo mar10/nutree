@@ -89,8 +89,8 @@ Documentation = "https://nutree.readthedocs.io/"
 Download = "https://github.com/mar10/nutree/releases/latest"
 
 # --- Setuptools Configuration -------------------------------------------------
-# [tool.setuptools.dynamic]
-# version = {attr = "nutree.__version__"}
+[tool.setuptools.dynamic]
+version = {attr = "nutree.__version__"}
 
 # [tool.setuptools.packages.find]
 # where = ["."]

@@ -2111,7 +2111,6 @@ dev = [
     { name = "sphinxcontrib-mermaid" },
     { name = "tox" },
     { name = "tox-uv" },
-    { name = "twine" },
     { name = "yabs" },
 ]
 
@@ -2154,7 +2153,6 @@ dev = [
     { name = "sphinxcontrib-mermaid" },
     { name = "tox" },
     { name = "tox-uv" },
-    { name = "twine" },
     { name = "yabs" },
 ]
 
