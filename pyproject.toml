@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 # --- Project Metadata ---------------------------------------------------------
 [project]
 name = "nutree"
-dynamic = ["version"]
+version = "1.1.1a1"
 description = "A Python library for tree data structures with an intuitive, yet powerful, API."
 readme = "README.md"
 license = {file = "LICENSE.txt"}
@@ -89,9 +89,6 @@ Documentation = "https://nutree.readthedocs.io/"
 Download = "https://github.com/mar10/nutree/releases/latest"
 
 # --- Setuptools Configuration -------------------------------------------------
-[tool.setuptools.dynamic]
-version = {attr = "nutree.__version__"}
-
 # [tool.setuptools.packages.find]
 # where = ["."]
 # exclude = ["tests*"]

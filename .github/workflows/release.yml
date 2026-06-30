@@ -3,7 +3,7 @@
 # Trigger: push a tag matching v* (e.g. v1.2.0 or v1.2.0rc1).
 #
 # Steps:
-#   1. validate  – verify the tag version matches __version__ in source and run lint + tests.
+#   1. validate  – verify the tag version matches pyproject.toml and run lint + tests.
 #   2. build     – build sdist and wheel; upload as a workflow artifact.
 #   3. github-release – create / update the GitHub Release and attach the artifacts.
 #   4. pypi-publish  – publish to PyPI via Trusted Publisher (OIDC, no API token).
@@ -62,10 +62,10 @@ jobs:
 
       - name: Verify tag/source version match
         run: |
-          PKG_VERSION=$(python -c "import re, pathlib; m = re.search(r'__version__\s*=\s*[\"\'](.*?)[\"\']', pathlib.Path('nutree/__init__.py').read_text()); print(m.group(1))")
+          PKG_VERSION=$(uv version --short)
           TAG_VERSION="${{ steps.tag.outputs.version }}"
           if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::Version mismatch: tag=$TAG_VERSION but nutree/__init__.py has __version__='$PKG_VERSION'"
+            echo "::error::Version mismatch: tag=$TAG_VERSION but pyproject.toml has version='$PKG_VERSION'"
             exit 1
           fi
           echo "Version check passed: $PKG_VERSION"
@@ -101,6 +101,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Build sdist and wheel
         run: uv build
@@ -161,7 +166,7 @@ jobs:
   post-release-bump:
     name: Open post-release version bump PR
     runs-on: ubuntu-latest
-    needs: [github-release, pypi-publish]
+    needs: [validate, github-release, pypi-publish]
     permissions:
       contents: write        # push bump branch
       pull-requests: write   # open PR
@@ -178,35 +183,26 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
       - name: Compute next dev version (next patch .dev1)
         id: bump
         run: |
-          python - <<'EOF'
-          import re, pathlib, os
+          RELEASED="${{ needs.validate.outputs.version }}"
 
-          src = pathlib.Path("nutree/__init__.py").read_text()
-          m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', src)
-          current = m.group(1)
+          # Normalize project version to the released tag value first,
+          # then derive next development version in a deterministic way.
+          uv version "$RELEASED" --frozen
+          uv version --bump patch --frozen
+          uv version --bump dev --frozen
 
-          # Strip any pre-release/dev suffix, then bump patch
-          base = re.sub(r'(\.?(a|b|rc|post|dev)\d+)+$', '', current)
-          parts = base.split(".")
-          parts[-1] = str(int(parts[-1]) + 1)
-          next_dev = ".".join(parts) + ".dev1"
-
-          # Write back
-          new_src = re.sub(
-              r'(__version__\s*=\s*["\'])([^"\']+)(["\'])',
-              lambda mo: f'{mo.group(1)}{next_dev}{mo.group(3)}',
-              src,
-          )
-          pathlib.Path("nutree/__init__.py").write_text(new_src)
-
-          print(f"Bumped {current} -> {next_dev}")
-          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-              fh.write(f"current={current}\n")
-              fh.write(f"next={next_dev}\n")
-          EOF
+          NEXT_DEV=$(uv version --short)
+          echo "Bumped $RELEASED -> $NEXT_DEV"
+          echo "current=$RELEASED" >> "$GITHUB_OUTPUT"
+          echo "next=$NEXT_DEV" >> "$GITHUB_OUTPUT"
 
       - name: Configure git identity
         run: |

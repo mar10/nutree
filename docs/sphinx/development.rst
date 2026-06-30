@@ -134,11 +134,11 @@ Release Steps
 
 2. **Set the release version**
 
-   Edit ``nutree/__init__.py`` and set the final version (PEP 440, no ``-``
-   separators)::
+   Update ``pyproject.toml`` (``[project].version``) to the release version
+   (PEP 440, no ``-`` separators), for example using ``uv version``::
 
-       __version__ = "1.2.0"      # final release
-       __version__ = "1.2.0rc1"   # release candidate (optional)
+       $ uv version 1.2.0      # final release
+       $ uv version 1.2.0rc1   # release candidate (optional)
 
    Version format rules:
 
@@ -155,7 +155,7 @@ Release Steps
 
    The tag **must match** the version string exactly (strip the ``v`` prefix)::
 
-       $ git add CHANGELOG.md nutree/__init__.py
+       $ git add CHANGELOG.md pyproject.toml
        $ git commit -m "Release 1.2.0"
        $ git tag v1.2.0
        $ git push origin main --tags

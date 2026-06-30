@@ -16,7 +16,31 @@ NOTE:
 """
 
 # flake8: noqa
-__version__ = "1.1.1a1"
+from importlib.metadata import PackageNotFoundError, version as dist_version
+from pathlib import Path
+import re
+
+
+def _detect_version() -> str:
+    """Resolve package version from installed metadata or local pyproject.toml."""
+    try:
+        return dist_version("nutree")
+    except PackageNotFoundError:
+        pass
+
+    pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        text = pyproject.read_text(encoding="utf-8")
+        match = re.search(r"^version\s*=\s*['\"]([^'\"]+)['\"]", text, re.MULTILINE)
+        if match:
+            return match.group(1)
+    except OSError:
+        pass
+
+    return "0.0.0"
+
+
+__version__ = _detect_version()
 
 from nutree.common import (
     AmbiguousMatchError,
