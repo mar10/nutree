@@ -140,6 +140,20 @@ Release Steps
        $ uv version 1.2.0      # final release
        $ uv version 1.2.0rc1   # release candidate (optional)
 
+     ``uv`` bump shortcuts are context-sensitive. Use them like this:
+
+     - Current version is pre-release (for example ``1.1.1a1``):
+         ``uv version --bump stable`` -> ``1.1.1``
+     - Current version is development (for example ``1.1.1.dev1``):
+         ``uv version --bump stable`` -> ``1.1.1``
+     - Current version is final (for example ``1.1.1``):
+         ``uv version --bump patch`` -> ``1.1.2``
+
+     .. note::
+
+            Do **not** use ``uv version --bump patch`` when cutting a stable release
+            from ``1.1.1a1`` or ``1.1.1.dev1``: it would jump to ``1.1.2``.
+
    Version format rules:
 
    - Pre-release: ``1.2.0a1``, ``1.2.0b1``, ``1.2.0rc1``
@@ -153,7 +167,9 @@ Release Steps
 
 4. **Commit and tag**
 
-   The tag **must match** the version string exactly (strip the ``v`` prefix)::
+    Create and push a ``v``-prefixed tag whose numeric part matches
+    ``[project].version`` exactly (for example ``v1.2.0`` for version
+    ``1.2.0``)::
 
        $ git add CHANGELOG.md pyproject.toml
        $ git commit -m "Release 1.2.0"
