@@ -50,7 +50,7 @@ random = ["fabulist"]
 all = ["pydot", "rdflib", "graphviz", "fabulist"]
 
 [tool.uv.sources]
-benchman = {path = "../benchman", editable = true}
+# benchman = {path = "../benchman", editable = true}
 
 [dependency-groups]
 dev = [

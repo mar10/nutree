@@ -217,8 +217,8 @@ wheels = [
 
 [[package]]
 name = "benchman"
-version = "0.0.2a1"
-source = { editable = "../benchman" }
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build" },
     { name = "psutil" },
@@ -227,29 +227,9 @@ dependencies = [
     { name = "toml" },
     { name = "typing-extensions" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "build", specifier = ">=1.2.2.post1" },
-    { name = "psutil", specifier = ">=6.1.0" },
-    { name = "snazzy", specifier = ">=0.2.2" },
-    { name = "tablib", extras = ["cli"], specifier = ">=3.7.0" },
-    { name = "toml", specifier = ">=0.10.2" },
-    { name = "typing-extensions", specifier = ">=4.12.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ipykernel", specifier = ">=6.29.5" },
-    { name = "mypy", specifier = ">=1.13.0" },
-    { name = "notebook", specifier = ">=7.2.2" },
-    { name = "pyright", specifier = ">=1.1.390" },
-    { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "pytest-html", specifier = ">=4.1.1" },
-    { name = "tox", specifier = ">=4.23.2" },
-    { name = "tox-uv", specifier = ">=1.16.0" },
-    { name = "yabs", specifier = ">=0.6.1" },
+sdist = { url = "https://files.pythonhosted.org/packages/c7/42/64d69e41b2f20859e528ea8421156ff932a8b3f84d6f4e65bfb3a3fc5f9c/benchman-0.0.1.tar.gz", hash = "sha256:25a4c9434eb1bf9561eb57be37f0de24d0ff9227b6856f81e0c84ca5b3172239", size = 263518, upload-time = "2024-12-27T21:20:52.933Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/67/e9d1279335ade3cee6f9df4ac5d3fcf807c654ef7ec5e81a5a080f18c151/benchman-0.0.1-py3-none-any.whl", hash = "sha256:62ba8c39d25ee546d93dba35fa3ec0547e9b65bb1db4338c787165c1af4b0751", size = 32004, upload-time = "2024-12-27T21:20:49.409Z" },
 ]
 
 [[package]]
@@ -2062,6 +2042,7 @@ wheels = [
 
 [[package]]
 name = "nutree"
+version = "1.1.1a1"
 source = { editable = "." }
 dependencies = [
     { name = "typing-extensions" },
@@ -2130,7 +2111,7 @@ provides-extras = ["graph", "random", "all"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "benchman", editable = "../benchman" },
+    { name = "benchman" },
     { name = "fabulist" },
     { name = "furo" },
     { name = "ipykernel" },
