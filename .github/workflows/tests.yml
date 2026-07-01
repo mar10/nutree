@@ -33,7 +33,7 @@ jobs:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         # Python 3.10 # EOL 2026-10
         # Python 3.11 # EOL 2027-10
