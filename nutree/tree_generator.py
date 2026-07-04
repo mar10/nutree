@@ -11,7 +11,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Union
+from typing import Any
 
 from nutree.common import DictWrapper
 from nutree.node import Node
@@ -93,7 +93,7 @@ class RangeRandomizer(Randomizer):
         self.none_value = none_value
         assert self.max > self.min
 
-    def generate(self) -> Union[float, int, Any, None]:
+    def generate(self) -> float | int | Any | None:
         if self._skip_value():
             return self.none_value
         if self.is_float:
@@ -124,7 +124,7 @@ class DateRangeRandomizer(Randomizer):
         min_dt: date,
         max_dt: date | int,
         *,
-        as_js_stamp=True,
+        as_js_stamp: bool = True,
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
@@ -147,7 +147,7 @@ class DateRangeRandomizer(Randomizer):
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
 
-    def generate(self) -> Union[date, float, None]:
+    def generate(self) -> date | float | None:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
             return None
@@ -197,7 +197,11 @@ class SampleRandomizer(Randomizer):
     """
 
     def __init__(
-        self, sample_list: Sequence, *, counts=None, probability: float = 1.0
+        self,
+        sample_list: Sequence,
+        *,
+        counts: list | None = None,
+        probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
         self.sample_list = sample_list
@@ -346,7 +350,7 @@ def _make_tree(
     types: dict,
     relations: dict,
     prefix: str,
-):
+) -> None:
     child_specs = relations[parent_type]
 
     for node_type, spec in child_specs.items():

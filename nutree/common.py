@@ -13,18 +13,11 @@ import io
 import sys
 import warnings
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Literal,
-    Union,
-)
+from typing import IO, TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
@@ -127,7 +120,7 @@ class SkipBranch(IterationControl):
     If `and_self` is false, some iterators will consider the node's children only.
     """
 
-    def __init__(self, *, and_self=None):
+    def __init__(self, *, and_self: bool | None = None) -> None:
         self.and_self = and_self
 
 
@@ -144,21 +137,21 @@ class StopTraversal(IterationControl):
     ``StopTraversal(None)`` exception.
     """
 
-    def __init__(self, value=None):
+    def __init__(self, value: Any = None) -> None:
         self.value = value
 
 
 #: Type of ``Node.data_id``
-DataIdType = Union[str, int]
+DataIdType = str | int
 
 #: Type of ``Tree(..., calc_data_id)```
 CalcIdCallbackType = Callable[["Tree", Any], DataIdType]
 
-#: Type of ``format(..., repr=)```
-ReprArgType = Union[str, Callable[["Node"], str]]
+#: Type of ``format(..., repr=)``
+ReprArgType = str | Callable[["Node"], str]
 
 #: A dict of scalar values
-FlatJsonDictType = dict[str, Union[str, int, float, bool, None]]
+FlatJsonDictType = dict[str, str | int | float | bool | None]
 
 #: Type of ``tree.save(..., key_map)``
 KeyMapType = dict[str, str]
@@ -171,41 +164,41 @@ ValueMapType = dict[str, list[str]]
 ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
-MapperCallbackType = Callable[["Node", dict], Union[None, Any]]
+MapperCallbackType = Callable[["Node", dict], None | Any]
 
 #: Callback for `tree.save()`
-SerializeMapperType = Callable[["Node", dict], Union[None, dict]]
+SerializeMapperType = Callable[["Node", dict], None | dict]
 
 #: Callback for `tree.load()`
-DeserializeMapperType = Callable[["Node", dict], Union[str, object]]
+DeserializeMapperType = Callable[["Node", dict], str | object]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
 PredicateCallbackType = Callable[
-    ["Node"], Union[None, bool, IterationControl, type[IterationControl]]
+    ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
 #:
-MatchArgumentType = Union[str, PredicateCallbackType, list, tuple, Any]
+MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 
 #:
 TraversalCallbackType = Callable[
     ["Node", Any],
-    Union[
-        None,
-        bool,
-        SkipBranch,
-        StopTraversal,
-        type[SkipBranch],
-        type[StopTraversal],
-        type[StopIteration],
-    ],
+    None
+    | bool
+    | SkipBranch
+    | StopTraversal
+    | type[SkipBranch]
+    | type[StopTraversal]
+    | type[StopIteration],
 ]
 #: Callback for `tree.sort(key=...)`
 SortKeyType = Callable[["Node"], Any]
 # SortKeyType = Callable[[Node], SupportsLess]
 
 #: Node connector prefixes, for use with ``format(style=...)`` argument.
-CONNECTORS = {
+CONNECTORS: dict[
+    str, tuple[str, str, str, str] | tuple[str, str, str, str, str, str]
+] = {
     "space1": (" ", " ", " ", " "),
     "space2": ("  ", "  ", "  ", "  "),
     "space3": ("   ", "   ", "   ", "   "),
@@ -256,7 +249,7 @@ class DictWrapper:
 
     __slots__ = ("_dict",)
 
-    def __init__(self, dict_inst: dict | None = None, **values) -> None:
+    def __init__(self, dict_inst: dict | None = None, **values: Any) -> None:
         self._dict: dict = {}
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
@@ -270,10 +263,10 @@ class DictWrapper:
             # store them in a new dictionary
             self._dict = values
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self._dict}>"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # We return the id of the dict object, which is unique and stable.
         # Calculating a hash from the dict content is too expensive and would
         # not work anyway, since the result is used as a key in a reference map
@@ -282,7 +275,7 @@ class DictWrapper:
         # multiple times to the same tree.
         return id(self._dict)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, DictWrapper):
             d2 = other._dict
         elif isinstance(other, dict):
@@ -300,7 +293,7 @@ class DictWrapper:
                 return False
         return True
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         """Allow to access values as items.
 
         Example::
@@ -309,7 +302,7 @@ class DictWrapper:
         """
         self._dict[key] = value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         """Allow to access values as items.
 
         E.g. ``foo = node.data["foo"]`` instead of `` foo = node.data._dict["foo"]``.
@@ -336,7 +329,7 @@ class DictWrapper:
     #         raise AttributeError(name) from None
 
     @classmethod
-    def serialize_mapper(cls, nutree_node: Node, data: dict) -> Union[None, dict]:
+    def serialize_mapper(cls, nutree_node: Node, data: dict) -> None | dict:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -348,7 +341,7 @@ class DictWrapper:
         return nutree_node.data._dict.copy()
 
     @classmethod
-    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> Union[str, object]:
+    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> str | object:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -364,7 +357,7 @@ def get_version() -> str:
     return __version__
 
 
-def check_python_version(min_version: tuple[Union[str, int], Union[str, int]]) -> bool:
+def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     """Check for deprecated Python version."""
     if sys.version_info < min_version:
         min_ver = ".".join([str(s) for s in min_version[:3]])

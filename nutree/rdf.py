@@ -15,7 +15,8 @@ Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdfli
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from nutree.common import IterationControl
 
@@ -37,7 +38,7 @@ except ImportError:
     RDF = XSD = DefinedNamespace = Namespace = None
 
 
-RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], Union[None, bool]]
+RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], None | bool]
 
 
 if rdflib:
