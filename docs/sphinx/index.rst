@@ -49,9 +49,11 @@ Nutree Facts
   * :ref:`Convert to RDF graph <save-rdf>`
   * :ref:`Fully type annotated <api-reference>`
   * :ref:`Typed child nodes <typed-tree>`
+  * :ref:`Memory efficient <meta-data>`
   * :ref:`Pretty print <pretty-print>`
   * :ref:`Navigation <navigate>`
   * :ref:`Filtering <mutation>`
+  * `Fast <ug_benchmarks.html>`_
 
 
 

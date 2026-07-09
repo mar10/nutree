@@ -6,7 +6,9 @@
 [![License](https://img.shields.io/pypi/l/nutree.svg)](https://github.com/mar10/nutree/blob/main/LICENSE.txt)
 [![Documentation Status](https://readthedocs.org/projects/nutree/badge/?version=latest)](http://nutree.readthedocs.io/)
 [![Released with: Yabs](https://img.shields.io/badge/released%20with-yabs-yellowgreen)](https://github.com/mar10/yabs)
-[![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree)
+[![Downloads](https://img.shields.io/pypi/dm/nutree.svg)](https://pypi.python.org/pypi/nutree/)
+
+<!-- [![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree) -->
 
 > _Nutree_ is a Python library for tree data structures with an intuitive,
 > yet powerful, API.
@@ -26,9 +28,11 @@ Generate random trees <br>
 Convert to RDF graph <br>
 Fully type annotated <br>
 Typed child nodes <br>
+Memory efficient <br>
 Pretty print <br>
 Navigation <br>
 Filtering <br>
+Fast <br>
 
 **Example**
 

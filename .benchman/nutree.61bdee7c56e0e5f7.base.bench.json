@@ -1,0 +1,1535 @@
+{
+  "combine_date": "2024-12-27T21:32:29.559992+00:00",
+  "context": {
+    "client": "61bdee7c56e0e5f7",
+    "debug_mode": false,
+    "hardware": "arm64_16_GB",
+    "project": "nutree",
+    "system": "Darwin_24.1.0",
+    "tag": "latest",
+    "version": "0.11.2a1"
+  },
+  "data": [
+    {
+      "elap": 1.879025125,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 6.309943375,
+      "timings": [
+        2.9388320800000045e-07,
+        2.7261066700000036e-07,
+        2.6684075000000005e-07,
+        2.6863754200000046e-07,
+        2.710235839999999e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 0.23445079202065244,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435956.673530833,
+      "timings": [
+        0.2080998329911381
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.888255707999999,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 12.759410083,
+      "timings": [
+        2.6516683300000034e-06,
+        2.6543870800000136e-06,
+        2.6532808299999998e-06,
+        2.705696660000001e-06,
+        2.679816249999991e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 1.359946041018702,
+      "iterations": 500000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435951.66399325,
+      "timings": [
+        4.058725840877742e-07,
+        4.0251275000628085e-07,
+        3.998702500248328e-07,
+        3.9922266802750527e-07,
+        3.9841258397791534e-07
+      ],
+      "variant": "for _ in tree.iterator(UNORDERED): ..."
+    },
+    {
+      "elap": 0.1939362910343334,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435954.6782625,
+      "timings": [
+        0.1490553340408951
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 0.32471949997125193,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435956.239044375,
+      "timings": [
+        0.3245403750333935
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 2.1866160000208765,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435946.600838458,
+      "timings": [
+        3.15199083997868e-06,
+        3.1414283299818635e-06,
+        3.1392304197652264e-06,
+        3.1415054097305985e-06,
+        3.133815000182949e-06
+      ],
+      "variant": "for _ in tree.iterator(POST_ORDER): ..."
+    },
+    {
+      "elap": 0.23767220799999933,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 28.848162583,
+      "timings": [
+        0.2029996660000002
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 0.28600579098565504,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435954.005476375,
+      "timings": [
+        0.28585333295632154
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 0.30567366699688137,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435954.289086333,
+      "timings": [
+        0.30547970900079235
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 1.9434720410000006,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 4.366033,
+      "timings": [
+        2.742077079999996e-07,
+        2.756102089999999e-07,
+        2.768199579999999e-07,
+        2.7653975000000043e-07,
+        2.7508749999999973e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.5654468329739757,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435949.0980855,
+      "timings": [
+        1.8251943751238287e-06,
+        1.8265864599379712e-06,
+        1.935386874829419e-06,
+        1.8289204148459247e-06,
+        1.8299822899280115e-06
+      ],
+      "variant": "for _ in tree.iterator(RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 2.1243196669965982,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435953.024355791,
+      "timings": [
+        1.6103431250667198e-06,
+        1.5134504201705568e-06,
+        1.5143662499031052e-06,
+        1.513507914787624e-06,
+        1.5196564598591067e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 0.20720454200636595,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435955.570214833,
+      "timings": [
+        0.17099062498891726
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 1.722915499994997,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435942.313472208,
+      "timings": [
+        1.2223614598042332e-06,
+        1.226107919937931e-06,
+        1.2255139599437826e-06,
+        1.226421045139432e-06,
+        1.2303943748702296e-06
+      ],
+      "variant": "for _ in tree.iterator(LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 0.23351870800000185,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 30.92470375,
+      "timings": [
+        0.20377599999999774
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.323873333982192,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435928.264699916,
+      "timings": [
+        3.5818591609131546e-07,
+        3.4776633407454937e-07,
+        3.4938408399466424e-07,
+        4.0771791606675833e-07,
+        4.1623500001151117e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 2.054999875021167,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435936.475252416,
+      "timings": [
+        2.9700979095650837e-08,
+        2.954680830007419e-08,
+        2.9401625000173225e-08,
+        2.9461737495148556e-08,
+        3.163041250081733e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.6980046660173684,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435942.133219125,
+      "timings": [
+        1.927068539953325e-06,
+        1.9226408351096323e-06,
+        1.9319452048512175e-06,
+        1.908413959899917e-06,
+        1.931498749763705e-06
+      ],
+      "variant": "for _ in tree.iterator(LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 0.17356137500610203,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435954.29178825,
+      "timings": [
+        0.14802125003188848
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 2.816223166999407,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435950.578464166,
+      "timings": [
+        2.00146521005081e-06,
+        2.016233544854913e-06,
+        2.0123108348343523e-06,
+        2.015126874903217e-06,
+        1.9979460400645622e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 1.9867887499858625,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435931.359950166,
+      "timings": [
+        1.4125374998548069e-07,
+        1.415208124963101e-07,
+        1.4076472949818709e-07,
+        1.4115337500697934e-07,
+        1.5418183300062082e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 1.583960791991558,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435947.513661291,
+      "timings": [
+        2.307241249945946e-06,
+        2.2919366700807585e-06,
+        2.303882919950411e-06,
+        2.303918749676086e-06,
+        2.291633750428446e-06
+      ],
+      "variant": "for _ in tree.iterator(POST_ORDER): ..."
+    },
+    {
+      "elap": 0.18889250000938773,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435954.786306916,
+      "timings": [
+        0.16316562501015142
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 0.27257137501146644,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435953.56273475,
+      "timings": [
+        0.2723865419975482
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 0.5678622919949703,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435955.794345416,
+      "timings": [
+        0.5676808750140481
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.7050586250261404,
+      "iterations": 500000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435950.556942333,
+      "timings": [
+        4.943419159390032e-07,
+        4.92126083932817e-07,
+        4.957195820752531e-07,
+        4.943255840335041e-07,
+        5.027715000323951e-07
+      ],
+      "variant": "for _ in tree.iterator(UNORDERED): ..."
+    },
+    {
+      "elap": 1.9452532079885714,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435952.3669565,
+      "timings": [
+        1.38945833517937e-06,
+        1.3842133298749105e-06,
+        1.4903327048523352e-06,
+        1.3829322898527606e-06,
+        1.3907443749485538e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 1.7685781249892898,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435944.831745458,
+      "timings": [
+        2.579723329981789e-06,
+        2.567929159849882e-06,
+        2.5697854202007875e-06,
+        2.568831670214422e-06,
+        2.566006249981001e-06
+      ],
+      "variant": "for _ in tree.iterator(PRE_ORDER): ..."
+    },
+    {
+      "elap": 2.4839111249893904,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435945.377573541,
+      "timings": [
+        1.7668266649707221e-06,
+        1.885392709809821e-06,
+        1.766377290186938e-06,
+        1.7811587499454617e-06,
+        1.7710931249894202e-06
+      ],
+      "variant": "for _ in tree.iterator(RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 0.1868802919634618,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435955.118030666,
+      "timings": [
+        0.15886929200496525
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 0.22998558299150318,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435955.339963458,
+      "timings": [
+        0.22978741599945351
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 2.100093624962028,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435929.589130625,
+      "timings": [
+        1.489553959982004e-07,
+        1.5058435400715098e-07,
+        1.6693570799543521e-07,
+        1.4780189548037015e-07,
+        1.4795660402160138e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.9461581250070594,
+      "iterations": 50000000,
+      "name": "access node.data",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435935.616397458,
+      "timings": [
+        8.678273339755833e-09,
+        8.74585915938951e-09,
+        8.599877499509603e-09,
+        8.610334999393672e-09,
+        9.159491679165513e-09
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.39747670898214,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435938.564050666,
+      "timings": [
+        1.731518335000146e-06,
+        1.6952827101340517e-06,
+        1.7003343752003274e-06,
+        1.7275191651424393e-06,
+        1.687496039958205e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.16941141698043793,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435953.835627083,
+      "timings": [
+        0.14489166700514033
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 0.19197841599816456,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435956.564160875,
+      "timings": [
+        0.16515712498221546
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 1.8161426659789868,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435952.262429375,
+      "timings": [
+        2.6224233297398315e-06,
+        2.596846250235103e-06,
+        2.605844170320779e-06,
+        2.82442124967929e-06,
+        2.5950524996733295e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 1.7988457920000016,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 23.087533208,
+      "timings": [
+        2.5672866700000086e-06,
+        2.5809979199999945e-06,
+        2.5754470900000113e-06,
+        2.811245830000004e-06,
+        2.561269579999994e-06
+      ],
+      "variant": "for _ in tree.iterator(RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 1.771161166999999,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 26.569842458,
+      "timings": [
+        2.542294579999975e-06,
+        2.5502841599999827e-06,
+        2.7531558400000123e-06,
+        2.532317079999977e-06,
+        2.544261660000018e-06
+      ],
+      "variant": "tree.visit(lambda node, memo: None)"
+    },
+    {
+      "elap": 2.203464916034136,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435931.638303625,
+      "timings": [
+        1.5645241650054232e-07,
+        1.5713854151545093e-07,
+        1.6945670850691386e-07,
+        1.5676022949628533e-07,
+        1.5653922950150444e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 2.203962249972392,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435937.998066083,
+      "timings": [
+        1.5340014599496499e-06,
+        1.7980935401283205e-06,
+        1.5370147899375298e-06,
+        1.5272481247666292e-06,
+        1.5276845850166864e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.660008332983125,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435956.013199375,
+      "timings": [
+        0.6598544159787707
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.3024402919691056,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435928.194187041,
+      "timings": [
+        3.608238340821117e-07,
+        3.422475840197876e-07,
+        3.435819159494713e-07,
+        4.0363183396402747e-07,
+        4.116369179682806e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 1.820829792,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 2.544589333,
+      "timings": [
+        6.398550840000006e-07,
+        5.174257499999992e-07,
+        5.162199159999999e-07,
+        5.193174999999997e-07,
+        5.222110000000005e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 0.2157112910063006,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435954.462194625,
+      "timings": [
+        0.21457800001371652
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 0.1831993330270052,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435956.362509875,
+      "timings": [
+        0.15565620799316093
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 0.32014629198238254,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435954.465858791,
+      "timings": [
+        0.3199805000331253
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 1.7745953749981709,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435940.358269208,
+      "timings": [
+        2.5634258304489776e-06,
+        2.5752362504135815e-06,
+        2.56280500034336e-06,
+        2.5775450002402068e-06,
+        2.5646645802771674e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.24466266599483788,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435954.872629875,
+      "timings": [
+        0.24446549999993294
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 2.3786546670016833,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435945.134487791,
+      "timings": [
+        1.6896133351838217e-06,
+        1.6919910401338712e-06,
+        1.8125854199752212e-06,
+        1.694877080153674e-06,
+        1.7090718750841915e-06
+      ],
+      "variant": "for _ in tree.iterator(PRE_ORDER): ..."
+    },
+    {
+      "elap": 0.6264578749999998,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 30.297912208,
+      "timings": [
+        0.6262254170000006
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 2.3459407500340603,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435940.962069208,
+      "timings": [
+        1.6659877100028097e-06,
+        1.6831062501296401e-06,
+        1.6688604198861867e-06,
+        1.8046491651330142e-06,
+        1.6721404148847796e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.2934847499999975,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 28.554340708,
+      "timings": [
+        0.2932338329999986
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 1.7558224169770256,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435930.321662208,
+      "timings": [
+        2.858841660199687e-07,
+        2.4674920900724827e-07,
+        2.486434169695713e-07,
+        2.483698330470361e-07,
+        2.4899137503234667e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 0.22615220898296684,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435954.595063791,
+      "timings": [
+        0.20041320798918605
+      ],
+      "variant": "uncompressed ('.json')"
+    },
+    {
+      "elap": 1.6878737079678103,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435932.078073583,
+      "timings": [
+        2.4105170799884947e-07,
+        2.4073170794872567e-07,
+        2.6976274995831774e-07,
+        2.40396499983035e-07,
+        2.404870840255171e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 0.23229699995135888,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435955.780491041,
+      "timings": [
+        0.2079884170088917
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 1.768588374950923,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435948.787892458,
+      "timings": [
+        2.5864479201845826e-06,
+        2.5557591702090575e-06,
+        2.555790829937905e-06,
+        2.563935409998521e-06,
+        2.557413330068812e-06
+      ],
+      "variant": "for _ in tree.iterator(RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 2.5535197499999995,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 8.190563791,
+      "timings": [
+        7.499484999999986e-08,
+        7.513561660000008e-08,
+        7.569620820000011e-08,
+        7.508731660000017e-08,
+        7.539572499999991e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 0.5663362499908544,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435956.756555458,
+      "timings": [
+        0.5661617909790948
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 2.2151105420000015,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 20.871938458,
+      "timings": [
+        3.217069170000002e-06,
+        3.200510839999993e-06,
+        3.222673329999992e-06,
+        3.209802080000017e-06,
+        3.2122650000000163e-06
+      ],
+      "variant": "for _ in tree.iterator(POST_ORDER): ..."
+    },
+    {
+      "elap": 2.092240874946583,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435929.2663165,
+      "timings": [
+        1.455290835001506e-07,
+        1.4542381250066683e-07,
+        1.446687290153932e-07,
+        1.6563285450683906e-07,
+        1.45237854012521e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.3435257090022787,
+      "iterations": 1000000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435950.022980666,
+      "timings": [
+        3.3761329198023305e-07,
+        3.3731962501769883e-07,
+        3.363305840175599e-07,
+        3.3586233301321047e-07,
+        3.390626669861376e-07
+      ],
+      "variant": "for _ in tree.iterator(UNORDERED): ..."
+    },
+    {
+      "elap": 1.6799284580047242,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435933.778104875,
+      "timings": [
+        4.94724249932915e-08,
+        5.032126660225913e-08,
+        4.921684160362929e-08,
+        4.9082375003490596e-08,
+        4.9340416595805434e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 0.2676840830245055,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435955.777794958,
+      "timings": [
+        0.2675059589673765
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 0.19276195799466223,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435956.04577225,
+      "timings": [
+        0.1638718749745749
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 2.1406887500197627,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435929.497135708,
+      "timings": [
+        1.5127574998768978e-07,
+        1.5078331247786992e-07,
+        1.7198493747855538e-07,
+        1.5129750000778587e-07,
+        1.511933954898268e-07
+      ],
+      "variant": "find()"
+    },
+    {
+      "elap": 2.7162752500153147,
+      "iterations": 1000000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435947.861847541,
+      "timings": [
+        3.9437945798272265e-07,
+        3.9449074998265134e-07,
+        3.9407295803539456e-07,
+        3.943203749950044e-07,
+        3.942029160098173e-07
+      ],
+      "variant": "for _ in tree.iterator(UNORDERED): ..."
+    },
+    {
+      "elap": 2.5381901250220835,
+      "iterations": 50000000,
+      "name": "access node.data",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435935.458531708,
+      "timings": [
+        7.457043339964003e-09,
+        7.463611660059541e-09,
+        7.536743340315297e-09,
+        7.44422834017314e-09,
+        7.500530820107088e-09
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.110569750017021,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435940.202452375,
+      "timings": [
+        1.5137352052261122e-06,
+        1.5104604148655198e-06,
+        1.5080489599495195e-06,
+        1.5160241650301032e-06,
+        1.5261158350040205e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 1.8865746670000014,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 18.984876041,
+      "timings": [
+        2.699959579999991e-06,
+        2.703660840000026e-06,
+        2.695544589999983e-06,
+        2.70173125000003e-06,
+        2.9324225000000224e-06
+      ],
+      "variant": "for _ in tree.iterator(PRE_ORDER): ..."
+    },
+    {
+      "elap": 0.2705083330000022,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 30.026953125,
+      "timings": [
+        0.2399419999999992
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 0.19616562500596046,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435955.569589041,
+      "timings": [
+        0.16162895900197327
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.8255943339900114,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.12.6",
+      "sample_size": 8,
+      "start_time": 435943.308422791,
+      "timings": [
+        1.3188179148710334e-06,
+        1.3098697949317285e-06,
+        1.3150939598563127e-06,
+        1.3188087497837842e-06,
+        1.3093960451078602e-06
+      ],
+      "variant": "for _ in tree.iterator(LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 1.7727552499854937,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435933.843212125,
+      "timings": [
+        5.2023224998265506e-08,
+        5.26530749979429e-08,
+        5.214526660274714e-08,
+        5.2103049994912e-08,
+        5.221042499179021e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 2.170303916966077,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435939.866904416,
+      "timings": [
+        1.5633804150274955e-06,
+        1.5621808348805644e-06,
+        1.5543943751254118e-06,
+        1.5565447899280116e-06,
+        1.5520858301897534e-06
+      ],
+      "variant": "for _ in tree.iterator(LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 0.2813159580109641,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435955.305359,
+      "timings": [
+        0.28107295802328736
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 2.013351125,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 10.744530458,
+      "timings": [
+        2.885362090000001e-08,
+        2.883114589999991e-08,
+        2.8644645800000035e-08,
+        3.1283625000000014e-08,
+        2.8915425000000107e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 2.112843124952633,
+      "iterations": 1000000,
+      "name": "search",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435927.152949833,
+      "timings": [
+        2.8903962497133764e-07,
+        2.878984170383774e-07,
+        3.571322500356473e-07,
+        2.873634590068832e-07,
+        3.146265420364216e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 1.5702493750141002,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435938.296215625,
+      "timings": [
+        2.1542374999262392e-06,
+        2.714030829956755e-06,
+        2.1930470800725743e-06,
+        2.138251250144094e-06,
+        2.147827500011772e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.33350454099999993,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 29.0862005,
+      "timings": [
+        0.3333562910000012
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 1.5381942089879885,
+      "iterations": 10000000,
+      "name": "access node.data",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435935.260932541,
+      "timings": [
+        2.2449108399450778e-08,
+        2.2265779104782268e-08,
+        2.2355554095702244e-08,
+        2.2380341700045393e-08,
+        2.2281308402307333e-08
+      ],
+      "variant": "node._data (attr)"
+    },
+    {
+      "elap": 0.23578479199204594,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435955.166285041,
+      "timings": [
+        0.2096443329937756
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 1.9122302499599755,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435933.348216,
+      "timings": [
+        5.6989691592752935e-08,
+        5.6074408395215866e-08,
+        5.665572499856353e-08,
+        5.646135839633644e-08,
+        5.628111659316346e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 1.8462202079826966,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435943.530923875,
+      "timings": [
+        2.684878750005737e-06,
+        2.6744420797331257e-06,
+        2.6668512501055376e-06,
+        2.667028330033645e-06,
+        2.6912724995054303e-06
+      ],
+      "variant": "for _ in tree.iterator(POST_ORDER): ..."
+    },
+    {
+      "elap": 1.826052125019487,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435938.531829416,
+      "timings": [
+        3.1441087502753364e-06,
+        2.553851249977015e-06,
+        2.558372079511173e-06,
+        2.5611616601236164e-06,
+        2.573229999979958e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 2.503180624999999,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 16.480977666,
+      "timings": [
+        1.787901250000008e-06,
+        1.7882185399999884e-06,
+        1.7760841650000003e-06,
+        1.7891391649999911e-06,
+        1.7777964600000119e-06
+      ],
+      "variant": "for _ in tree.iterator(LEVEL_ORDER): ..."
+    },
+    {
+      "elap": 2.4190120000275783,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435947.603550041,
+      "timings": [
+        1.7283818751457147e-06,
+        1.7477204150054605e-06,
+        1.740352289925795e-06,
+        1.7490047949831932e-06,
+        1.7397760399035178e-06
+      ],
+      "variant": "for _ in tree.iterator(RANDOM_ORDER): ..."
+    },
+    {
+      "elap": 1.6821404999999992,
+      "iterations": 500000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 24.88694325,
+      "timings": [
+        4.913080840000034e-07,
+        4.967719180000004e-07,
+        5.036882499999962e-07,
+        4.956293320000001e-07,
+        4.95182333999999e-07
+      ],
+      "variant": "for _ in tree.iterator(UNORDERED): ..."
+    },
+    {
+      "elap": 0.1938899999950081,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.12.6",
+      "sample_size": 1,
+      "start_time": 435957.323216375,
+      "timings": [
+        0.16737300000386313
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 1.495163333020173,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435936.800559958,
+      "timings": [
+        2.1665849996497853e-06,
+        2.1579283301252874e-06,
+        2.1572004200425e-06,
+        2.1612608298892157e-06,
+        2.1671491698361934e-06
+      ],
+      "variant": "for _ in tree: ..."
+    },
+    {
+      "elap": 0.3777089170180261,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435955.402499541,
+      "timings": [
+        0.37755354098044336
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 1.492943125020247,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.11.10",
+      "sample_size": 8,
+      "start_time": 435942.0376405,
+      "timings": [
+        2.1246729203267025e-06,
+        2.3566075001144783e-06,
+        2.1086049999576064e-06,
+        2.142283329740167e-06,
+        2.142948330147192e-06
+      ],
+      "variant": "for _ in tree.iterator(PRE_ORDER): ..."
+    },
+    {
+      "elap": 0.2068745830329135,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.13.0rc3+",
+      "sample_size": 1,
+      "start_time": 435955.586978625,
+      "timings": [
+        0.1747563750250265
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 2.086841624986846,
+      "iterations": 2000000,
+      "name": "search",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435931.689693916,
+      "timings": [
+        1.4848029147833585e-07,
+        1.4840583348996006e-07,
+        1.6297093752655202e-07,
+        1.4845862501533702e-07,
+        1.4774620800744742e-07
+      ],
+      "variant": "find_all()"
+    },
+    {
+      "elap": 2.70733179198578,
+      "iterations": 5000000,
+      "name": "access node.data",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435933.767454041,
+      "timings": [
+        8.050535839283839e-08,
+        7.940759999910369e-08,
+        7.95854999916628e-08,
+        8.021862499881536e-08,
+        7.92650418006815e-08
+      ],
+      "variant": "node.data (property)"
+    },
+    {
+      "elap": 0.5936122090206482,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.11.10",
+      "sample_size": 1,
+      "start_time": 435954.975603166,
+      "timings": [
+        0.5934554159757681
+      ],
+      "variant": "ZIP_LZMA ('.lzma')"
+    },
+    {
+      "elap": 2.09840587497456,
+      "iterations": 200000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435944.036857708,
+      "timings": [
+        1.5107052051462232e-06,
+        1.497782499936875e-06,
+        1.5204572951188312e-06,
+        1.5067147900117562e-06,
+        1.5128070852370002e-06
+      ],
+      "variant": "for _ in tree.iterator(PRE_ORDER): ..."
+    },
+    {
+      "elap": 1.4672455409890972,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.13.0rc3+",
+      "sample_size": 8,
+      "start_time": 435946.135727125,
+      "timings": [
+        2.100178329856135e-06,
+        2.314192919875495e-06,
+        2.0903537498088552e-06,
+        2.1205537498462947e-06,
+        2.0881470799213276e-06
+      ],
+      "variant": "for _ in tree.iterator(POST_ORDER): ..."
+    },
+    {
+      "elap": 1.8323127499999998,
+      "iterations": 100000,
+      "name": "iterate",
+      "python": "3.9.20",
+      "sample_size": 8,
+      "start_time": 14.648176,
+      "timings": [
+        2.6394345799999997e-06,
+        2.6552329199999924e-06,
+        2.6577254200000054e-06,
+        2.675879170000002e-06,
+        2.6663029199999854e-06
+      ],
+      "variant": "for _ in tree.iterator(): ..."
+    },
+    {
+      "elap": 0.3528744580000023,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 29.673738458,
+      "timings": [
+        0.3527137499999995
+      ],
+      "variant": "ZIP_BZIP2 ('.bz2')"
+    },
+    {
+      "elap": 1.7249543750076555,
+      "iterations": 500000,
+      "name": "search",
+      "python": "3.10.15",
+      "sample_size": 8,
+      "start_time": 435928.596118125,
+      "timings": [
+        5.456825819564983e-07,
+        5.54217666038312e-07,
+        4.884732500649989e-07,
+        4.87423583981581e-07,
+        4.873494160128757e-07
+      ],
+      "variant": "by index"
+    },
+    {
+      "elap": 0.25318749999999923,
+      "iterations": 1,
+      "name": "serialize_load",
+      "python": "3.9.20",
+      "sample_size": 1,
+      "start_time": 29.420049375,
+      "timings": [
+        0.208984375
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    },
+    {
+      "elap": 0.3441679999814369,
+      "iterations": 1,
+      "name": "serialize_save",
+      "python": "3.10.15",
+      "sample_size": 1,
+      "start_time": 435954.821688333,
+      "timings": [
+        0.3440127090434544
+      ],
+      "variant": "ZIP_DEFLATED ('.zip')"
+    }
+  ],
+  "tag": "base"
+}

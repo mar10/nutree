@@ -15,8 +15,9 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, Iterator, Type, cast, final
+from typing import IO, cast, final
 
 # typing.Self requires Python 3.11
 from typing_extensions import Any, Self
@@ -26,6 +27,7 @@ from nutree.common import (
     ROOT_NODE_ID,
     DataIdType,
     DeserializeMapperType,
+    IterMethod,
     KeyMapType,
     MapperCallbackType,
     PredicateCallbackType,
@@ -100,7 +102,7 @@ class TypedNode(Node[TData]):
     def kind(self) -> str:
         return self._kind
 
-    def get_children(self, kind: str | Type[ANY_KIND]) -> list[Self]:
+    def get_children(self, kind: str | type[ANY_KIND]) -> list[Self]:
         """Return list of direct child nodes of a given type (list may be empty)."""
         all_children = self._children
         if not all_children:
@@ -109,7 +111,7 @@ class TypedNode(Node[TData]):
             return all_children
         return list(filter(lambda n: n._kind == kind, all_children))
 
-    def first_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
+    def first_child(self, kind: str | type[ANY_KIND]) -> Self | None:
         """First direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -122,7 +124,7 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def last_child(self, kind: str | Type[ANY_KIND]) -> Self | None:
+    def last_child(self, kind: str | type[ANY_KIND]) -> Self | None:
         """Last direct child node or None if no children exist."""
         all_children = self._children
         if not all_children:
@@ -136,13 +138,47 @@ class TypedNode(Node[TData]):
                 return n
         return None
 
-    def has_children(self, kind: str | Type[ANY_KIND]) -> bool:
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        add_self: bool = False,
+        kind: str | type[ANY_KIND] = ANY_KIND,
+    ) -> Iterator[TypedNode[TData]]:
+        """Return an iterator that walks the tree in the specified order."""
+        if kind is ANY_KIND:
+            yield from super().iterator(method=method, add_self=add_self)
+            return
+
+        if add_self and self.kind == kind:
+            yield self
+        for n in super().iterator(method=method, add_self=False):
+            if n.kind == kind:
+                yield n
+        return
+
+    def has_children(self, kind: str | type[ANY_KIND]) -> bool:
         """Return true if this node has one or more children."""
         if kind is ANY_KIND:
             return bool(self._children)
         return len(self.get_children(kind)) > 1
 
-    def get_siblings(self, *, add_self=False, any_kind=False) -> list[Self]:
+    def count_descendants(
+        self, *, leaves_only: bool = False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of descendant nodes, not counting self."""
+        if kind is ANY_KIND:
+            return super().count_descendants(leaves_only=leaves_only)
+        all = not leaves_only
+        i = 0
+        for node in self.iterator():
+            if (all or not node._children) and node.kind == kind:
+                i += 1
+        return i
+
+    def get_siblings(
+        self, *, add_self: bool = False, any_kind: bool = False
+    ) -> list[Self]:
         """Return a list of all sibling entries of self (excluding self) if any."""
         if any_kind:
             return super().get_siblings(add_self=add_self)
@@ -150,7 +186,7 @@ class TypedNode(Node[TData]):
         rel = self.kind
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
 
-    def first_sibling(self, *, any_kind=False) -> Self:
+    def first_sibling(self, *, any_kind: bool = False) -> Self:
         """Return first sibling `of the same kind` (may be self)."""
         pc = self._parent.children
         if any_kind:
@@ -160,7 +196,7 @@ class TypedNode(Node[TData]):
                 return n
         raise AssertionError("Internal error")  # pragma: no cover
 
-    def last_sibling(self, *, any_kind=False) -> Self:
+    def last_sibling(self, *, any_kind: bool = False) -> Self:
         """Return last sibling `of the same kind` (may be self)."""
         pc = self._parent.children
         if any_kind:
@@ -170,7 +206,7 @@ class TypedNode(Node[TData]):
                 return n
         raise AssertionError("Internal error")  # pragma: no cover
 
-    def prev_sibling(self, *, any_kind=False) -> Self | None:
+    def prev_sibling(self, *, any_kind: bool = False) -> Self | None:
         """Return predecessor `of the same kind` or None if node is first sibling."""
         pc = self._parent.children
         own_idx = pc.index(self)
@@ -181,7 +217,7 @@ class TypedNode(Node[TData]):
                     return n
         return None
 
-    def next_sibling(self, *, any_kind=False) -> Self | None:
+    def next_sibling(self, *, any_kind: bool = False) -> Self | None:
         """Return successor `of the same kind` or None if node is last sibling."""
         pc = self._parent.children
         pc_len = len(pc)
@@ -194,7 +230,7 @@ class TypedNode(Node[TData]):
                     return n
         return None
 
-    def get_index(self, *, any_kind=False) -> int:
+    def get_index(self, *, any_kind: bool = False) -> int:
         """Return index in sibling list."""
         if any_kind:
             kc = self._parent.children
@@ -202,14 +238,14 @@ class TypedNode(Node[TData]):
             kc = self._parent.get_children(self.kind)
         return kc.index(cast(Self, self))
 
-    def is_first_sibling(self, *, any_kind=False) -> bool:
+    def is_first_sibling(self, *, any_kind: bool = False) -> bool:
         """Return true if this node is the first sibling, i.e. the first child
         of its parent."""
         if any_kind:
             return self is self._parent.children[0]
         return self is self.first_sibling(any_kind=False)
 
-    def is_last_sibling(self, *, any_kind=False) -> bool:
+    def is_last_sibling(self, *, any_kind: bool = False) -> bool:
         """Return true if this node is the last sibling, i.e. the last child
         **of this kind** of its parent."""
         if any_kind:
@@ -283,7 +319,7 @@ class TypedNode(Node[TData]):
 
         source_node: Self = None  # type: ignore
         new_node: Self = None  # type: ignore
-        factory: Type[Self] = self._tree.node_factory  # type: ignore
+        factory: type[Self] = self._tree.node_factory  # type: ignore
 
         if isinstance(child, TypedNode):
             if deep is None:
@@ -376,7 +412,7 @@ class TypedNode(Node[TData]):
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ):
+    ) -> Self:
         """Append a new subnode.
 
         This is a shortcut for :meth:`add_child` with ``before=None``.
@@ -398,7 +434,7 @@ class TypedNode(Node[TData]):
         deep: bool | None = None,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-    ):
+    ) -> Self:
         """Prepend a new subnode.
 
         This is a shortcut for :meth:`add_child` with ``before=True``.
@@ -417,9 +453,9 @@ class TypedNode(Node[TData]):
         child: Self | TypedTree | TData,
         *,
         kind: str | None,
-        deep=None,
-        data_id=None,
-        node_id=None,
+        deep: bool | None = None,
+        data_id: DataIdType | None = None,
+        node_id: int | None = None,
     ) -> Self:
         """Add a new node **of same kind** before `self`.
 
@@ -453,7 +489,7 @@ class TypedNode(Node[TData]):
         )
 
     def copy(
-        self, *, add_self=True, predicate: PredicateCallbackType | None = None
+        self, *, add_self: bool = True, predicate: PredicateCallbackType | None = None
     ) -> TypedTree[TData]:
         """Return a new :class:`~nutree.tree.Tree` instance from this branch.
 
@@ -489,8 +525,8 @@ class TypedNode(Node[TData]):
     def to_dot(
         self,
         *,
-        add_self=False,
-        unique_nodes=True,
+        add_self: bool = False,
+        unique_nodes: bool = True,
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
@@ -503,10 +539,11 @@ class TypedNode(Node[TData]):
         """
 
         # TypedNodes can provide labelled edges:
-        def _edge_mapper(node, data):
+        def _edge_mapper(node: Node, data: dict) -> dict | None:
             data["label"] = node.kind
             if edge_mapper:
                 return edge_mapper(node, data)
+            return None
 
         res = super().to_dot(
             add_self=add_self,
@@ -549,7 +586,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     See :ref:`typed-tree` for details.
     """
 
-    node_factory = TypedNode
+    node_factory: type[TypedNode] = cast(type[TypedNode], TypedNode)
     root_node_factory = _SystemRootTypedNode
 
     #: Default value for ``key_map`` argument when saving
@@ -620,26 +657,44 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             node_id=node_id,
         )
 
-    def first_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
+    def first_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the first toplevel node."""
         return self.system_root.first_child(kind=kind)
 
-    def last_child(self, kind: str | Type[ANY_KIND]) -> TypedNode[TData] | None:
+    def last_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
         """Return the last toplevel node."""
         return self.system_root.last_child(kind=kind)
 
-    def iter_by_type(self, kind: str | Type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
+    def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
+        """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
+        yield from self.iterator(kind=kind)
+
+    def iterator(
+        self,
+        method: IterMethod = IterMethod.PRE_ORDER,
+        *,
+        kind: str | type[ANY_KIND] = ANY_KIND,
+    ) -> Iterator[TypedNode[TData]]:
         if kind == ANY_KIND:
-            yield from self.iterator()
-        for n in self.iterator():
+            yield from super().iterator(method=method)
+            return
+
+        for n in super().iterator(method=method):
             if n._kind == kind:
                 yield n
         return
+
+    def count_descendants(
+        self, *, leaves_only: bool = False, kind: str | type[ANY_KIND] = ANY_KIND
+    ) -> int:
+        """Return number of nodes, optionally restricted to type."""
+        return self.system_root.count_descendants(leaves_only=leaves_only, kind=kind)
 
     def save(
         self,
         target: IO[str] | str | Path,
         *,
+        compression: bool | int = False,
         mapper: SerializeMapperType | None = None,
         meta: dict | None = None,
         key_map: KeyMapType | bool = True,
@@ -668,6 +723,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
         return super().save(
             target,
+            compression=compression,
             mapper=mapper,
             meta=meta,
             key_map=key_map,

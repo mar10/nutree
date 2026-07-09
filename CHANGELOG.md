@@ -1,6 +1,20 @@
 # Changelog
 
-## 0.11.2 (unreleased)
+## 1.2.0 (unreleased)
+- Drop Python 3.9 (EOL 2025-10)
+- Support Python 3.14, 3.15
+- Use [uv](https://docs.astral.sh/uv/)
+
+## 1.1.0 (2025-02-09)
+
+- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(.., kind)`instead.
+- New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
+  `TypedNode.iterator(..., kind=ANY_KIND)`,
+  and `TypedTree.count_descendants(leaves_only=False, kind=ANY_KIND)`
+ 
+## 1.0.0 (2024-12-27)
+- Add benchmarks (using [Benchman](https://github.com/mar10/benchman)).
+- Drop support for Python 3.8
 
 ## 0.11.1 (2024-11-08)
 - `t0.diff(t1, ...)` adds nodes from t1 when possible, so the new status is 

@@ -16,7 +16,31 @@ NOTE:
 """
 
 # flake8: noqa
-__version__ = "0.11.2-a1"
+from importlib.metadata import PackageNotFoundError, version as dist_version
+from pathlib import Path
+import re
+
+
+def _detect_version() -> str:
+    """Resolve package version from installed metadata or local pyproject.toml."""
+    try:
+        return dist_version("nutree")
+    except PackageNotFoundError:
+        pass
+
+    pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        text = pyproject.read_text(encoding="utf-8")
+        match = re.search(r"^version\s*=\s*['\"]([^'\"]+)['\"]", text, re.MULTILINE)
+        if match:
+            return match.group(1)
+    except OSError:
+        pass
+
+    return "0.0.0"
+
+
+__version__ = _detect_version()
 
 from nutree.common import (
     AmbiguousMatchError,
@@ -34,20 +58,20 @@ from nutree.node import Node
 from nutree.tree import Tree
 from nutree.typed_tree import TypedNode, TypedTree
 
-__all__ = [  # type: ignore
-    Tree,
-    Node,
-    AmbiguousMatchError,
-    diff_node_formatter,
-    DiffClassification,
-    DictWrapper,
-    IterMethod,
-    load_tree_from_fs,
-    SelectBranch,
-    SkipBranch,
-    StopTraversal,
-    TreeError,
-    TypedNode,
-    TypedTree,
-    UniqueConstraintError,
+__all__ = [
+    "Tree",
+    "Node",
+    "AmbiguousMatchError",
+    "diff_node_formatter",
+    "DiffClassification",
+    "DictWrapper",
+    "IterMethod",
+    "load_tree_from_fs",
+    "SelectBranch",
+    "SkipBranch",
+    "StopTraversal",
+    "TreeError",
+    "TypedNode",
+    "TypedTree",
+    "UniqueConstraintError",
 ]

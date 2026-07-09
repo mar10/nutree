@@ -7,8 +7,9 @@ Functions and declarations to support
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Iterator
+from typing import IO, TYPE_CHECKING, Any
 
 from nutree.common import MapperCallbackType, call_mapper
 
@@ -25,8 +26,8 @@ except ImportError:  # pragma: no cover
 def node_to_dot(
     node: Node,
     *,
-    add_self=False,
-    unique_nodes=True,
+    add_self: bool = False,
+    unique_nodes: bool = True,
     graph_attrs: dict | None = None,
     node_attrs: dict | None = None,
     edge_attrs: dict | None = None,
@@ -45,10 +46,14 @@ def node_to_dot(
     name = node.tree.name
     used_keys = set()
 
-    def _key(n: Node):
+    def _key(n: Node) -> str | int:
         return n._data_id if unique_nodes else n._node_id
 
-    def _attr_str(attr_def: dict, mapper=None, node=None):
+    def _attr_str(
+        attr_def: dict,
+        mapper: MapperCallbackType | None = None,
+        node: Node | None = None,
+    ) -> str:
         if mapper:
             assert isinstance(attr_def, dict), "attr_def must be a dict"
             # if attr_def is None:
@@ -114,9 +119,9 @@ def tree_to_dotfile(
     tree: Tree[Any, Any],
     target: IO[str] | str | Path,
     *,
-    format=None,
-    add_root=True,
-    unique_nodes=True,
+    format: str | None = None,
+    add_root: bool = True,
+    unique_nodes: bool = True,
     graph_attrs: dict | None = None,
     node_attrs: dict | None = None,
     edge_attrs: dict | None = None,

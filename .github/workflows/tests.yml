@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# Lint and test on every push/PR to main.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Tests
@@ -10,57 +10,65 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run ruff via tox
+        run: uvx --with tox-uv tox -e lint
+
+  test:
+    name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        # Python 3.4  # EOL 2019-03-18
-        # Python 3.5  # EOL 2020-09-13
-        # Python 3.6  # EOL 2021-12-21
-        # Python 3.7  # EOL 2023-06-27
-        # Python 3.8  # EOL 2024-10
-        # Python 3.9  # EOL 2025-10
         # Python 3.10 # EOL 2026-10
         # Python 3.11 # EOL 2027-10
         # Python 3.12 # EOL 2028-10
         # Python 3.13 # EOL 2029-10
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
-
       - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: ${{ matrix.python-version == '3.15' }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get install graphviz
-          python -V
-          python -m pip install --upgrade pip
-          python -m pip install pydot pytest pytest-cov pytest-html rdflib ruff
-          # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          python -m pip install -e .
-          python -m pip list
-
-      - name: Lint with ruff
-        run: |
-          ruff -V
-          ruff check  --output-format=github nutree tests setup.py
-          ruff format --check nutree tests setup.py
-
-      - name: Test with pytest
-        run: |
-          pytest -V
-          pytest -ra -v -x --durations=10 --cov=nutree
-          # pytest -ra -v -x --durations=10 --cov=nutree --html=build/pytest/report-${{ matrix.python-version }}.html --self-contained-html
-          # pytest -ra -v -x --durations=10 --cov=nutree --html=build/pytest/report-{envname}.html --self-contained-html {posargs}
+      - name: Run tests via tox
+        # Use bash expansion to convert 3.12 -> 312 for tox env names like py312.
+        env:
+          PYVER: ${{ matrix.python-version }}
+        run: uvx --with tox-uv tox -e py${PYVER/./}
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
+        if: matrix.python-version == '3.12'
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

@@ -9,8 +9,9 @@ from __future__ import annotations
 import random
 import sys
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Sequence, Union
+from typing import Any
 
 from nutree.common import DictWrapper
 from nutree.node import Node
@@ -42,9 +43,9 @@ class Randomizer(ABC):
     """
 
     def __init__(self, *, probability: float = 1.0) -> None:
-        assert (
-            isinstance(probability, float) and 0.0 <= probability <= 1.0
-        ), f"probality must be in the range [0.0 .. 1.0]: {probability}"
+        assert isinstance(probability, float) and 0.0 <= probability <= 1.0, (
+            f"probality must be in the range [0.0 .. 1.0]: {probability}"
+        )
         self.probability = probability
 
     def _skip_value(self) -> bool:
@@ -83,16 +84,16 @@ class RangeRandomizer(Randomizer):
         none_value: Any = None,
     ) -> None:
         super().__init__(probability=probability)
-        assert type(min_val) is type(
-            max_val
-        ), f"min_val and max_val must be of the same type: {min_val}, {max_val}"
+        assert type(min_val) is type(max_val), (
+            f"min_val and max_val must be of the same type: {min_val}, {max_val}"
+        )
         self.is_float = isinstance(min_val, float)
         self.min = min_val
         self.max = max_val
         self.none_value = none_value
         assert self.max > self.min
 
-    def generate(self) -> Union[float, int, Any, None]:
+    def generate(self) -> float | int | Any | None:
         if self._skip_value():
             return self.none_value
         if self.is_float:
@@ -123,14 +124,14 @@ class DateRangeRandomizer(Randomizer):
         min_dt: date,
         max_dt: date | int,
         *,
-        as_js_stamp=True,
+        as_js_stamp: bool = True,
         probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
         assert isinstance(min_dt, date), f"min_dt must be a date: {min_dt}"
-        assert isinstance(
-            max_dt, (date, int)
-        ), f"max_dt must be a date or int: {max_dt}"
+        assert isinstance(max_dt, (date, int)), (
+            f"max_dt must be a date or int: {max_dt}"
+        )
 
         if isinstance(max_dt, int):
             self.delta_days = max_dt
@@ -138,15 +139,15 @@ class DateRangeRandomizer(Randomizer):
         else:
             self.delta_days = (max_dt - min_dt).days
 
-        assert (
-            max_dt > min_dt
-        ), f"max_dt must be greater than min_dt: {min_dt}, {max_dt}"
+        assert max_dt > min_dt, (
+            f"max_dt must be greater than min_dt: {min_dt}, {max_dt}"
+        )
 
         self.min = min_dt
         self.max = max_dt
         self.as_js_stamp = as_js_stamp
 
-    def generate(self) -> Union[date, float, None]:
+    def generate(self) -> date | float | None:
         # print(self.min, self.max, self.delta_days, self.probability)
         if self._skip_value():
             return None
@@ -196,7 +197,11 @@ class SampleRandomizer(Randomizer):
     """
 
     def __init__(
-        self, sample_list: Sequence, *, counts=None, probability: float = 1.0
+        self,
+        sample_list: Sequence,
+        *,
+        counts: list | None = None,
+        probability: float = 1.0,
     ) -> None:
         super().__init__(probability=probability)
         self.sample_list = sample_list
@@ -345,7 +350,7 @@ def _make_tree(
     types: dict,
     relations: dict,
     prefix: str,
-):
+) -> None:
     child_specs = relations[parent_type]
 
     for node_type, spec in child_specs.items():

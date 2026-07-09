@@ -15,16 +15,13 @@ from __future__ import annotations
 import json
 import random
 import threading
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import (
     IO,
     Any,
     Generic,
-    Iterable,
-    Iterator,
     Literal,
-    Type,
-    Union,
     cast,
 )
 
@@ -111,7 +108,7 @@ class Tree(Generic[TData, TNode]):
     **Note:** Use with care, see also :ref:`forward-attributes`.
     """
 
-    node_factory: Type[TNode] = cast(Type[TNode], Node)
+    node_factory: type[TNode] = cast(type[TNode], Node)
     root_node_factory = _SystemRootNode
 
     #: Default connector prefixes ``format(style=...)`` argument.
@@ -144,27 +141,32 @@ class Tree(Generic[TData, TNode]):
         # Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}>"
 
-    def __contains__(self, data):
+    def __contains__(self, data: Any) -> bool:
         """Implement ``data in tree`` syntax to check for node existence."""
         return bool(self.find_first(data))
 
-    def __delitem__(self, data):
+    def __delitem__(self, data: Any) -> None:
         """Implement ``del tree[data]`` syntax to remove nodes."""
         self[data].remove()
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         """Implement ``with tree: ...`` syntax to acquire an RLock."""
         self._lock.acquire()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(
+        self,
+        type: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: Any,
+    ) -> None:
         self._lock.release()
         return
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         raise NotImplementedError("Use `is` instead of `==`.")
 
     def __getitem__(self, data: object) -> TNode:
@@ -203,7 +205,7 @@ class Tree(Generic[TData, TNode]):
             )
         return res[0]
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Make ``len(tree)`` return the number of nodes
         (also makes empty trees falsy)."""
         return self.count
@@ -451,7 +453,11 @@ class Tree(Generic[TData, TNode]):
     __iter__ = iterator
 
     def format_iter(
-        self, *, repr: ReprArgType | None = None, style=None, title=None
+        self,
+        *,
+        repr: ReprArgType | None = None,
+        style: str | None = None,
+        title: str | bool | None = None,
     ) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
         if title is None:
@@ -500,7 +506,7 @@ class Tree(Generic[TData, TNode]):
         before: TNode | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
-        node_id=None,
+        node_id: int | None = None,
     ) -> TNode:
         """Add a toplevel node (same as shortcut :meth:`add`).
 
@@ -525,7 +531,7 @@ class Tree(Generic[TData, TNode]):
         before: TNode | bool | int | None = None,
         deep: bool | None = None,
         data_id: DataIdType | None = None,
-        node_id=None,
+        node_id: int | None = None,
     ) -> TNode:
         """Add a toplevel node (same as shortcut :meth:`add`).
 
@@ -563,7 +569,7 @@ class Tree(Generic[TData, TNode]):
             new_tree.system_root._add_from(self.system_root, predicate=predicate)
         return new_tree
 
-    def copy_to(self, target: TNode | Self, *, deep=True) -> None:
+    def copy_to(self, target: TNode | Self, *, deep: bool = True) -> None:
         """Copy this tree's nodes to another target.
 
         See Node's :meth:`~nutree.node.Node.copy_to` method for details.
@@ -593,7 +599,7 @@ class Tree(Generic[TData, TNode]):
 
     def find_all(
         self,
-        data=None,
+        data: Any = None,
         *,
         match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
@@ -622,7 +628,7 @@ class Tree(Generic[TData, TNode]):
 
     def find_first(
         self,
-        data=None,
+        data: Any = None,
         *,
         match: MatchArgumentType | None = None,
         data_id: DataIdType | None = None,
@@ -654,7 +660,13 @@ class Tree(Generic[TData, TNode]):
     #: Alias for :meth:`find_first`
     find = find_first
 
-    def sort(self, *, key: SortKeyType | None = None, reverse=False, deep=True) -> None:
+    def sort(
+        self,
+        *,
+        key: SortKeyType | None = None,
+        reverse: bool = False,
+        deep: bool = True,
+    ) -> None:
         """Sort toplevel nodes (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
@@ -672,7 +684,9 @@ class Tree(Generic[TData, TNode]):
         return res
 
     @classmethod
-    def from_dict(cls, obj: list[dict], *, mapper=None) -> Self:
+    def from_dict(
+        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
+    ) -> Self:
         """Return a new :class:`Tree` instance from a list of dicts.
 
         See also :meth:`~nutree.tree.Tree.to_dict_list` and
@@ -689,7 +703,7 @@ class Tree(Generic[TData, TNode]):
         mapper: SerializeMapperType | None = None,
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
-    ) -> Iterator[tuple[DataIdType, Union[FlatJsonDictType, str, int]]]:
+    ) -> Iterator[tuple[DataIdType, FlatJsonDictType | str | int]]:
         """Yield a parent-referencing list of child nodes."""
         yield from self.system_root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
@@ -880,8 +894,8 @@ class Tree(Generic[TData, TNode]):
     def to_dot(
         self,
         *,
-        add_root=True,
-        unique_nodes=True,
+        add_root: bool = True,
+        unique_nodes: bool = True,
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
@@ -906,15 +920,15 @@ class Tree(Generic[TData, TNode]):
         self,
         target: IO[str] | str | Path,
         *,
-        format=None,
-        add_root=True,
-        unique_nodes=True,
-        graph_attrs=None,
-        node_attrs=None,
-        edge_attrs=None,
-        node_mapper=None,
-        edge_mapper=None,
-    ):
+        format: str | None = None,
+        add_root: bool = True,
+        unique_nodes: bool = True,
+        graph_attrs: dict | None = None,
+        node_attrs: dict | None = None,
+        edge_attrs: dict | None = None,
+        node_mapper: MapperCallbackType | None = None,
+        edge_mapper: MapperCallbackType | None = None,
+    ) -> None:
         """Serialize a DOT formatted graph representation.
 
         Optionally convert to a Graphviz display formats.
@@ -949,7 +963,7 @@ class Tree(Generic[TData, TNode]):
         root_shape: str | None = None,
         node_mapper: MermaidNodeMapperCallbackType | str | None = None,
         edge_mapper: MermaidEdgeMapperCallbackType | str | None = None,
-    ):
+    ) -> None:
         """Serialize a Mermaid flowchart representation.
 
         Optionally convert to a Graphviz display formats.
@@ -971,7 +985,7 @@ class Tree(Generic[TData, TNode]):
         )
         return
 
-    def to_rdf_graph(self):
+    def to_rdf_graph(self) -> Any:
         """Return an instance of ``rdflib.Graph``.
 
         See :ref:`graphs` for details.
@@ -983,8 +997,8 @@ class Tree(Generic[TData, TNode]):
         other: Self,
         *,
         compare: DiffCompareCallbackType | bool = True,
-        ordered=False,
-        reduce=False,
+        ordered: bool = False,
+        reduce: bool = False,
     ) -> Tree:
         """Compare this tree against `other` and return a merged, annotated copy.
 
@@ -1024,9 +1038,9 @@ class Tree(Generic[TData, TNode]):
             # assert node._data_id == self.calc_data_id(node.data), node
             assert node._data_id in self._nodes_by_data_id, node
             assert node._node_id == id(node), f"{node}: {node._node_id} != {id(node)}"
-            assert (
-                node._children is None or len(node._children) > 0
-            ), f"{node}: {node._children}"
+            assert node._children is None or len(node._children) > 0, (
+                f"{node}: {node._children}"
+            )
 
         assert len(self._node_by_id) == len(node_list)
 

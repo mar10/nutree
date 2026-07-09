@@ -285,9 +285,9 @@ class TestDictWrapper:
 
         assert isinstance(dict_node.data, FrozenItem)
         assert dict_node.data is item, "dataclass should be stored as reference"
-        assert (
-            dict_node.price == 12.34
-        ), "should support attribute access via forwardinging"
+        assert dict_node.price == 12.34, (
+            "should support attribute access via forwardinging"
+        )
         with pytest.raises(AttributeError):
             _ = dict_node.foo
 

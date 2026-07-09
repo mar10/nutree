@@ -15,7 +15,7 @@ import timeit
 import uuid
 from random import randint
 from textwrap import dedent, indent
-from typing import IO, Any, List
+from typing import IO, Any
 
 from nutree.common import ReprArgType
 from nutree.tree import Node, Tree
@@ -233,7 +233,7 @@ def create_typed_tree_simple(
     return tree
 
 
-def generate_tree(level_defs: List[int]) -> Tree:
+def generate_tree(level_defs: list[int]) -> Tree:
     """Generate a tree.
 
     Example:

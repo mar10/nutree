@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, List, Type, cast
+from typing import Generic, cast
 from uuid import UUID, uuid4
 
 from typing_extensions import Any, Self, TypeVar, reveal_type
@@ -19,7 +19,7 @@ class Node(Generic[TData]):
     def __init__(self, data: TData, parent: Self):
         self.data: TData = data
         self.parent: Self = parent
-        self.children: List[Self] = []
+        self.children: list[Self] = []
 
     def add(self, data: TData) -> Self:
         node = self.__class__(data, self)
@@ -28,7 +28,7 @@ class Node(Generic[TData]):
 
 
 class Tree(Generic[TData, TNode]):
-    node_factory: Type[TNode] = cast(Type[TNode], Node)
+    node_factory: type[TNode] = cast(type[TNode], Node)
 
     def __init__(self):
         self._root: Node = self.node_factory("__root__", None)  # type: ignore
