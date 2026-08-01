@@ -185,7 +185,7 @@ class Node(Generic[TData]):
 
     # Do not define __len__: we don't want leaf nodes to evaluate as falsy
     # def __len__(self) -> int:
-    #     raise NotImplementedError("Use `len(node.data)` or `len(node._children)`.")
+    #     raise NotImplementedError("Use `len(node.data)` or `len(node.children)`.")
 
     @property
     def name(self) -> str:
