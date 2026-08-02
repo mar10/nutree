@@ -148,7 +148,7 @@ class TestClones:
 
         tree.print()
         res = tree.find_all("A")
-        assert len(res) == 2
+        assert len(res) == 4
 
         res = tree.find_all("a1")
         assert len(res) == 3
