@@ -25,6 +25,7 @@ from typing_extensions import Any, Self
 from nutree.common import (
     ROOT_DATA_ID,
     ROOT_NODE_ID,
+    CalcIdCallbackType,
     CycleDetectedError,
     DataIdType,
     DeserializeMapperType,
@@ -597,6 +598,21 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     DEFAULT_VALUE_MAP = {}  # expands to { "kind": [<distinct `kind` values>] }
     #: Default value for ``add_child`` when loading.
     DEFAULT_CHILD_TYPE = "child"
+
+    def __init__(
+        self,
+        name: str | None = None,
+        *,
+        calc_data_id: CalcIdCallbackType | None = None,
+        forward_attrs: bool = False,
+    ) -> None:
+        super().__init__(
+            name=name,
+            calc_data_id=calc_data_id,
+            forward_attrs=forward_attrs,
+            check_dag=True,
+        )
+        self._system_root = self.root_node_factory(self)
 
     @classmethod
     def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:

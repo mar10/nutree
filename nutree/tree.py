@@ -109,9 +109,15 @@ class Tree(Generic[TData, TNode]):
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
 
-    `check_dag` enables validations to ensure that the node structure is
-    compliant with Directed Acyclic Graphs (DAG). This means that no nodes
-    with the same data_id cannot be added as descendants of each other.
+    `check_dag` can be set to false to disable validations that ensure the node
+    structure is compliant with Directed Acyclic Graphs (DAG).
+    This means that no nodes with the same data_id being added as descendants of
+    each other or under the same parent.
+    This *may* be useful, e.g. when a node stores a list of children
+    that may repeat, such as BOM (Bill of Materials) parts.
+    However, this is not a common use case and should be used with care since it
+    can lead to cycles in the tree structure.
+    `check_dag` is always enabled for :class:`TypedTree` instances.
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -134,8 +140,8 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
-        check_dag: bool = False,
-    ):
+        check_dag: bool = True,
+    ) -> None:
         self._lock = threading.RLock()
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
@@ -147,7 +153,9 @@ class Tree(Generic[TData, TNode]):
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
         #: Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
-        #: Enable cycle detection in add_child()
+        #: Enable cycle detection and prevent duplicate data for one parent
+        # in `add_child()`.
+        #: Note that is always enabled for TypedTree.
         self.check_dag = check_dag
 
     def __repr__(self) -> str:
@@ -215,8 +223,10 @@ class Tree(Generic[TData, TNode]):
         return res[0]
 
     def __len__(self) -> int:
-        """Make ``len(tree)`` return the number of nodes
-        (also makes empty trees falsy)."""
+        """Make ``len(tree)`` return the number of all nodes (not just direct children).
+
+        This also makes empty trees falsy.
+        """
         return self.count
 
     def calc_data_id(self, data: Any) -> DataIdType:
@@ -237,9 +247,10 @@ class Tree(Generic[TData, TNode]):
 
     def _check_insert(self, node: TNode):
         """Raise error if inserting a node would violate DAG restrictions."""
-        # We can assume that node.parent is set and that node already has at
-        # least one clone registered in self._nodes_by_data_id, when this is
-        # called from _register()
+        #  When this method is called from _register(), we can assume that
+        # - check_dag is true,
+        # - node.parent is set
+        # - node already has at least one clone registered in self._nodes_by_data_id
         data_id = node._data_id
         if node._parent._children:
             for sibling in node._parent._children:

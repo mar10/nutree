@@ -48,6 +48,8 @@ class TestClones:
             tree.add("A")
         with pytest.raises(UniqueConstraintError):
             tree.add(tree["A"])
+
+        # Not allowed to add a clone as descendant of itself (cycle)
         with pytest.raises(CycleDetectedError):
             tree["a2"].add(tree["A"])
 
@@ -78,6 +80,83 @@ class TestClones:
 
         res = tree.find_all("not_existing")
         assert res == []
+
+        assert tree._self_check()
+
+    def test_dag(self):
+        """Test Trees that have `check_dag=True`."""
+        tree = fixture.create_tree_simple(check_dag=True)
+        assert tree.check_dag is True
+        # Add another 'a1' below 'B'
+        tree["B"].add("a1")
+
+        # Not allowed to add two clones to same parent
+        with pytest.raises(UniqueConstraintError):
+            tree["B"].add("a1")
+
+        # Not allowed to add two clones to same parent
+        with pytest.raises(UniqueConstraintError):
+            tree.add("A")
+        with pytest.raises(UniqueConstraintError):
+            tree.add(tree["A"])
+
+        # Not allowed to add a clone as descendant of itself (cycle)
+        with pytest.raises(CycleDetectedError):
+            tree["a2"].add(tree["A"])
+
+        res = tree.find("a1")
+        assert res
+        assert res.data == "a1"
+        assert res.is_clone()
+        assert len(res.get_clones()) == 1
+        assert len(res.get_clones(add_self=True)) == 2
+
+        assert not tree["a2"].is_clone()
+
+        res = tree.find_all("a1")
+
+        assert res[0].is_clone()
+        assert res[1].is_clone()
+
+        assert tree._self_check()
+
+    def test_non_dag(self):
+        """Test Trees that have `check_dag=False`."""
+        tree = fixture.create_tree_simple(check_dag=False)
+        assert tree.check_dag is False
+
+        # Add another 'a1's below 'B'
+        tree["B"].add("a1")
+        tree["B"].add("a1")
+
+        assert len(tree.find_all("a1")) == 3
+
+        node_A = tree["A"]  # currently only one instance of 'A' in the tree
+        # *IS* allowed to add two clones to same parent
+        tree.add(node_A)
+        with pytest.raises(AmbiguousMatchError):
+            res = tree["A"]
+
+        # *IS* allowed to add a clone as descendant of itself (cycle)
+        tree["a2"].add(node_A)
+        tree["a2"].add(node_A)
+
+        res = tree["a2"].find_all("A")
+        assert len(res) == 2
+        assert res[0].get_path() == "/A/a2/A"
+        assert res[1].get_path() == "/A/a2/A"
+
+        tree.print()
+        res = tree.find_all("A")
+        assert len(res) == 2
+
+        res = tree.find_all("a1")
+        assert len(res) == 3
+        assert res[0].is_clone()
+        assert res[1].is_clone()
+        assert len(res[0].get_clones(add_self=True)) == 3
+
+        assert not tree["a2"].is_clone()
 
         assert tree._self_check()
 

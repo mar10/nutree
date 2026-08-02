@@ -676,14 +676,15 @@ class Node(Generic[TData]):
                 raise ValueError("Cannot set ID for deep copies.")
 
             source_node = cast(Self, child)
-            if source_node._tree is self._tree:
-                if source_node._parent is self:
-                    raise UniqueConstraintError(
-                        f"Cannot add a copy of {source_node} as child of {self}, "
-                        "because it would create a 2nd instance in the same parent."
-                    )
-            else:
-                pass
+            if (
+                self._tree.check_dag
+                and source_node._parent is self
+                and source_node._tree is self._tree
+            ):
+                raise UniqueConstraintError(
+                    f"Cannot add a copy of {source_node} as child of {self}, "
+                    "because it would create a 2nd instance in the same parent."
+                )
 
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")

@@ -61,11 +61,10 @@ class UniqueConstraintError(StructureError):
 
     This would violate the constraint of the tree being a 'SIMPLE directed
     acyclic graph'.
-    Note that the tree allows to add the same data_id to different parent nodes.
+    Note that the tree does not allow to add the same data_id to a parent node
+    if check_dag is true (the default).
     In TypedTrees, the data_id may be added to the same parent twice, as long as
     it has a different kind.
-
-    Pass `check_dag=False` to the tree constructor to suppress this restriction.
     """
 
 
@@ -82,7 +81,12 @@ class CycleDetectedError(StructureError):
 
 
 class AmbiguousMatchError(TreeError):
-    """Thrown when a single-value lookup found multiple matches."""
+    """Thrown when a single-value lookup found multiple matches.
+
+    Receiving this error indicates that the tree contains duplicate data values,
+    but the user expected a single match.
+    Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
+    """
 
 
 class IterMethod(Enum):
