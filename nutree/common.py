@@ -145,6 +145,11 @@ PredicateCallbackType = Callable[
     ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
+#: Generic callback for `tree.map()`
+MapCallbackType = Callable[
+    ["Node"], None | bool | IterationControl | type[IterationControl]
+]
+
 #:
 MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 

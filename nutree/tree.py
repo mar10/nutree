@@ -39,6 +39,7 @@ from nutree.common import (
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
+    MapCallbackType,
     MapperCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
@@ -592,6 +593,23 @@ class Tree(Generic[TData, TNode]):
         if not predicate:
             raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
+
+    def map(self, fn: MapCallbackType) -> Self:
+        """Return a mapped tree.
+
+        Mapping is a transformation of a container structure, where each node's
+        data can be modified or replaced or the node itself can be removed.
+
+        This could be achieved using Python's built-in function like ``map(fn, tree)``,
+        but that would flatten all nodes and return a list of results.
+
+        In contrast, ``tree.map(fn)`` is intended to transform the node data, while
+        keeping the tree hierarchy intact.
+
+        Internally `tree.map()` is implemented using :meth:`~nutree.tree.Tree.copy()`
+        and `fn` is used as the `predicate` callback to modify or remove nodes.
+        """
+        return self.copy(predicate=fn, name=f"{self.name}")
 
     def clear(self) -> None:
         """Remove all nodes from this tree."""
