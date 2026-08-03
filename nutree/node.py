@@ -183,9 +183,23 @@ class Node(Generic[TData]):
             return getattr(self, name[:-2])()
         raise AttributeError(repr(name))
 
-    # Do not define __len__: we don't want leaf nodes to evaluate as falsy
-    # def __len__(self) -> int:
-    #     raise NotImplementedError("Use `len(node.data)` or `len(node._children)`.")
+    def __bool__(self) -> bool:
+        """Always return true, even for leaf nodes.
+
+        Explicitly defined to always return True, because the default behavior
+        would be to return False for empty containers, but leaf nodes should not
+        be considered falsy.
+        """
+        return True
+
+    def __len__(self) -> int:
+        """Return number of direct children (0 for leaves).
+
+        This allows to use ``len(node)`` syntax.
+        Note that a Node object still evaluates as truthy even if it has no children.
+        Use :meth:`count_descendants` to get the total number of descendants.
+        """
+        return len(self.children)
 
     @property
     def name(self) -> str:
