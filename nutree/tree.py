@@ -36,11 +36,11 @@ from nutree.common import (
     CalcIdCallbackType,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
     MapCallbackType,
-    MapperCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
@@ -917,8 +917,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -944,8 +944,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> None:
         """Serialize a DOT formatted graph representation.
 

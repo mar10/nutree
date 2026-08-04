@@ -27,9 +27,9 @@ from nutree.common import (
     ROOT_NODE_ID,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     PredicateCallbackType,
     SerializeMapperType,
     UniqueConstraintError,
@@ -530,8 +530,8 @@ class TypedNode(Node[TData]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
