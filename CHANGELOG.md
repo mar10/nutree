@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.2.0 (unreleased)
+- `len(node)` returns number of direct children. 
+  However nodes are always truthy, even if they don't have children.
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
