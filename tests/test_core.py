@@ -929,16 +929,37 @@ class TestMutate:
             """
             Tree<*>
             +- A
-            |  +- a1
-            |  |  +- a11
-            |  |  `- a12
-            |  `- a2
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
             `- B
-               +- a1
-               |  +- a11
-               |  `- a12
-               `- b1
-                  `- b11
+               `- B1
+                  `- B11
+            """,
+        )
+
+    def test_map_tree_with_clones(self):
+        tree = fixture.create_tree_simple(clones=True)
+
+        def mapper(node: Node):
+            node.set_data(data=node.data.upper(), with_clones=True)
+
+        tree_2 = tree.map(mapper)
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  +- A11
+                  `- B11
             """,
         )
 

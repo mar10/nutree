@@ -45,6 +45,7 @@ from nutree.common import (
     PredicateCallbackType,
     ReprArgType,
     SerializeMapperType,
+    SkipBranch,
     SortKeyType,
     TraversalCallbackType,
     UniqueConstraintError,
@@ -606,10 +607,24 @@ class Tree(Generic[TData, TNode]):
         In contrast, ``tree.map(fn)`` is intended to transform the node data, while
         keeping the tree hierarchy intact.
 
-        Internally `tree.map()` is implemented using :meth:`~nutree.tree.Tree.copy()`
-        and `fn` is used as the `predicate` callback to modify or remove nodes.
+        Internally `tree.map()` is implemented using
+        :meth:`~nutree.tree.Tree.filtered()` but `fn` return values are interpreted
+        differently than the `predicate` callback.
+        See also :ref:`iteration-callbacks`.
         """
-        return self.copy(predicate=fn, name=f"{self.name}")
+
+        # `copy()` expects a predicate that returns True/False, but `fn` may
+        # return None to keep the node but not change its data.
+        def fn_wrapper(node: TNode):
+            res = fn(node)
+            if res is None:
+                return True  # keep node if fn() does not return anything
+            if res is False:
+                return SkipBranch(and_self=True)  # remove node if fn() returns False
+
+            return res
+
+        return self.filtered(predicate=cast(PredicateCallbackType, fn_wrapper))
 
     def clear(self) -> None:
         """Remove all nodes from this tree."""
