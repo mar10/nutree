@@ -118,7 +118,7 @@ Traversal
 Iterators are the most performant and memory efficient way to traverse the tree.
 
 Iterators are available for the whole tree or by branch (i.e. starting at a node). 
-Different traversal methods are supported. ::
+Multiple traversal methods are supported. ::
 
     for node in tree:
         # Depth-first, pre-order by default
