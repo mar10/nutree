@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.2.0 (unreleased)
+- Support `tree.deepcopy()`, `copy.copy(tree)` and `copy.deepcopy(tree)`
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
