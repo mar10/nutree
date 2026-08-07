@@ -145,15 +145,10 @@ PredicateCallbackType = Callable[
     ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
-#: Generic callback for `tree.map()`
-MapCallbackType = Callable[
-    ["Node"], None | bool | IterationControl | type[IterationControl]
-]
-
-#:
+#: Callback for `tree.find_all()`, `tree.find_first()`, ...
 MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 
-#:
+#: Callback for `tree.visit()`,  ...
 TraversalCallbackType = Callable[
     ["Node", Any],
     None

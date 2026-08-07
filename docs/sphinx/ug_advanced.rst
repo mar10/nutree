@@ -118,16 +118,6 @@ argument and should return control value:
       Unconditionally accept node and all descendants (do not call `predicate()`).
       In other words: copy the whole branch.
 
-:meth:`~nutree.node.Node.map`
-
-    The `fn(node)` can use `node.set_data()` to mutate the content. |br|
-    The callback can return these values:
-
-    - `True` or `None`: Keep the node and visit children.
-    - `False` or :data:`~nutree.common.SkipBranch`:
-      Skip node and its descendants, but continue iteration with next sibling. |br|
-      Return `SkipBranch(and_self=False)` to keep the node, but skip descendants.
-
 :meth:`~nutree.tree.Tree.save`
 :meth:`~nutree.tree.Tree.to_dict_list`,
 :meth:`~nutree.tree.Tree.to_dot`,

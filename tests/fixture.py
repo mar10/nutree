@@ -112,7 +112,7 @@ def create_tree_simple(
     clones=False,
     tree: Tree | None = None,
     print=True,
-) -> Tree:
+) -> Tree[str]:
     """
     Tree<'fixture'>
     ├── 'A'

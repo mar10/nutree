@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import random
 import threading
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from typing import (
     IO,
@@ -40,12 +40,10 @@ from nutree.common import (
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
-    MapCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
     SerializeMapperType,
-    SkipBranch,
     SortKeyType,
     TraversalCallbackType,
     UniqueConstraintError,
@@ -595,36 +593,29 @@ class Tree(Generic[TData, TNode]):
             raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
-    def map(self, fn: MapCallbackType) -> Self:
-        """Return a mapped tree.
+    def map(self, fn: Callable[[TData], TData]) -> Self:
+        """Return a copy of this tree with mapped data.
 
-        Mapping is a transformation of a container structure, where each node's
-        data can be modified or replaced or the node itself can be removed.
+        Using Python's built-in function ``map(fn, tree)`` would flatten all
+        nodes and return a list of node objects. |br|
+        In contrast, ``tree.map(fn)`` is intended to transform the node.data,
+        while keeping the tree hierarchy intact.
 
-        This could be achieved using Python's built-in function like ``map(fn, tree)``,
-        but that would flatten all nodes and return a list of results.
-
-        In contrast, ``tree.map(fn)`` is intended to transform the node data, while
-        keeping the tree hierarchy intact.
-
-        Internally `tree.map()` is implemented using
-        :meth:`~nutree.tree.Tree.filtered()` but `fn` return values are interpreted
-        differently than the `predicate` callback.
-        See also :ref:`iteration-callbacks`.
+        Note pitfall: a *shallow* copy of the tree is created first, and then
+        ``fn(node.data)`` is called for each node.
+        This means that the new tree's nodes reference the same data objects as
+        the original tree, so if a data object is mutated, it will also affect
+        the original tree. |br|
+        If this is not desired, you can either make sure that ``fn`` returns a
+        new data object, or alternatively make a deepcopy first:
+        ``new_tree = tree.deepcopy().map(fn)``.
         """
-
-        # `copy()` expects a predicate that returns True/False, but `fn` may
-        # return None to keep the node but not change its data.
-        def fn_wrapper(node: TNode):
-            res = fn(node)
-            if res is None:
-                return True  # keep node if fn() does not return anything
-            if res is False:
-                return SkipBranch(and_self=True)  # remove node if fn() returns False
-
-            return res
-
-        return self.filtered(predicate=cast(PredicateCallbackType, fn_wrapper))
+        new_tree = self.copy()
+        for node in new_tree:
+            new_data = fn(node.data)
+            if node.data is not new_data:
+                node.set_data(data=new_data, with_clones=False)
+        return new_tree
 
     def clear(self) -> None:
         """Remove all nodes from this tree."""
