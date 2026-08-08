@@ -408,6 +408,25 @@ class TestSort:
         """,
         )
 
+    def test_sort_key(self):
+        tree = fixture.create_tree_objects()
+
+        # Sort by age descending (oldest first)
+        tree.sort(key=lambda node: -getattr(node.data, "age", 0))
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── Department<Development>
+            │   ├── Person<Bob, 32>
+            │   ╰── Person<Alice, 23>
+            ╰── Department<Marketing>
+                ├── Person<Dave, 54>
+                ╰── Person<Charleen, 43>
+        """,
+        )
+
     def test_sort_reverse_deep(self):
         tree = fixture.create_tree_simple()
 
@@ -445,6 +464,29 @@ class TestSort:
                 │   ├── a11
                 │   ╰── a12
                 ╰── a2
+        """,
+        )
+
+    def test_sorted(self):
+        tree = fixture.create_tree_simple()
+
+        # First un-sort the fixture (we checked in below tests that this works)
+        tree_2 = tree.sorted(reverse=True, deep=True)
+
+        assert tree_2 is not tree
+
+        assert fixture.check_content(
+            tree_2.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── B
+            │   ╰── b1
+            │       ╰── b11
+            ╰── A
+                ├── a2
+                ╰── a1
+                    ├── a12
+                    ╰── a11
         """,
         )
 

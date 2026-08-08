@@ -670,7 +670,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
         warnings.warn(
             "Tree.iter_by_type() is deprecated since v1.1, "
-            "use Tree.iterator() with `kind` argument instead.",
+            "use Tree.iterator(..., kind=...) instead.",
             DeprecationWarning,
             stacklevel=2,
         )

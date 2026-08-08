@@ -13,6 +13,7 @@ Declare the :class:`~nutree.node.Node` class.
 from __future__ import annotations
 
 import re
+import warnings
 from collections.abc import Iterable, Iterator
 from operator import attrgetter
 from pathlib import Path
@@ -180,6 +181,11 @@ class Node(Generic[TData]):
         # Allow calling simple methods from within TEMPLATE.format(),
         # e.g. `"{node.path()}"`:
         if name.endswith("()"):
+            warnings.warn(
+                f"Calling method '{name}()' via __getattr__ is deprecated since v1.2.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return getattr(self, name[:-2])()
         raise AttributeError(repr(name))
 

@@ -5,18 +5,21 @@
   - Some methods now raise `TypeError` instead of `ValueError` when 
     parameters have the wrong type or are missing.
     (4fd93e98b99f8c6aa66d05d3b2e9fb22b5c185f2)
+- DEPRECATE: `Tree.find()` is deprecated, use `Tree.find_first()` instead."
+- DEPRECATE: Calling method `{name}()` via `__getattr__` is deprecated.
+  This allowed calling simple methods from within `repr=TEMPLATE` parameter
+   e.g. `repr="{node.path()}"`. Use `repr=CALLBACK` instead.
 - `tree[x]` now also accepts `Node` instances.
 - `x in tree` now uses the same lookup logic as `tree[x]`.
 - `reversed(tree)` now raises a TypError, since it didn't make sense.
 - New method `tree.sorted()` returns a sorted copy.
-- `Tree.find()` is deprecated, use `Tree.find_first()` instead."
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
 
 ## 1.1.0 (2025-02-09)
 
-- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(.., kind)`instead.
+- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(..., kind)`instead.
 - New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
   `TypedNode.iterator(..., kind=ANY_KIND)`,
   and `TypedTree.count_descendants(leaves_only=False, kind=ANY_KIND)`
