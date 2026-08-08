@@ -379,10 +379,34 @@ class TestNavigate:
 
 
 class TestSort:
-    def test_reverse_deep(self):
+    def test_sort(self):
         tree = fixture.create_tree_simple()
 
-        tree.sort(reverse=True)
+        # First un-sort the fixture (we checked in below tests that this works)
+        tree.sort(reverse=True, deep=True)
+
+        # Now do the real test
+        tree.sort()
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<'fixture'>
+            ├── A
+            │   ├── a1
+            │   │   ├── a11
+            │   │   ╰── a12
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
+        """,
+        )
+
+    def test_sort_reverse_deep(self):
+        tree = fixture.create_tree_simple()
+
+        tree.sort(reverse=True, deep=True)
 
         assert fixture.check_content(
             tree.format(repr="{node.name}"),
@@ -396,6 +420,26 @@ class TestSort:
                 ╰── a1
                     ├── a12
                     ╰── a11
+        """,
+        )
+
+    def test_sort_reverse_shallow(self):
+        tree = fixture.create_tree_simple()
+
+        tree.sort(reverse=True, deep=False)
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── B
+            │   ╰── b1
+            │       ╰── b11
+            ╰── A
+                ├── a1
+                │   ├── a11
+                │   ╰── a12
+                ╰── a2
         """,
         )
 
@@ -682,6 +726,10 @@ class TestTraversal:
             TypeError, match="callback should not return values except for"
         ):
             res_2 = tree.visit(cb)  # type: ignore
+
+    def test_reversed(self):
+        with pytest.raises(TypeError, match="Cannot reverse a tree"):
+            reversed(Tree())
 
 
 class TestMutate:
@@ -1114,6 +1162,18 @@ class TestCopy:
         assert tree_1.count == tree_2.count
         assert tree_1["a11"] == tree_2["a11"]
         assert tree_1["a11"].data is tree_2["a11"].data
+
+        tree_1_a11 = tree_1["a11"]
+        tree_2_a11 = tree_2["a11"]
+        assert tree_1_a11 is not tree_2_a11
+        assert tree_1_a11 == tree_2_a11
+        assert tree_1_a11.data is tree_2_a11.data
+        assert tree_1_a11.data_id == tree_2_a11.data_id
+
+        with pytest.raises(KeyError):
+            tree_1[tree_2_a11]
+        with pytest.raises(KeyError):
+            tree_2[tree_1_a11]
 
         assert fixture.trees_equal(tree_1, tree_2)
         # assert fixture.canonical_repr(tree_1) == fixture.canonical_repr(tree_2)

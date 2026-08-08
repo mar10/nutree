@@ -1,8 +1,10 @@
 # Changelog
 
 ## 1.2.0 (unreleased)
-- BREAKING: Some methods now raise `TypeError` instead of `ValueError` when 
-  parameters have the wrong type or are missing.
+- BREAKING:
+  - Some methods now raise `TypeError` instead of `ValueError` when 
+    parameters have the wrong type or are missing.
+    (4fd93e98b99f8c6aa66d05d3b2e9fb22b5c185f2)
 - `tree[x]` now also accepts `Node` instances.
 - `x in tree` now uses the same lookup logic as `tree[x]`.
 - `reversed(tree)` now raises a TypError, since it didn't make sense.

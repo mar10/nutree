@@ -1316,7 +1316,7 @@ class Node(Generic[TData]):
         reverse: bool = False,
         deep: bool = False,
     ) -> None:
-        """Sort child nodes.
+        """Sort child nodes in-place (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.

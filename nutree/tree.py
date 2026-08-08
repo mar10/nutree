@@ -683,7 +683,7 @@ class Tree(Generic[TData, TNode]):
         reverse: bool = False,
         deep: bool = True,
     ) -> None:
-        """Sort toplevel nodes (optionally recursively).
+        """Sort child nodes recursively.
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.

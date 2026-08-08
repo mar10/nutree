@@ -13,6 +13,23 @@
 > _Nutree_ is a Python library for tree data structures with an intuitive,
 > yet powerful, API.
 
+Nutree trees and nodes follow Python's container conventions where it makes 
+sense for a tree structure, while deliberately diverging where a literal 
+list/Sequence analogy would be misleading. 
+
+`__len__` returns the total number of nodes in the tree (or direct children of a node),
+`__iter__` performs a depth-first traversal over descendants, 
+and `__contains__` tests membership using the same matching rules as lookup.
+
+`__getitem__` is value-based rather than positional: an int is matched against id(node)
+and node.data_id. Other values are matched against node.data.
+A lookup that finds no match raises KeyError; one that finds more than one match 
+raises AmbiguousMatchError, which points you to find_first() or find_all() for 
+explicit control. 
+Because there is no meaningful notion of position in a tree, slicing and `__reversed__` 
+are intentionally not implemented — use traversal methods (iterate(), 
+order-specific walks) when you need directional or ordered access instead.
+
 **Nutree Facts**
 
 Handle multiple references of single objects ('clones') <br>

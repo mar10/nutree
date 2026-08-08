@@ -206,11 +206,13 @@ CONNECTORS: dict[
 class DictWrapper:
     """Wrap a Python dict so it can be added to the tree.
 
-    Makes the dict hashable and comparable with `==`, so it can be used added to
+    Makes a dict hashable and comparable with `==`, so it can be added to
     the tree and can be checked for modifications during tree diffing.
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
+
+    For Python 3.15 and later consider using ``frozendict`` instead of this class.
 
     See :ref:`generic-node-data` for details.
     """
