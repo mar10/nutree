@@ -175,7 +175,7 @@ class TestNavigate:
         assert tree[records.data_id] is records
         assert tree[records.data] is records
         assert tree[records.node_id] is records
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             tree[records]
 
         assert records.tree is records._tree
@@ -680,7 +680,7 @@ class TestTraversal:
                 return 17
 
         with pytest.raises(
-            ValueError, match="callback should not return values except for"
+            TypeError, match="callback should not return values except for"
         ):
             res_2 = tree.visit(cb)  # type: ignore
 
@@ -791,7 +791,7 @@ class TestMutate:
         with pytest.raises(AmbiguousMatchError):  # not allowed for clones
             tree.find_first("a1").rename("new_a1")
 
-        with pytest.raises(ValueError):  # missing args
+        with pytest.raises(TypeError):  # missing args
             tree.find_first("a1").set_data(None)
 
         # Only rename first occurrence:
@@ -1324,9 +1324,9 @@ class TestCopy:
         """
         tree = fixture.create_tree_simple()
 
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree.filter(predicate=None)  # type: ignore
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree.system_root.filter(predicate=None)  # type: ignore
 
         def _tf(
@@ -1496,10 +1496,10 @@ class TestCopy:
         )
 
         # Should use tree.copy() instead:
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree_2 = tree.filtered(predicate=None)  # type: ignore
 
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree_2 = tree.system_root.filtered(predicate=None)  # type: ignore
 
         tree_2 = tree.copy()

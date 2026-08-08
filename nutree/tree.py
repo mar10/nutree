@@ -182,7 +182,7 @@ class Tree(Generic[TData, TNode]):
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
         """
         if isinstance(data, Node):
-            raise ValueError(f"Expected data instance, data_id, or node_id: {data}")
+            raise TypeError(f"Expected data instance, data_id, or node_id: {data}")
 
         # Support node_id lookup
         if isinstance(data, int):
@@ -319,7 +319,7 @@ class Tree(Generic[TData, TNode]):
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         if not data and not data_id:
-            raise ValueError("Missing data or data_id")
+            raise TypeError("Missing data or data_id")
 
         if data is None or data is node._data:
             new_data = None
@@ -590,7 +590,7 @@ class Tree(Generic[TData, TNode]):
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("Predicate is required (use copy() instead)")
+            raise TypeError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
     def clear(self) -> None:
@@ -673,6 +673,21 @@ class Tree(Generic[TData, TNode]):
         their string representation.
         """
         self.system_root.sort_children(key=key, reverse=reverse, deep=deep)
+
+    def sorted(
+        self,
+        *,
+        key: SortKeyType | None = None,
+        reverse: bool = False,
+        deep: bool = True,
+    ) -> Self:
+        """Return a sorted copy of this node and descendants as tree.
+
+        See also :ref:`iteration-callbacks`.
+        """
+        new_tree = self.copy()
+        new_tree.sort(key=key, reverse=reverse, deep=deep)
+        return new_tree
 
     def to_dict_list(self, *, mapper: SerializeMapperType | None = None) -> list[dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all

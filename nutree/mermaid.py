@@ -107,7 +107,7 @@ def _node_to_mermaid_flowchart_iter(
             )
 
     elif not callable(edge_mapper):  # pragma: no cover
-        raise ValueError("edge_mapper must be str or callable")
+        raise TypeError("edge_mapper must be str or callable")
 
     if as_markdown:
         yield "```mermaid"
@@ -210,7 +210,7 @@ def node_to_mermaid_flowchart(
         target = Path(target)
 
     if not isinstance(target, Path):
-        raise ValueError(f"target must be a Path, str, or StringIO: {target}")
+        raise TypeError(f"target must be a Path, str, or StringIO: {target}")
 
     mm_path = target.with_suffix(".tmp") if format else target
 

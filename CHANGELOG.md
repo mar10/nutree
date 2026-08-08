@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.2.0 (unreleased)
+- BREAKING: Some methods now raise `TypeError` instead of `ValueError` when 
+  parameters have the wrong type or are missing.
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)

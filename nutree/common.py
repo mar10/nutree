@@ -224,7 +224,7 @@ class DictWrapper:
             if not isinstance(dict_inst, dict):
                 raise TypeError("dict_inst must be a dictionary or None")
             if values:
-                raise ValueError("Cannot pass both dict_inst and **values")
+                raise TypeError("Cannot pass both dict_inst and **values")
             self._dict = dict_inst
         else:
             # Single keyword arguments are passed (probably from unpacked dict):
@@ -407,7 +407,7 @@ def call_traversal_cb(
             # Converts wrong syntax in exception handler...
             raise res
         else:
-            raise ValueError(
+            raise TypeError(
                 "callback should not return values except for "
                 f"None, False, SkipBranch, or StopTraversal: {res!r}."
             )

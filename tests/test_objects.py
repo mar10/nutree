@@ -74,7 +74,7 @@ class TestObjects:
         # assert get_back in tree
         # assert "123-456" in tree
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             n.rename("foo")
         assert tree._self_check()
 
@@ -137,7 +137,7 @@ class TestDictWrapper:
         with pytest.raises(TypeError):
             _ = DictWrapper("foo", d)  # type: ignore
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             _ = DictWrapper(d, foo="bar")
 
         dw = DictWrapper(d)
