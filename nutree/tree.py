@@ -658,16 +658,20 @@ class Tree(Generic[TData, TNode]):
         :ref:`iteration-callbacks`.
         """
         if data is not None:
-            assert data_id is None
+            if data_id is not None:
+                raise TypeError("Cannot pass both `data` and `data_id`")
             data_id = self.calc_data_id(data)
 
         if data_id is not None:
-            assert match is None
-            assert node_id is None
+            if match is not None or node_id is not None:
+                raise TypeError(
+                    "Cannot pass `data_id` together with `match` or `node_id`"
+                )
             res = self._nodes_by_data_id.get(data_id)
             return res[0] if res else None
         elif match is not None:
-            assert node_id is None
+            if node_id is not None:
+                raise TypeError("Cannot pass `match` together with `node_id`")
             return self.system_root.find_first(match=match)
         elif node_id is not None:
             return self._node_by_id.get(node_id)
