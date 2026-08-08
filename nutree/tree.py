@@ -144,10 +144,6 @@ class Tree(Generic[TData, TNode]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}>"
 
-    def __contains__(self, data: Any) -> bool:
-        """Implement ``data in tree`` syntax to check for node existence."""
-        return bool(self.find_first(data))
-
     def __delitem__(self, data: Any) -> None:
         """Implement ``del tree[data]`` syntax to remove nodes."""
         self[data].remove()
@@ -172,14 +168,18 @@ class Tree(Generic[TData, TNode]):
     def __getitem__(self, data: object) -> TNode:
         """Implement ``tree[data]`` syntax to lookup a node.
 
-        `data` may be a plain string, data object, data_id, or node_id.
+        `data` may be a Node, node_id, data_id or any data object.
 
-        Note: This is a flexible and concise way to access tree nodes. However,
-        :meth:`find_all` or :meth:`find_first` may be faster.
+        If a match is found (trying node_id first, then data_id, then data),
+        the corresponding node is returned.
+        If no match is found, a KeyError is raised.
 
         :class:`~nutree.common.AmbiguousMatchError` is raised if multiple matches
         are found.
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
+
+        Note: This is a flexible and concise way to access tree nodes. However,
+        :meth:`find_all` or :meth:`find_first` may be faster and more explicit.
         """
         if isinstance(data, Node):
             data = id(data)
@@ -204,6 +204,18 @@ class Tree(Generic[TData, TNode]):
                 "Use tree.find_all() or tree.find_first() to resolve this."
             )
         return res[0]
+
+    def __contains__(self, data: Any) -> bool:
+        """Implement ``data in tree`` syntax to check for node existence.
+
+        Uses the same lookup logic as :meth:`__getitem__`, but returns True/False
+        instead of raising exceptions.
+        """
+        try:
+            self[data]
+        except KeyError:
+            return False
+        return True  # even for AmbiguousMatchError, we return True
 
     def __len__(self) -> int:
         """Make ``len(tree)`` return the number of nodes
