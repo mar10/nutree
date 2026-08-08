@@ -4,6 +4,7 @@
 - BREAKING: Some methods now raise `TypeError` instead of `ValueError` when 
   parameters have the wrong type or are missing.
 - `tree[x]` now also accepts `Node` instances.
+- `reversed(tree)` now raises a TypError, since it didn't make sense.
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)

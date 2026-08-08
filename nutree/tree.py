@@ -210,6 +210,10 @@ class Tree(Generic[TData, TNode]):
         (also makes empty trees falsy)."""
         return self.count
 
+    def __reversed__(self):
+        """Raise an error when trying to reverse the tree."""
+        raise TypeError("Cannot reverse a tree")
+
     def calc_data_id(self, data: Any) -> DataIdType:
         """Called internally to calculate `data_id` for a `data` object.
 
