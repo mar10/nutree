@@ -182,7 +182,7 @@ class Tree(Generic[TData, TNode]):
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
         """
         if isinstance(data, Node):
-            raise TypeError(f"Expected data instance, data_id, or node_id: {data}")
+            data = id(data)
 
         # Support node_id lookup
         if isinstance(data, int):

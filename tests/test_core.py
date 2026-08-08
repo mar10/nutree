@@ -175,8 +175,7 @@ class TestNavigate:
         assert tree[records.data_id] is records
         assert tree[records.data] is records
         assert tree[records.node_id] is records
-        with pytest.raises(TypeError):
-            tree[records]
+        assert tree[records] is records
 
         assert records.tree is records._tree
 
