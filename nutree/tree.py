@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import random
 import threading
+import warnings
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import (
@@ -677,8 +678,17 @@ class Tree(Generic[TData, TNode]):
             return self._node_by_id.get(node_id)
         raise NotImplementedError
 
-    #: Alias for :meth:`find_first`
-    find = find_first
+    def find(self, *args, **kwargs):
+        """Alias for :meth:`find_first`.
+
+        @deprecated: Use :meth:`find_first` instead.
+        """
+        warnings.warn(
+            "Tree.find() is deprecated since v1.2, use Tree.find_first() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.find_first(*args, **kwargs)
 
     def sort(
         self,

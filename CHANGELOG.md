@@ -8,6 +8,8 @@
 - `tree[x]` now also accepts `Node` instances.
 - `x in tree` now uses the same lookup logic as `tree[x]`.
 - `reversed(tree)` now raises a TypError, since it didn't make sense.
+- New method `tree.sorted()` returns a sorted copy.
+- `Tree.find()` is deprecated, use `Tree.find_first()` instead."
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)

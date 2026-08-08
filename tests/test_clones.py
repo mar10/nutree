@@ -45,14 +45,14 @@ class TestClones:
         with pytest.raises(UniqueConstraintError):
             tree.add(tree["A"])
 
-        res = tree.find("a1")
+        res = tree.find_first("a1")
         assert res
         assert res.data == "a1"
         assert res.is_clone()
         assert len(res.get_clones()) == 1
         assert len(res.get_clones(add_self=True)) == 2
 
-        res = tree.find("not_existing")
+        res = tree.find_first("not_existing")
         assert res is None
 
         assert not tree["a2"].is_clone()
@@ -123,9 +123,9 @@ class TestClones:
         n1.data["a"] = 42
         assert n2.data["a"] == 42
         with pytest.raises(TypeError, match="unhashable type: 'dict'"):
-            _ = tree.find(d)
+            _ = tree.find_first(d)
 
-        n = tree.find(DictWrapper(d))
+        n = tree.find_first(DictWrapper(d))
         assert n
         assert n is n1
         assert n.is_clone()

@@ -50,7 +50,7 @@ class TestObjects:
         assert n.name == repr(n.data)
         assert n.name == "Item<'Let It Be', 12.34$>"
 
-        assert tree.find(match=".*Let It Be.*").data is let_it_be
+        assert tree.find_first(match=".*Let It Be.*").data is let_it_be
 
         pony = Item("Dig A Pony", 0.99, 0)
         n.add(pony)
@@ -60,14 +60,14 @@ class TestObjects:
 
         print(tree.format(repr="{node.data}"))
 
-        n = tree.find(pony)
+        n = tree.find_first(pony)
         assert n.data is pony
 
-        n = tree.find(get_back)
+        n = tree.find_first(get_back)
         assert n is None
-        n = tree.find(data_id="123-000")
+        n = tree.find_first(data_id="123-000")
         assert n is None
-        n = tree.find(data_id="123-456")
+        n = tree.find_first(data_id="123-456")
         assert n.data is get_back
         assert "Get Back" not in tree
         # FIXME: this should work

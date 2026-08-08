@@ -93,7 +93,7 @@ class TestBasics:
            """,
         )
 
-        a11 = tree.find("a11")
+        a11 = tree.find_first("a11")
         assert a11.up().name == "a1"
         assert a11.up(1).name == "a1"
         assert a11.up(2).name == "A"
@@ -181,10 +181,10 @@ class TestNavigate:
 
         assert len(tree.get_toplevel_nodes()) == 2
 
-        assert tree.find(data="Records") is records
+        assert tree.find_first(data="Records") is records
         # TODO: hashes are salted in Py3, so we can't assume stable keys in tests
-        # assert tree.find(data_id="1862529381406879915") is records
-        assert tree.find(data_id=records.data_id) is records
+        # assert tree.find_first(data_id="1862529381406879915") is records
+        assert tree.find_first(data_id=records.data_id) is records
 
         assert records.name == "Records"
         assert f"{records.data}" == "Records"
@@ -230,7 +230,7 @@ class TestNavigate:
 
         let_it_be = records.first_child()
         assert let_it_be.name
-        assert records.find("Let It Be") is let_it_be
+        assert records.find_first("Let It Be") is let_it_be
         assert let_it_be.name == "Let It Be"
         assert let_it_be.depth() == 2
         assert let_it_be.parent is records
@@ -322,9 +322,14 @@ class TestNavigate:
         n = tree["Let It Be"]
         assert n.name == "Let It Be"
 
+        #
+        with pytest.deprecated_call():
+            assert tree.find("Let It Be") is n
+            assert tree.find("Let It Boo") is None
+
         # Search by data
-        assert tree.find("Let It Be") is n
-        assert tree.find("Let It Boo") is None
+        assert tree.find_first("Let It Be") is n
+        assert tree.find_first("Let It Boo") is None
 
         assert tree.find_first(node_id=records.node_id) is records
         assert tree.find_first(node_id=records.node_id) is records
@@ -334,20 +339,20 @@ class TestNavigate:
         assert "Let" not in tree
 
         # Search by data.name
-        assert tree.find(match="Let It Boo") is None
-        assert tree.find(match="Let") is None
-        assert tree.find(match="Let.*") is n
-        assert tree.find(match="It") is None
-        assert tree.find(match="It.*") is None
-        assert tree.find(match=".*It") is None
-        assert tree.find(match=".*It.*") is n
-        assert tree.find(match="let it be") is None  # case sensitive!
-        assert tree.find(match=("let it be", re.I)) is n  # case insensitive!
-        assert tree.find(match="Let It Be") is n
+        assert tree.find_first(match="Let It Boo") is None
+        assert tree.find_first(match="Let") is None
+        assert tree.find_first(match="Let.*") is n
+        assert tree.find_first(match="It") is None
+        assert tree.find_first(match="It.*") is None
+        assert tree.find_first(match=".*It") is None
+        assert tree.find_first(match=".*It.*") is n
+        assert tree.find_first(match="let it be") is None  # case sensitive!
+        assert tree.find_first(match=("let it be", re.I)) is n  # case insensitive!
+        assert tree.find_first(match="Let It Be") is n
 
-        assert records.find(match="Let It Be") is n
-        assert records.find(match=".* It Be") is n
-        assert records.find(match="It Be") is None
+        assert records.find_first(match="Let It Be") is n
+        assert records.find_first(match=".* It Be") is n
+        assert records.find_first(match="It Be") is None
 
         # Search multiple
         assert tree.find_all(match="Let It Be") == [n]
@@ -885,16 +890,20 @@ class TestMutate:
         )
 
         assert tree["a2"].data_id == hash("a2")
-        tree.find("a2").set_data(data=None, data_id=123, with_clones=True)
+        tree.find_first("a2").set_data(data=None, data_id=123, with_clones=True)
         with pytest.raises(KeyError):
             _ = tree["a2"].data_id
-        assert tree.find(data_id=123)
+        assert tree.find_first(data_id=123)
 
-        tree.find(data_id=123).set_data(data="a2_new", data_id=123, with_clones=True)
-        assert tree.find(data_id=123)
+        tree.find_first(data_id=123).set_data(
+            data="a2_new", data_id=123, with_clones=True
+        )
+        assert tree.find_first(data_id=123)
 
-        tree.find(data_id=123).set_data(data="a2_new2", data_id=123, with_clones=False)
-        assert tree.find(data_id=123)
+        tree.find_first(data_id=123).set_data(
+            data="a2_new2", data_id=123, with_clones=False
+        )
+        assert tree.find_first(data_id=123)
 
         assert tree._self_check()
 

@@ -87,15 +87,15 @@ class TestDiff:
         tree_1 = tree_0.copy(name="T1")
 
         # Modify 2nd tree
-        bob_node = tree_1.find(match=".*Bob.*")
+        bob_node = tree_1.find_first(match=".*Bob.*")
         assert bob_node
-        dave_node = tree_1.find(match=".*Dave.*")
+        dave_node = tree_1.find_first(match=".*Dave.*")
         assert dave_node
-        dev_node = tree_1.find(match=".*Development.*")
+        dev_node = tree_1.find_first(match=".*Development.*")
         assert dev_node
-        mkt_node = tree_1.find(match=".*Marketing.*")
+        mkt_node = tree_1.find_first(match=".*Marketing.*")
         assert mkt_node
-        alice_node = tree_1.find(match=".*Alice.*")
+        alice_node = tree_1.find_first(match=".*Alice.*")
         assert alice_node
 
         newman = fixture.Person("Newman", age=67, guid="{567-567}")

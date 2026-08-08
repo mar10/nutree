@@ -7,6 +7,7 @@
 import re
 from pathlib import Path
 
+import pytest
 from nutree.typed_tree import ANY_KIND, TypedNode, TypedTree, _SystemRootTypedNode
 
 from . import fixture
@@ -103,7 +104,9 @@ class TestTypedTree:
         assert tree.count_descendants(leaves_only=True, kind="failure") == 1
         assert tree.system_root.count_descendants(kind="failure") == 2
 
-        assert len(list(tree.iter_by_type("cause"))) == 2
+        with pytest.deprecated_call():
+            assert len(list(tree.iter_by_type("cause"))) == 2
+
         assert len(list(tree.iterator(kind="cause"))) == 2
         assert len(list(tree.iterator())) == 8
 

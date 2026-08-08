@@ -140,11 +140,11 @@ Tree statistics and related nodes are accessible like so::
     assert len(records_node.children) == 2
     assert records_node.depth() == 1
 
-    assert tree.find("Records") is records_node
-    assert tree.find("records") is None  # case-sensitive
+    assert tree.find_first("Records") is records_node
+    assert tree.find_first("records") is None  # case-sensitive
 
     n = records_node.first_child()
-    assert records_node.find("Let It Be") is n
+    assert records_node.find_first("Let It Be") is n
 
     assert n.name == "Let It Be"
     assert n.depth() == 2

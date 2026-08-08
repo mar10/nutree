@@ -35,9 +35,9 @@ class TestBenchmarks:
             """,
         )
         bmr.run(
-            variant="find() ",
+            variant="find_first() ",
             stmt="""\
-                _ = tree.find("a1")
+                _ = tree.find_first("a1")
             """,
         )
         bmr.run(
