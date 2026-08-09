@@ -556,15 +556,35 @@ class Node(Generic[TData]):
     def get_parent_list(
         self, *, add_self: bool = False, bottom_up: bool = False
     ) -> list[Self]:
-        """Return ordered list of all parent nodes."""
+        """Return an ordered list of all parent nodes (top-down by default)."""
         res = []
         parent = self if add_self else self._parent
         while parent is not None and parent._parent is not None:
             res.append(parent)
             parent = parent._parent
         if not bottom_up:
+            # Note: it is more efficient to reverse the list than to append
+            # in reverse order!
             res.reverse()
         return res
+
+    def parent_iterator(self, *, add_self=False, bottom_up=True) -> Iterator[Self]:
+        """Generator that walks the parent chain bottom-up.
+
+        Note: top-down requires to convert to a list and revert anyway,
+        so it can also be implemented as
+        ```py
+        for p in self.get_parent_list(add_self=add_self, bottom_up=False):
+        ```
+        """
+        if not bottom_up:
+            yield from self.get_parent_list(add_self=add_self, bottom_up=False)
+            return
+        # Bottom-up iteration:
+        parent = self if add_self else self._parent
+        while parent is not None and parent._parent is not None:
+            yield parent
+            parent = parent._parent
 
     def get_path(
         self, *, add_self: bool = True, separator: str = "/", repr: str = "{node.name}"
@@ -656,14 +676,15 @@ class Node(Generic[TData]):
                 raise ValueError("Cannot set ID for deep copies.")
 
             source_node = cast(Self, child)
-            if source_node._tree is self._tree:
-                if source_node._parent is self:
-                    raise UniqueConstraintError(
-                        f"Cannot add a copy of {source_node} as child of {self}, "
-                        "because it would create a 2nd instance in the same parent."
-                    )
-            else:
-                pass
+            if (
+                self._tree.check_dag
+                and source_node._parent is self
+                and source_node._tree is self._tree
+            ):
+                raise UniqueConstraintError(
+                    f"Cannot add a copy of {source_node} as child of {self}, "
+                    "because it would create a 2nd instance in the same parent."
+                )
 
             if data_id and data_id != source_node._data_id:
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")

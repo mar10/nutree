@@ -1,6 +1,12 @@
 # Changelog
 
+**NOTE** 
+Dropping Python versions that reached EOL will only cause a minor version bump.
+
 ## 1.2.0 (unreleased)
+
+- New method `node.parent_iterator()`.
+- New option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).
 - Add `tree.map(fn)`
 - BREAKING: Rename `MapperCallbackType` to `DotMapperCallbackType`
 - Drop Python 3.9 (EOL 2025-10)

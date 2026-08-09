@@ -45,12 +45,48 @@ class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
 
 
-class UniqueConstraintError(TreeError):
-    """Thrown when trying to add the same node_id to the same parent"""
+class StructureError(TreeError):
+    """Base class for errors thrown when the tree structure is invalid."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class DuplicateNodeIdError(StructureError):
+    """Thrown when trying to add the same node_id to the tree."""
+
+
+class UniqueConstraintError(StructureError):
+    """Thrown when trying to add the same data_id to the same parent.
+
+    This would violate the constraint of the tree being a 'SIMPLE directed
+    acyclic graph'.
+    Note that the tree does not allow to add the same data_id to a parent node
+    if check_dag is true (the default).
+    In TypedTrees, the data_id may be added to the same parent twice, as long as
+    it has a different kind.
+    """
+
+
+class CycleDetectedError(StructureError):
+    """Thrown when trying to add the same data_id to the same ancestor chain.
+
+    This would violate the constraint of the tree being a 'simple directed
+    ACYCLIC graph' and create a cycle.
+    In TypedTrees, the data_id may be added to the same ancestor chain more than
+    once, as long as it has a different kind.
+
+    Pass `check_dag=False` to the tree constructor to suppress this restriction.
+    """
 
 
 class AmbiguousMatchError(TreeError):
-    """Thrown when a single-value lookup found multiple matches."""
+    """Thrown when a single-value lookup found multiple matches.
+
+    Receiving this error indicates that the tree contains duplicate data values,
+    but the user expected a single match.
+    Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
+    """
 
 
 class IterMethod(Enum):

@@ -565,6 +565,37 @@ class TestTraversal:
         s = [n.data for n in tree.iterator(IterMethod.RANDOM_ORDER)]
         assert len(s) == 8
 
+    def test_iter_parents(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree_simple()
+
+        # print(tree.format(repr="{node.data}"))
+        a11 = tree["a12"]
+
+        s = ",".join(n.data for n in a11.parent_iterator())
+        assert s == "a1,A"
+
+        s = ",".join(n.data for n in a11.parent_iterator(add_self=True))
+        assert s == "a12,a1,A"
+
+        s = ",".join(n.data for n in a11.parent_iterator(bottom_up=False))
+        assert s == "A,a1"
+
+        s = ",".join(
+            n.data for n in a11.parent_iterator(bottom_up=False, add_self=True)
+        )
+        assert s == "A,a1,a12"
+
     def test_visit(self):
         """
         Tree<'fixture'>
