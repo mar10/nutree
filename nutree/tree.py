@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import random
 import threading
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from typing import (
     IO,
@@ -37,11 +37,11 @@ from nutree.common import (
     CycleDetectedError,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
     DuplicateNodeIdError,
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
@@ -631,6 +631,30 @@ class Tree(Generic[TData, TNode]):
             raise ValueError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
+    def map(self, fn: Callable[[TData], TData]) -> Self:
+        """Return a copy of this tree with mapped data.
+
+        Using Python's built-in function ``map(fn, tree)`` would flatten all
+        nodes and return a list of node objects. |br|
+        In contrast, ``tree.map(fn)`` is intended to transform the node.data,
+        while keeping the tree hierarchy intact.
+
+        Note pitfall: a *shallow* copy of the tree is created first, and then
+        ``fn(node.data)`` is called for each node.
+        This means that the new tree's nodes reference the same data objects as
+        the original tree, so if a data object is mutated, it will also affect
+        the original tree. |br|
+        If this is not desired, you can either make sure that ``fn`` returns a
+        new data object, or alternatively make a deepcopy first:
+        ``new_tree = tree.deepcopy().map(fn)``.
+        """
+        new_tree = self.copy()
+        for node in new_tree:
+            new_data = fn(node.data)
+            if node.data is not new_data:
+                node.set_data(data=new_data, with_clones=False)
+        return new_tree
+
     def clear(self) -> None:
         """Remove all nodes from this tree."""
         self.system_root.remove_children()
@@ -937,8 +961,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -964,8 +988,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> None:
         """Serialize a DOT formatted graph representation.
 

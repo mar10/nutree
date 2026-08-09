@@ -947,6 +947,72 @@ class TestMutate:
             """,
         )
 
+    def test_map_tree(self):
+        tree = fixture.create_tree_simple()
+
+        def mapper(data: str) -> str:
+            return data.upper()
+
+        tree_2 = tree.map(mapper)
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  `- B11
+            """,
+        )
+
+        tree_3 = tree.map(str.upper)
+
+        assert fixture.check_content(
+            tree_3,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  `- B11
+            """,
+        )
+
+    def test_map_tree_with_clones(self):
+        tree = fixture.create_tree_simple(clones=True)
+
+        def mapper(data):
+            return data.upper()
+
+        tree_2 = tree.map(mapper)
+
+        assert tree_2 is not tree, "map() should return a new tree"
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  +- A11
+                  `- B11
+            """,
+        )
+
     def test_remove(self):
         """
         Tree<'fixture'>

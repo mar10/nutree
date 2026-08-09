@@ -23,7 +23,7 @@ Save as DOT file and graphwiz diagram <br>
 Nodes can be plain strings or objects <br>
 (De)Serialize to (compressed) JSON <br>
 Save as Mermaid flow diagram <br>
-Different traversal methods <br>
+Multiple traversal methods <br>
 Generate random trees <br>
 Convert to RDF graph <br>
 Fully type annotated <br>

@@ -168,7 +168,7 @@ ValueMapType = dict[str, list[str]]
 ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
-MapperCallbackType = Callable[["Node", dict], None | Any]
+DotMapperCallbackType = Callable[["Node", dict], None | Any]
 
 #: Callback for `tree.save()`
 SerializeMapperType = Callable[["Node", dict], None | dict]
@@ -181,10 +181,10 @@ PredicateCallbackType = Callable[
     ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
-#:
+#: Callback for `tree.find_all()`, `tree.find_first()`, ...
 MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 
-#:
+#: Callback for `tree.visit()`,  ...
 TraversalCallbackType = Callable[
     ["Node", Any],
     None
@@ -375,10 +375,10 @@ def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     return True
 
 
-def call_mapper(fn: MapperCallbackType | None, node: Node, data: dict) -> Any:
+def call_mapper(fn: DotMapperCallbackType | None, node: Node, data: dict) -> Any:
     """Call the function and normalize result and exceptions.
 
-    Handles `MapperCallbackType`:
+    Handles `DotMapperCallbackType`:
     Call `fn(node, data)` if defined and return the result.
     If `fn` is undefined or returns `None`, return `data`.
     """
