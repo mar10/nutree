@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any
 
-from nutree.common import MapperCallbackType, call_mapper
+from nutree.common import DotMapperCallbackType, call_mapper
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
@@ -31,8 +31,8 @@ def node_to_dot(
     graph_attrs: dict | None = None,
     node_attrs: dict | None = None,
     edge_attrs: dict | None = None,
-    node_mapper: MapperCallbackType | None = None,
-    edge_mapper: MapperCallbackType | None = None,
+    node_mapper: DotMapperCallbackType | None = None,
+    edge_mapper: DotMapperCallbackType | None = None,
 ) -> Iterator[str]:
     """Generate DOT formatted output line-by-line.
 
@@ -51,7 +51,7 @@ def node_to_dot(
 
     def _attr_str(
         attr_def: dict,
-        mapper: MapperCallbackType | None = None,
+        mapper: DotMapperCallbackType | None = None,
         node: Node | None = None,
     ) -> str:
         if mapper:
@@ -125,8 +125,8 @@ def tree_to_dotfile(
     graph_attrs: dict | None = None,
     node_attrs: dict | None = None,
     edge_attrs: dict | None = None,
-    node_mapper: MapperCallbackType | None = None,
-    edge_mapper: MapperCallbackType | None = None,
+    node_mapper: DotMapperCallbackType | None = None,
+    edge_mapper: DotMapperCallbackType | None = None,
 ) -> None:
     if isinstance(target, str):
         target = Path(target)
