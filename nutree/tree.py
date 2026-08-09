@@ -12,6 +12,7 @@ Declare the :class:`~nutree.tree.Tree` class.
 
 from __future__ import annotations
 
+import copy
 import json
 import random
 import threading
@@ -589,16 +590,19 @@ class Tree(Generic[TData, TNode]):
         name: str | None = None,
         predicate: PredicateCallbackType | None = None,
     ) -> Self:
-        """Return a copy of this tree.
+        """Return a shallow copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
         The new nodes reference the original data objects.
 
         `predicate` may be passed to filter the result, which is equivalent to
-        calling :meth:`~nutree.tree.Tree.filtered`
+        calling :meth:`~nutree.tree.Tree.filtered`.
 
         See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
         method for details.
+
+        See :meth:`~nutree.tree.Tree.deepcopy` for a variant that deep-copies
+        the data objects.
         """
         if name is None:
             name = f"Copy of {self}"
@@ -606,6 +610,59 @@ class Tree(Generic[TData, TNode]):
         with self:
             new_tree.system_root._add_from(self.system_root, predicate=predicate)
         return new_tree
+
+    def __copy__(self) -> Self:
+        """Return a shallow copy of this tree.
+
+        Calling ``copy.copy(tree)`` is equivalent to ``tree.copy()``.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference the original data objects.
+        """
+        return self.copy(name=self.name)
+
+    def deepcopy(
+        self,
+        *,
+        name: str | None = None,
+        # predicate: PredicateCallbackType | None = None,
+        memo: dict[int, Any] | None = None,
+    ) -> Self:
+        """Return a deep copy of this tree.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference deep-copied data objects.
+
+        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
+        method for details.
+        """
+        if name is None:
+            name = f"Deep copy of {self}"
+        if memo is None:
+            memo = {}
+        new_tree = self.__class__(name)
+
+        def _copy_children(source_parent: TNode, target_parent: TNode) -> None:
+            for c in source_parent.children:
+                new_data = copy.deepcopy(c.data, memo)
+                new_data_id = new_tree.calc_data_id(new_data)
+                new_node = target_parent.add(new_data, deep=False, data_id=new_data_id)
+                _copy_children(c, new_node)
+
+        with self:
+            _copy_children(self.system_root, new_tree.system_root)
+
+        return new_tree
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+        """Return a deep copy of this tree.
+
+        Calling ``copy.deepcopy(tree)`` is equivalent to ``tree.deepcopy()``.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference deep-copied data objects.
+        """
+        return self.deepcopy(name=self.name, memo=memo)
 
     def copy_to(self, target: TNode | Self, *, deep: bool = True) -> None:
         """Copy this tree's nodes to another target.

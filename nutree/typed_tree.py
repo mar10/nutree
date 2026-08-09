@@ -14,6 +14,7 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 
 from __future__ import annotations
 
+import copy
 from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
@@ -267,7 +268,9 @@ class TypedNode(Node[TData]):
 
         assert not self._children
         for child in other.children:
-            new_child = self.add_child(child.data, kind=None, data_id=child._data_id)
+            new_child = self.add_child(
+                child.data, kind=child.kind, data_id=child._data_id
+            )
             if child.children:
                 new_child._add_from(child, predicate=None)
         return
@@ -494,7 +497,7 @@ class TypedNode(Node[TData]):
     def copy(
         self, *, add_self: bool = True, predicate: PredicateCallbackType | None = None
     ) -> TypedTree[TData]:
-        """Return a new :class:`~nutree.tree.Tree` instance from this branch.
+        """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
 
         See also :ref:`iteration-callbacks`.
         """
@@ -624,6 +627,41 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
         )
+
+    def deepcopy(
+        self,
+        *,
+        name: str | None = None,
+        memo: dict[int, Any] | None = None,
+    ) -> TypedTree[TData]:
+        """Return a deep copy of this tree.
+
+        New :class:`~nutree.typed_tree.TypedTree`
+        and :class:`~nutree.typed_tree.TypedNode` instances are created.
+        The new nodes reference deep-copied data objects.
+
+        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
+        method for details.
+        """
+        if name is None:
+            name = f"Deep copy of {self}"
+        if memo is None:
+            memo = {}
+        new_tree = self.__class__(name)
+
+        def _copy_children(source_parent, target_parent) -> None:
+            for c in source_parent.children:
+                new_data = copy.deepcopy(c.data, memo)
+                new_data_id = new_tree.calc_data_id(new_data)
+                new_node = target_parent.add(
+                    new_data, deep=False, data_id=new_data_id, kind=c.kind
+                )
+                _copy_children(c, new_node)
+
+        with self:
+            _copy_children(self.system_root, new_tree.system_root)
+
+        return new_tree
 
     def _check_insert(self, node: Node):
         """Raise error if inserting a node would violate DAG restrictions."""

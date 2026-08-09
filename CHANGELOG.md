@@ -4,6 +4,7 @@
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
 ## 1.2.0 (unreleased)
+- Support `tree.deepcopy()`, `copy.copy(tree)` and `copy.deepcopy(tree)`
 - `len(node)` returns number of direct children. 
   However nodes are always truthy, even if they don't have children.
 
