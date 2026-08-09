@@ -44,10 +44,10 @@ from nutree.common import (
     CONNECTORS,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
@@ -1610,8 +1610,8 @@ class Node(Generic[TData]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 

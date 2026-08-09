@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.2.0 (unreleased)
+- Add `tree.map(fn)`
+- BREAKING: Rename `MapperCallbackType` to `DotMapperCallbackType`
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
