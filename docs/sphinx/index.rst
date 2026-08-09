@@ -44,7 +44,7 @@ Nutree Facts
   * :ref:`Nodes can be plain strings or objects <objects>`
   * :ref:`(De)Serialize to (compressed) JSON <serialize>`
   * :ref:`Save as Mermaid flow diagram <save-mermaid>`
-  * :ref:`Different traversal methods <traversal>`
+  * :ref:`Multiple traversal methods <traversal>`
   * :ref:`Generate random trees <randomize>`
   * :ref:`Convert to RDF graph <save-rdf>`
   * :ref:`Fully type annotated <api-reference>`

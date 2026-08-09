@@ -1,7 +1,17 @@
 # Changelog
 
+**NOTE** 
+Dropping Python versions that reached EOL will only cause a minor version bump.
+
 ## 1.2.0 (unreleased)
 - Support `tree.deepcopy()`, `copy.copy(tree)` and `copy.deepcopy(tree)`
+- `len(node)` returns number of direct children. 
+  However nodes are always truthy, even if they don't have children.
+
+- New method `node.parent_iterator()`.
+- New option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).
+- Add `tree.map(fn)`
+- BREAKING: Rename `MapperCallbackType` to `DotMapperCallbackType`
 - Drop Python 3.9 (EOL 2025-10)
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)

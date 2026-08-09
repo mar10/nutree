@@ -26,11 +26,13 @@ from typing_extensions import Any, Self
 from nutree.common import (
     ROOT_DATA_ID,
     ROOT_NODE_ID,
+    CalcIdCallbackType,
+    CycleDetectedError,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     PredicateCallbackType,
     SerializeMapperType,
     UniqueConstraintError,
@@ -84,11 +86,12 @@ class TypedNode(Node[TData]):
         node_id: int | None = None,
         meta: dict | None = None,
     ):
-        self._kind: str = kind  # tree._register() checks for this attribute
+        # tree._register() checks for this attribute in __init__():
+        self._kind: str = kind
         super().__init__(
             data, parent=parent, data_id=data_id, node_id=node_id, meta=meta
         )
-        assert isinstance(kind, str) and kind != ANY_KIND, f"Unsupported `kind`: {kind}"
+        assert isinstance(kind, str), f"Unsupported `kind`: {kind}"
 
         # del self._children
         # self._child_map: Dict[Node] = None
@@ -533,8 +536,8 @@ class TypedNode(Node[TData]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -599,6 +602,21 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     #: Default value for ``add_child`` when loading.
     DEFAULT_CHILD_TYPE = "child"
 
+    def __init__(
+        self,
+        name: str | None = None,
+        *,
+        calc_data_id: CalcIdCallbackType | None = None,
+        forward_attrs: bool = False,
+    ) -> None:
+        super().__init__(
+            name=name,
+            calc_data_id=calc_data_id,
+            forward_attrs=forward_attrs,
+            check_dag=True,
+        )
+        self._system_root = self.root_node_factory(self)
+
     @classmethod
     def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
@@ -644,6 +662,27 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             _copy_children(self.system_root, new_tree.system_root)
 
         return new_tree
+
+    def _check_insert(self, node: Node):
+        """Raise error if inserting a node would violate DAG restrictions."""
+        # We can assume that node.parent is set and that node already has at
+        # least one clone registered in self._nodes_by_data_id, when this is
+        # called from _register()
+        assert node._kind, node
+        ref_key = node._data_id
+        kind = node._kind
+        if node._parent._children:
+            for sibling in node._parent._children:
+                if sibling._data_id == ref_key and sibling._kind == kind:
+                    raise UniqueConstraintError(
+                        f"Node with data_id {ref_key} and kind {kind} "
+                        f"already exists in parent {node._parent}"
+                    )
+        for n in self._nodes_by_data_id[ref_key]:
+            if node.is_descendant_of(n) and n._kind == kind:
+                raise CycleDetectedError(
+                    f"Inserting {node} would create a cycle with {n}"
+                )
 
     def add_child(
         self,

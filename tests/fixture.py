@@ -73,6 +73,7 @@ def create_tree_objects(
     clones=False,
     tree: Tree | None = None,
     print=True,
+    check_dag=True,
 ) -> Tree[OrgaUnit]:
     """
     Tree<'2009255653136'>
@@ -88,7 +89,9 @@ def create_tree_objects(
         assert not tree, "must be empty"
         assert isinstance(tree, Tree)
     else:
-        tree = Tree[OrgaUnit](name, calc_data_id=lambda tree, data: data.guid)
+        tree = Tree[OrgaUnit](
+            name, calc_data_id=lambda tree, data: data.guid, check_dag=check_dag
+        )
 
     dev = tree.add(Department("Development", guid="{012-345}"))
     dev.add(Person("Alice", age=23, guid="{123-456}"))
@@ -112,7 +115,8 @@ def create_tree_simple(
     clones=False,
     tree: Tree | None = None,
     print=True,
-) -> Tree:
+    check_dag=True,
+) -> Tree[str]:
     """
     Tree<'fixture'>
     ├── 'A'
@@ -129,7 +133,7 @@ def create_tree_simple(
         assert not tree, "must be empty"
         assert isinstance(tree, Tree)
     else:
-        tree = Tree(name)
+        tree = Tree(name, check_dag=check_dag)
 
     a = tree.add("A")
     a1 = a.add("a1")
