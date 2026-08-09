@@ -15,6 +15,7 @@ Declare the :class:`~nutree.tree.TypedTree` class.
 from __future__ import annotations
 
 import copy
+import warnings
 from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
@@ -744,6 +745,12 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
     def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
         """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
+        warnings.warn(
+            "Tree.iter_by_type() is deprecated since v1.1, "
+            "use Tree.iterator(..., kind=...) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         yield from self.iterator(kind=kind)
 
     def iterator(

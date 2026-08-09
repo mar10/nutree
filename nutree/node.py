@@ -13,6 +13,7 @@ Declare the :class:`~nutree.node.Node` class.
 from __future__ import annotations
 
 import re
+import warnings
 from collections.abc import Iterable, Iterator
 from operator import attrgetter
 from pathlib import Path
@@ -180,6 +181,11 @@ class Node(Generic[TData]):
         # Allow calling simple methods from within TEMPLATE.format(),
         # e.g. `"{node.path()}"`:
         if name.endswith("()"):
+            warnings.warn(
+                f"Calling method '{name}()' via __getattr__ is deprecated since v1.2.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return getattr(self, name[:-2])()
         raise AttributeError(repr(name))
 
@@ -317,7 +323,7 @@ class Node(Generic[TData]):
         """Set `self.data` to a new string (assuming plain string node)."""
         if isinstance(self._data, str):
             return self.set_data(new_name)
-        raise ValueError("Can only rename plain string nodes")
+        raise TypeError("Can only rename plain string nodes")
 
     def set_data(
         self,
@@ -1007,7 +1013,7 @@ class Node(Generic[TData]):
                     p = _create_parents()
                     p._add_from(n)
                 else:
-                    raise ValueError(f"Invalid predicate return value: {res}")
+                    raise TypeError(f"Invalid predicate return value type: {res}")
 
                 parent_stack.pop()
             return
@@ -1024,7 +1030,7 @@ class Node(Generic[TData]):
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("Predicate is required (use copy() instead)")
+            raise TypeError("Predicate is required (use copy() instead)")
         return self.copy(add_self=True, predicate=predicate)
 
     def filter(self, predicate: PredicateCallbackType) -> None:
@@ -1033,7 +1039,7 @@ class Node(Generic[TData]):
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("Predicate is required (use copy() instead)")
+            raise TypeError("Predicate is required (use copy() instead)")
 
         def _visit(parent: Self) -> bool:
             """Return True if any descendant returned True."""
@@ -1351,7 +1357,7 @@ class Node(Generic[TData]):
         reverse: bool = False,
         deep: bool = False,
     ) -> None:
-        """Sort child nodes.
+        """Sort child nodes in-place (optionally recursively).
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.

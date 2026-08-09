@@ -50,7 +50,7 @@ Examples::
     assert records_node.depth() == 1
 
     n = records_node.first_child()
-    assert records_node.find("Let It Be") is n
+    assert records_node.find_first("Let It Be") is n
 
     assert n.name == "Let It Be"
     assert n.depth() == 2
@@ -68,8 +68,8 @@ Search
 Examples::
 
     # Case sensitive (single match):
-    assert tree.find("Records") is records_node
-    assert tree.find("records") is None
+    assert tree.find_first("Records") is records_node
+    assert tree.find_first("records") is None
 
     # 'Smart' search:
     assert tree["Records"] is records_node
@@ -98,14 +98,14 @@ Examples::
   may be more explicit (and faster).
     
 .. note::
-  ``tree.find("123")`` will search for ``calc_data_id(node.data) == "123"``.
+  ``tree.find_first("123")`` will search for ``calc_data_id(node.data) == "123"``.
   If a node was created with an explicit ``data_id``, this will not work.
-  Instead, use ``tree.find(data_id="123")`` to search by key::
+  Instead, use ``tree.find_first(data_id="123")`` to search by key::
   
     tree.add("A", data_id="123")
-    assert tree.find("A") is None # not found
-    assert tree.find("123") is None # not found
-    assert tree.find(data_id="123") is not None # FOUND!
+    assert tree.find_first("A") is None # not found
+    assert tree.find_first("123") is None # not found
+    assert tree.find_first(data_id="123") is not None # FOUND!
     
 
 .. _traversal:

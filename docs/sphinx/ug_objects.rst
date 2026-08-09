@@ -77,7 +77,7 @@ Lookup works by `data` object or `data_id` as expected::
     assert tree[alice].data.guid == "{123-456}"
     assert tree["{123-456}"].data.name == "Alice"
 
-    assert tree.find(data_id="{123-456}").data is alice
+    assert tree.find_first(data_id="{123-456}").data is alice
 
 
 .. _forward-attributes:

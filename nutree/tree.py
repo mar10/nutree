@@ -16,6 +16,7 @@ import copy
 import json
 import random
 import threading
+import warnings
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from typing import (
@@ -162,10 +163,6 @@ class Tree(Generic[TData, TNode]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}>"
 
-    def __contains__(self, data: Any) -> bool:
-        """Implement ``data in tree`` syntax to check for node existence."""
-        return bool(self.find_first(data))
-
     def __delitem__(self, data: Any) -> None:
         """Implement ``del tree[data]`` syntax to remove nodes."""
         self[data].remove()
@@ -190,17 +187,21 @@ class Tree(Generic[TData, TNode]):
     def __getitem__(self, data: object) -> TNode:
         """Implement ``tree[data]`` syntax to lookup a node.
 
-        `data` may be a plain string, data object, data_id, or node_id.
+        `data` may be a Node, node_id, data_id or any data object.
 
-        Note: This is a flexible and concise way to access tree nodes. However,
-        :meth:`find_all` or :meth:`find_first` may be faster.
+        If a match is found (trying node_id first, then data_id, then data),
+        the corresponding node is returned.
+        If no match is found, a KeyError is raised.
 
         :class:`~nutree.common.AmbiguousMatchError` is raised if multiple matches
         are found.
         Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
+
+        Note: This is a flexible and concise way to access tree nodes. However,
+        :meth:`find_all` or :meth:`find_first` may be faster and more explicit.
         """
         if isinstance(data, Node):
-            raise ValueError(f"Expected data instance, data_id, or node_id: {data}")
+            data = id(data)
 
         # Support node_id lookup
         if isinstance(data, int):
@@ -223,12 +224,28 @@ class Tree(Generic[TData, TNode]):
             )
         return res[0]
 
+    def __contains__(self, data: Any) -> bool:
+        """Implement ``data in tree`` syntax to check for node existence.
+
+        Uses the same lookup logic as :meth:`__getitem__`, but returns True/False
+        instead of raising exceptions.
+        """
+        try:
+            self[data]
+        except KeyError:
+            return False
+        return True  # even for AmbiguousMatchError, we return True
+
     def __len__(self) -> int:
         """Make ``len(tree)`` return the number of all nodes (not just direct children).
 
         This also makes empty trees falsy.
         """
         return self.count
+
+    def __reversed__(self):
+        """Raise an error when trying to reverse the tree."""
+        raise TypeError("Cannot reverse a tree")
 
     def calc_data_id(self, data: Any) -> DataIdType:
         """Called internally to calculate `data_id` for a `data` object.
@@ -358,7 +375,7 @@ class Tree(Generic[TData, TNode]):
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         if not data and not data_id:
-            raise ValueError("Missing data or data_id")
+            raise TypeError("Missing data or data_id")
 
         if data is None or data is node._data:
             new_data = None
@@ -685,7 +702,7 @@ class Tree(Generic[TData, TNode]):
         See also :ref:`iteration-callbacks`.
         """
         if not predicate:
-            raise ValueError("Predicate is required (use copy() instead)")
+            raise TypeError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
 
     def map(self, fn: Callable[[TData], TData]) -> Self:
@@ -761,23 +778,36 @@ class Tree(Generic[TData, TNode]):
         :ref:`iteration-callbacks`.
         """
         if data is not None:
-            assert data_id is None
+            if data_id is not None:
+                raise TypeError("Cannot pass both `data` and `data_id`")
             data_id = self.calc_data_id(data)
 
         if data_id is not None:
-            assert match is None
-            assert node_id is None
+            if match is not None or node_id is not None:
+                raise TypeError(
+                    "Cannot pass `data_id` together with `match` or `node_id`"
+                )
             res = self._nodes_by_data_id.get(data_id)
             return res[0] if res else None
         elif match is not None:
-            assert node_id is None
+            if node_id is not None:
+                raise TypeError("Cannot pass `match` together with `node_id`")
             return self.system_root.find_first(match=match)
         elif node_id is not None:
             return self._node_by_id.get(node_id)
         raise NotImplementedError
 
-    #: Alias for :meth:`find_first`
-    find = find_first
+    def find(self, *args, **kwargs):
+        """Alias for :meth:`find_first`.
+
+        @deprecated: Use :meth:`find_first` instead.
+        """
+        warnings.warn(
+            "Tree.find() is deprecated since v1.2, use Tree.find_first() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.find_first(*args, **kwargs)
 
     def sort(
         self,
@@ -786,12 +816,27 @@ class Tree(Generic[TData, TNode]):
         reverse: bool = False,
         deep: bool = True,
     ) -> None:
-        """Sort toplevel nodes (optionally recursively).
+        """Sort child nodes recursively.
 
         `key` defaults to ``attrgetter("name")``, so children are sorted by
         their string representation.
         """
         self.system_root.sort_children(key=key, reverse=reverse, deep=deep)
+
+    def sorted(
+        self,
+        *,
+        key: SortKeyType | None = None,
+        reverse: bool = False,
+        deep: bool = True,
+    ) -> Self:
+        """Return a sorted copy of this node and descendants as tree.
+
+        See also :ref:`iteration-callbacks`.
+        """
+        new_tree = self.copy()
+        new_tree.sort(key=key, reverse=reverse, deep=deep)
+        return new_tree
 
     def to_dict_list(self, *, mapper: SerializeMapperType | None = None) -> list[dict]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all

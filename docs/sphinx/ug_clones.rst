@@ -39,10 +39,9 @@ locations::
 In this case, a lookup using the indexing syntax (`tree[data]`) is not allowed. |br|
 Use :meth:`tree.Tree.find_first()` or :meth:`~tree.Tree.find_all()` instead.
 
-`find_first()` will return the first match (or `None`). 
-Note that :meth:`~tree.Tree.find()` is an alias for :meth:`~tree.Tree.find_first()`::
+`find_first()` will return the first match (or `None`)::
 
-    print(tree.find("a2"))
+    print(tree.find_first("a2"))
 
 ::
 

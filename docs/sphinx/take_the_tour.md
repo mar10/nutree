@@ -216,7 +216,7 @@ now we could also search by the GUID, for example:
 
 
 ```python
-tree_2.find(data_id=str(bob.guid))
+tree_2.find_first(data_id=str(bob.guid))
 ```
 
 
@@ -410,7 +410,7 @@ tree.add("A").up().add("B")
 tree["A"].add(DictWrapper(d))
 tree["B"].add(DictWrapper(d))
 tree.print(repr="{node}")
-# tree.find(d)
+# tree.find_first(d)
 ```
 
     Tree<'4710635408'>

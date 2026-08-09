@@ -4,21 +4,33 @@
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
 ## 1.2.0 (unreleased)
-- Support `tree.deepcopy()`, `copy.copy(tree)` and `copy.deepcopy(tree)`
+- BREAKING:
+  - Drop Python 3.9 (EOL 2025-10)
+  - Some methods now raise `TypeError` instead of `ValueError` when 
+    parameters have the wrong type or are missing.
+  - Rename `MapperCallbackType` to `DotMapperCallbackType`
+
+- DEPRECATE: `Tree.find()` is deprecated, use `Tree.find_first()` instead."
+- DEPRECATE: Calling method `{name}()` by adding `()` to the attribute name via `__getattr__` is deprecated.
+  This allowed calling simple methods from within `repr=TEMPLATE` parameter
+   e.g. `repr="{node.path()}"`. Use `repr=CALLBACK` instead.
+
+- `tree[x]` now also accepts `Node` instances.
+- `x in tree` now uses the same lookup logic as `tree[x]`.
+- `reversed(tree)` now raises a TypError, since it didn't make sense.
+- Add method `tree.sorted()` returns a sorted copy.
+- Add `tree.deepcopy()`, so now we support `copy.copy(tree)` and `copy.deepcopy(tree)`.
 - `len(node)` returns number of direct children. 
   However nodes are always truthy, even if they don't have children.
-
-- New method `node.parent_iterator()`.
-- New option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).
-- Add `tree.map(fn)`
-- BREAKING: Rename `MapperCallbackType` to `DotMapperCallbackType`
-- Drop Python 3.9 (EOL 2025-10)
+- Add method `node.parent_iterator()`.
+- Add option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).
+- Add method `tree.map(fn)`
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
 
 ## 1.1.0 (2025-02-09)
 
-- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(.., kind)`instead.
+- DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(..., kind)`instead.
 - New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
   `TypedNode.iterator(..., kind=ANY_KIND)`,
   and `TypedTree.count_descendants(leaves_only=False, kind=ANY_KIND)`

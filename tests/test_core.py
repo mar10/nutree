@@ -98,7 +98,7 @@ class TestBasics:
            """,
         )
 
-        a11 = tree.find("a11")
+        a11 = tree.find_first("a11")
         assert a11.up().name == "a1"
         assert a11.up(1).name == "a1"
         assert a11.up(2).name == "A"
@@ -180,17 +180,16 @@ class TestNavigate:
         assert tree[records.data_id] is records
         assert tree[records.data] is records
         assert tree[records.node_id] is records
-        with pytest.raises(ValueError):
-            tree[records]
+        assert tree[records] is records
 
         assert records.tree is records._tree
 
         assert len(tree.get_toplevel_nodes()) == 2
 
-        assert tree.find(data="Records") is records
+        assert tree.find_first(data="Records") is records
         # TODO: hashes are salted in Py3, so we can't assume stable keys in tests
-        # assert tree.find(data_id="1862529381406879915") is records
-        assert tree.find(data_id=records.data_id) is records
+        # assert tree.find_first(data_id="1862529381406879915") is records
+        assert tree.find_first(data_id=records.data_id) is records
 
         assert records.name == "Records"
         assert f"{records.data}" == "Records"
@@ -236,7 +235,7 @@ class TestNavigate:
 
         let_it_be = records.first_child()
         assert let_it_be.name
-        assert records.find("Let It Be") is let_it_be
+        assert records.find_first("Let It Be") is let_it_be
         assert let_it_be.name == "Let It Be"
         assert let_it_be.depth() == 2
         assert let_it_be.parent is records
@@ -328,9 +327,13 @@ class TestNavigate:
         n = tree["Let It Be"]
         assert n.name == "Let It Be"
 
+        # `find()` is deprecated, use `find_first()` instead
+        with pytest.deprecated_call():
+            assert tree.find("Let It Be") is n
+
         # Search by data
-        assert tree.find("Let It Be") is n
-        assert tree.find("Let It Boo") is None
+        assert tree.find_first("Let It Be") is n
+        assert tree.find_first("Let It Boo") is None
 
         assert tree.find_first(node_id=records.node_id) is records
         assert tree.find_first(node_id=records.node_id) is records
@@ -340,20 +343,20 @@ class TestNavigate:
         assert "Let" not in tree
 
         # Search by data.name
-        assert tree.find(match="Let It Boo") is None
-        assert tree.find(match="Let") is None
-        assert tree.find(match="Let.*") is n
-        assert tree.find(match="It") is None
-        assert tree.find(match="It.*") is None
-        assert tree.find(match=".*It") is None
-        assert tree.find(match=".*It.*") is n
-        assert tree.find(match="let it be") is None  # case sensitive!
-        assert tree.find(match=("let it be", re.I)) is n  # case insensitive!
-        assert tree.find(match="Let It Be") is n
+        assert tree.find_first(match="Let It Boo") is None
+        assert tree.find_first(match="Let") is None
+        assert tree.find_first(match="Let.*") is n
+        assert tree.find_first(match="It") is None
+        assert tree.find_first(match="It.*") is None
+        assert tree.find_first(match=".*It") is None
+        assert tree.find_first(match=".*It.*") is n
+        assert tree.find_first(match="let it be") is None  # case sensitive!
+        assert tree.find_first(match=("let it be", re.I)) is n  # case insensitive!
+        assert tree.find_first(match="Let It Be") is n
 
-        assert records.find(match="Let It Be") is n
-        assert records.find(match=".* It Be") is n
-        assert records.find(match="It Be") is None
+        assert records.find_first(match="Let It Be") is n
+        assert records.find_first(match=".* It Be") is n
+        assert records.find_first(match="It Be") is None
 
         # Search multiple
         assert tree.find_all(match="Let It Be") == [n]
@@ -385,13 +388,99 @@ class TestNavigate:
 
 
 class TestSort:
-    def test_reverse_deep(self):
+    def test_sort(self):
         tree = fixture.create_tree_simple()
 
-        tree.sort(reverse=True)
+        # First un-sort the fixture (we checked in below tests that this works)
+        tree.sort(reverse=True, deep=True)
+
+        # Now do the real test
+        tree.sort()
 
         assert fixture.check_content(
             tree.format(repr="{node.name}"),
+            """\
+            Tree<'fixture'>
+            ├── A
+            │   ├── a1
+            │   │   ├── a11
+            │   │   ╰── a12
+            │   ╰── a2
+            ╰── B
+                ╰── b1
+                    ╰── b11
+        """,
+        )
+
+    def test_sort_key(self):
+        tree = fixture.create_tree_objects()
+
+        # Sort by age descending (oldest first)
+        tree.sort(key=lambda node: -getattr(node.data, "age", 0))
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── Department<Development>
+            │   ├── Person<Bob, 32>
+            │   ╰── Person<Alice, 23>
+            ╰── Department<Marketing>
+                ├── Person<Dave, 54>
+                ╰── Person<Charleen, 43>
+        """,
+        )
+
+    def test_sort_reverse_deep(self):
+        tree = fixture.create_tree_simple()
+
+        tree.sort(reverse=True, deep=True)
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── B
+            │   ╰── b1
+            │       ╰── b11
+            ╰── A
+                ├── a2
+                ╰── a1
+                    ├── a12
+                    ╰── a11
+        """,
+        )
+
+    def test_sort_reverse_shallow(self):
+        tree = fixture.create_tree_simple()
+
+        tree.sort(reverse=True, deep=False)
+
+        assert fixture.check_content(
+            tree.format(repr="{node.name}"),
+            """\
+            Tree<*>
+            ├── B
+            │   ╰── b1
+            │       ╰── b11
+            ╰── A
+                ├── a1
+                │   ├── a11
+                │   ╰── a12
+                ╰── a2
+        """,
+        )
+
+    def test_sorted(self):
+        tree = fixture.create_tree_simple()
+
+        # First un-sort the fixture (we checked in below tests that this works)
+        tree_2 = tree.sorted(reverse=True, deep=True)
+
+        assert tree_2 is not tree
+
+        assert fixture.check_content(
+            tree_2.format(repr="{node.name}"),
             """\
             Tree<*>
             ├── B
@@ -716,9 +805,13 @@ class TestTraversal:
                 return 17
 
         with pytest.raises(
-            ValueError, match="callback should not return values except for"
+            TypeError, match="callback should not return values except for"
         ):
             res_2 = tree.visit(cb)  # type: ignore
+
+    def test_reversed(self):
+        with pytest.raises(TypeError, match="Cannot reverse a tree"):
+            reversed(Tree())
 
 
 class TestMutate:
@@ -827,7 +920,7 @@ class TestMutate:
         with pytest.raises(AmbiguousMatchError):  # not allowed for clones
             tree.find_first("a1").rename("new_a1")
 
-        with pytest.raises(ValueError):  # missing args
+        with pytest.raises(TypeError):  # missing args
             tree.find_first("a1").set_data(None)
 
         # Only rename first occurrence:
@@ -874,16 +967,20 @@ class TestMutate:
         )
 
         assert tree["a2"].data_id == hash("a2")
-        tree.find("a2").set_data(data=None, data_id=123, with_clones=True)
+        tree.find_first("a2").set_data(data=None, data_id=123, with_clones=True)
         with pytest.raises(KeyError):
             _ = tree["a2"].data_id
-        assert tree.find(data_id=123)
+        assert tree.find_first(data_id=123)
 
-        tree.find(data_id=123).set_data(data="a2_new", data_id=123, with_clones=True)
-        assert tree.find(data_id=123)
+        tree.find_first(data_id=123).set_data(
+            data="a2_new", data_id=123, with_clones=True
+        )
+        assert tree.find_first(data_id=123)
 
-        tree.find(data_id=123).set_data(data="a2_new2", data_id=123, with_clones=False)
-        assert tree.find(data_id=123)
+        tree.find_first(data_id=123).set_data(
+            data="a2_new2", data_id=123, with_clones=False
+        )
+        assert tree.find_first(data_id=123)
 
         assert tree._self_check()
 
@@ -1218,6 +1315,18 @@ class TestCopy:
         assert tree_1["a11"] == tree_2["a11"]
         assert tree_1["a11"].data is tree_2["a11"].data
 
+        tree_1_a11 = tree_1["a11"]
+        tree_2_a11 = tree_2["a11"]
+        assert tree_1_a11 is not tree_2_a11
+        assert tree_1_a11 == tree_2_a11
+        assert tree_1_a11.data is tree_2_a11.data
+        assert tree_1_a11.data_id == tree_2_a11.data_id
+
+        with pytest.raises(KeyError):
+            tree_1[tree_2_a11]
+        with pytest.raises(KeyError):
+            tree_2[tree_1_a11]
+
         assert fixture.trees_equal(tree_1, tree_2)
         # assert fixture.canonical_repr(tree_1) == fixture.canonical_repr(tree_2)
 
@@ -1426,9 +1535,9 @@ class TestCopy:
         """
         tree = fixture.create_tree_simple()
 
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree.filter(predicate=None)  # type: ignore
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree.system_root.filter(predicate=None)  # type: ignore
 
         def _tf(
@@ -1598,10 +1707,10 @@ class TestCopy:
         )
 
         # Should use tree.copy() instead:
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree_2 = tree.filtered(predicate=None)  # type: ignore
 
-        with pytest.raises(ValueError, match="Predicate is required"):
+        with pytest.raises(TypeError, match="Predicate is required"):
             tree_2 = tree.system_root.filtered(predicate=None)  # type: ignore
 
         tree_2 = tree.copy()

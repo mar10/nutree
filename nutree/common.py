@@ -242,11 +242,13 @@ CONNECTORS: dict[
 class DictWrapper:
     """Wrap a Python dict so it can be added to the tree.
 
-    Makes the dict hashable and comparable with `==`, so it can be used added to
+    Makes a dict hashable and comparable with `==`, so it can be added to
     the tree and can be checked for modifications during tree diffing.
 
     Initialized with a dictionary of values. The values can be accessed
     via the `node.data` attribute like `node.data["KEY"]`.
+
+    For Python 3.15 and later consider using ``frozendict`` instead of this class.
 
     See :ref:`generic-node-data` for details.
     """
@@ -260,7 +262,7 @@ class DictWrapper:
             if not isinstance(dict_inst, dict):
                 raise TypeError("dict_inst must be a dictionary or None")
             if values:
-                raise ValueError("Cannot pass both dict_inst and **values")
+                raise TypeError("Cannot pass both dict_inst and **values")
             self._dict = dict_inst
         else:
             # Single keyword arguments are passed (probably from unpacked dict):
@@ -443,7 +445,7 @@ def call_traversal_cb(
             # Converts wrong syntax in exception handler...
             raise res
         else:
-            raise ValueError(
+            raise TypeError(
                 "callback should not return values except for "
                 f"None, False, SkipBranch, or StopTraversal: {res!r}."
             )
