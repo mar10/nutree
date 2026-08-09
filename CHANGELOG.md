@@ -4,6 +4,8 @@
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
 ## 1.2.0 (unreleased)
+- `len(node)` returns number of direct children. 
+  However nodes are always truthy, even if they don't have children.
 
 - New method `node.parent_iterator()`.
 - New option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).

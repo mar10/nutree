@@ -60,7 +60,12 @@ class TestBasics:
         records.add_child("Get Yer Ya-Ya's Out!")
 
         books = tree.add_child("Books")
-        books.add_child("The Little Prince")
+        tlp = books.add_child("The Little Prince")
+
+        assert books, "node with children is truthy"
+        assert len(books) == 1, "len(nodes) is count of direct children"
+        assert tlp, "leaf node is truthy"
+        assert len(tlp) == 0, "len(nodes) is count of direct children"
 
         assert fixture.check_content(
             tree,
