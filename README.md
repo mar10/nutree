@@ -5,9 +5,9 @@
 [![codecov](https://codecov.io/github/mar10/nutree/branch/main/graph/badge.svg?token=9xmAFm8Icl)](https://codecov.io/github/mar10/nutree)
 [![License](https://img.shields.io/pypi/l/nutree.svg)](https://github.com/mar10/nutree/blob/main/LICENSE.txt)
 [![Documentation Status](https://readthedocs.org/projects/nutree/badge/?version=latest)](http://nutree.readthedocs.io/)
-[![Released with: Yabs](https://img.shields.io/badge/released%20with-yabs-yellowgreen)](https://github.com/mar10/yabs)
 [![Downloads](https://img.shields.io/pypi/dm/nutree.svg)](https://pypi.python.org/pypi/nutree/)
 
+<!-- [![Released with: Yabs](https://img.shields.io/badge/released%20with-yabs-yellowgreen)](https://github.com/mar10/yabs) -->
 <!-- [![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree) -->
 
 > _Nutree_ is a Python library for tree data structures with an intuitive,
