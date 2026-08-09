@@ -3,6 +3,8 @@
 """ """
 # ruff: noqa: T201, T203 `print` found
 
+from typing import cast
+
 import pytest
 from nutree import AmbiguousMatchError, Node, Tree
 from nutree.common import (
@@ -195,7 +197,7 @@ class TestClones:
 
     def test_dict(self):
         """Test dictionary wrapper functionality in the tree."""
-        tree = fixture.create_tree_simple()
+        tree = cast(Tree, fixture.create_tree_simple())
         d = {"a": 1, "b": 2}
         # Add another 'a1' below 'B'
         n1 = tree["A"].add(DictWrapper(d))
