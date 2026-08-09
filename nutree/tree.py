@@ -12,11 +12,12 @@ Declare the :class:`~nutree.tree.Tree` class.
 
 from __future__ import annotations
 
+import copy
 import json
 import random
 import threading
 import warnings
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from typing import (
     IO,
@@ -35,12 +36,14 @@ from nutree.common import (
     ROOT_NODE_ID,
     AmbiguousMatchError,
     CalcIdCallbackType,
+    CycleDetectedError,
     DataIdType,
     DeserializeMapperType,
+    DotMapperCallbackType,
+    DuplicateNodeIdError,
     FlatJsonDictType,
     IterMethod,
     KeyMapType,
-    MapperCallbackType,
     MatchArgumentType,
     PredicateCallbackType,
     ReprArgType,
@@ -68,8 +71,8 @@ from nutree.rdf import tree_to_rdf
 
 _DELETED_TAG = "<deleted>"
 
-#: Minimal Python version that is supported by WsgiDAV
-MIN_PYTHON_VERSION_INFO = (3, 8)
+#: Minimal Python version that is supported by nutree
+MIN_PYTHON_VERSION_INFO = (3, 10)
 
 check_python_version(MIN_PYTHON_VERSION_INFO)
 
@@ -107,6 +110,16 @@ class Tree(Generic[TData, TNode]):
     Set `forward_attrs` to true, to enable aliasing of node attributes,
     i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
     **Note:** Use with care, see also :ref:`forward-attributes`.
+
+    `check_dag` can be set to false to disable validations that ensure the node
+    structure is compliant with Directed Acyclic Graphs (DAG).
+    This means that no nodes with the same data_id being added as descendants of
+    each other or under the same parent.
+    This *may* be useful, e.g. when a node stores a list of children
+    that may repeat, such as BOM (Bill of Materials) parts.
+    However, this is not a common use case and should be used with care since it
+    can lead to cycles in the tree structure.
+    `check_dag` is always enabled for :class:`TypedTree` instances.
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -129,7 +142,8 @@ class Tree(Generic[TData, TNode]):
         *,
         calc_data_id: CalcIdCallbackType | None = None,
         forward_attrs: bool = False,
-    ):
+        check_dag: bool = True,
+    ) -> None:
         self._lock = threading.RLock()
         #: Tree name used for logging
         self.name: str = str(id(self) if name is None else name)
@@ -139,8 +153,12 @@ class Tree(Generic[TData, TNode]):
         # Optional callback that calculates data_ids from data objects
         # hash(data) is used by default
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
-        # Enable aliasing when accessing node instances.
+        #: Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
+        #: Enable cycle detection and prevent duplicate data for one parent
+        # in `add_child()`.
+        #: Note that is always enabled for TypedTree.
+        self.check_dag = check_dag
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -219,8 +237,10 @@ class Tree(Generic[TData, TNode]):
         return True  # even for AmbiguousMatchError, we return True
 
     def __len__(self) -> int:
-        """Make ``len(tree)`` return the number of nodes
-        (also makes empty trees falsy)."""
+        """Make ``len(tree)`` return the number of all nodes (not just direct children).
+
+        This also makes empty trees falsy.
+        """
         return self.count
 
     def __reversed__(self):
@@ -243,27 +263,46 @@ class Tree(Generic[TData, TNode]):
             return self._calc_data_id_hook(self, data)  # type: ignore
         return hash(data)
 
+    def _check_insert(self, node: TNode):
+        """Raise error if inserting a node would violate DAG restrictions."""
+        #  When this method is called from _register(), we can assume that
+        # - check_dag is true,
+        # - node.parent is set
+        # - node already has at least one clone registered in self._nodes_by_data_id
+        data_id = node._data_id
+        if node._parent._children:
+            for sibling in node._parent._children:
+                if sibling._data_id == data_id:
+                    raise UniqueConstraintError(
+                        f"Node with data_id {data_id} already exists under same parent"
+                        "Pass `check_dag=False` to the tree constructor to suppress "
+                        "this restriction."
+                    )
+        for n in self._nodes_by_data_id[data_id]:
+            if node.is_descendant_of(n):
+                raise CycleDetectedError(
+                    f"Inserting {node} would create a cycle with {n}"
+                    "Pass `check_dag=False` to the tree constructor to suppress "
+                    "this restriction."
+                )
+
     def _register(self, node: TNode) -> None:
         assert node._tree is self
-        # node._tree = self
-        assert node._node_id and node._node_id not in self._node_by_id, f"{node}"
-        self._node_by_id[node._node_id] = node
+        assert node._node_id is not None
+        if node._node_id in self._node_by_id:
+            raise DuplicateNodeIdError(
+                f"Node ID already registered: {node}"
+            )  # pragma: no cover
+
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
-            for clone in clone_list:
-                if clone.parent is node.parent:
-                    is_same_kind = getattr(clone, "kind", None) == getattr(
-                        node, "kind", None
-                    )
-                    if is_same_kind:
-                        del self._node_by_id[node._node_id]
-                        raise UniqueConstraintError(
-                            f"Node.data already exists in parent: {clone=}, "
-                            f"{clone.parent=}"
-                        )
+            # if we get here, we are adding a clone and should check DAG compliance
+            if self.check_dag and node._parent:
+                self._check_insert(node)
             clone_list.append(node)
         except KeyError:
             self._nodes_by_data_id[node._data_id] = [node]
+        self._node_by_id[node._node_id] = node
 
     def _unregister(self, node: TNode, *, clear: bool = True) -> None:
         """Unlink node from this tree (children must be unregistered first)."""
@@ -568,16 +607,19 @@ class Tree(Generic[TData, TNode]):
         name: str | None = None,
         predicate: PredicateCallbackType | None = None,
     ) -> Self:
-        """Return a copy of this tree.
+        """Return a shallow copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
         The new nodes reference the original data objects.
 
         `predicate` may be passed to filter the result, which is equivalent to
-        calling :meth:`~nutree.tree.Tree.filtered`
+        calling :meth:`~nutree.tree.Tree.filtered`.
 
         See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
         method for details.
+
+        See :meth:`~nutree.tree.Tree.deepcopy` for a variant that deep-copies
+        the data objects.
         """
         if name is None:
             name = f"Copy of {self}"
@@ -585,6 +627,59 @@ class Tree(Generic[TData, TNode]):
         with self:
             new_tree.system_root._add_from(self.system_root, predicate=predicate)
         return new_tree
+
+    def __copy__(self) -> Self:
+        """Return a shallow copy of this tree.
+
+        Calling ``copy.copy(tree)`` is equivalent to ``tree.copy()``.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference the original data objects.
+        """
+        return self.copy(name=self.name)
+
+    def deepcopy(
+        self,
+        *,
+        name: str | None = None,
+        # predicate: PredicateCallbackType | None = None,
+        memo: dict[int, Any] | None = None,
+    ) -> Self:
+        """Return a deep copy of this tree.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference deep-copied data objects.
+
+        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
+        method for details.
+        """
+        if name is None:
+            name = f"Deep copy of {self}"
+        if memo is None:
+            memo = {}
+        new_tree = self.__class__(name)
+
+        def _copy_children(source_parent: TNode, target_parent: TNode) -> None:
+            for c in source_parent.children:
+                new_data = copy.deepcopy(c.data, memo)
+                new_data_id = new_tree.calc_data_id(new_data)
+                new_node = target_parent.add(new_data, deep=False, data_id=new_data_id)
+                _copy_children(c, new_node)
+
+        with self:
+            _copy_children(self.system_root, new_tree.system_root)
+
+        return new_tree
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+        """Return a deep copy of this tree.
+
+        Calling ``copy.deepcopy(tree)`` is equivalent to ``tree.deepcopy()``.
+
+        New :class:`Tree` and :class:`Node` instances are created.
+        The new nodes reference deep-copied data objects.
+        """
+        return self.deepcopy(name=self.name, memo=memo)
 
     def copy_to(self, target: TNode | Self, *, deep: bool = True) -> None:
         """Copy this tree's nodes to another target.
@@ -609,6 +704,30 @@ class Tree(Generic[TData, TNode]):
         if not predicate:
             raise TypeError("Predicate is required (use copy() instead)")
         return self.copy(predicate=predicate)
+
+    def map(self, fn: Callable[[TData], TData]) -> Self:
+        """Return a copy of this tree with mapped data.
+
+        Using Python's built-in function ``map(fn, tree)`` would flatten all
+        nodes and return a list of node objects. |br|
+        In contrast, ``tree.map(fn)`` is intended to transform the node.data,
+        while keeping the tree hierarchy intact.
+
+        Note pitfall: a *shallow* copy of the tree is created first, and then
+        ``fn(node.data)`` is called for each node.
+        This means that the new tree's nodes reference the same data objects as
+        the original tree, so if a data object is mutated, it will also affect
+        the original tree. |br|
+        If this is not desired, you can either make sure that ``fn`` returns a
+        new data object, or alternatively make a deepcopy first:
+        ``new_tree = tree.deepcopy().map(fn)``.
+        """
+        new_tree = self.copy()
+        for node in new_tree:
+            new_data = fn(node.data)
+            if node.data is not new_data:
+                node.set_data(data=new_data, with_clones=False)
+        return new_tree
 
     def clear(self) -> None:
         """Remove all nodes from this tree."""
@@ -944,8 +1063,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
         """Generate a DOT formatted graph representation.
 
@@ -971,8 +1090,8 @@ class Tree(Generic[TData, TNode]):
         graph_attrs: dict | None = None,
         node_attrs: dict | None = None,
         edge_attrs: dict | None = None,
-        node_mapper: MapperCallbackType | None = None,
-        edge_mapper: MapperCallbackType | None = None,
+        node_mapper: DotMapperCallbackType | None = None,
+        edge_mapper: DotMapperCallbackType | None = None,
     ) -> None:
         """Serialize a DOT formatted graph representation.
 

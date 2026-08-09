@@ -45,12 +45,48 @@ class TreeError(RuntimeError):
     """Base class for all `nutree` errors."""
 
 
-class UniqueConstraintError(TreeError):
-    """Thrown when trying to add the same node_id to the same parent"""
+class StructureError(TreeError):
+    """Base class for errors thrown when the tree structure is invalid."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class DuplicateNodeIdError(StructureError):
+    """Thrown when trying to add the same node_id to the tree."""
+
+
+class UniqueConstraintError(StructureError):
+    """Thrown when trying to add the same data_id to the same parent.
+
+    This would violate the constraint of the tree being a 'SIMPLE directed
+    acyclic graph'.
+    Note that the tree does not allow to add the same data_id to a parent node
+    if check_dag is true (the default).
+    In TypedTrees, the data_id may be added to the same parent twice, as long as
+    it has a different kind.
+    """
+
+
+class CycleDetectedError(StructureError):
+    """Thrown when trying to add the same data_id to the same ancestor chain.
+
+    This would violate the constraint of the tree being a 'simple directed
+    ACYCLIC graph' and create a cycle.
+    In TypedTrees, the data_id may be added to the same ancestor chain more than
+    once, as long as it has a different kind.
+
+    Pass `check_dag=False` to the tree constructor to suppress this restriction.
+    """
 
 
 class AmbiguousMatchError(TreeError):
-    """Thrown when a single-value lookup found multiple matches."""
+    """Thrown when a single-value lookup found multiple matches.
+
+    Receiving this error indicates that the tree contains duplicate data values,
+    but the user expected a single match.
+    Use :meth:`find_all` or :meth:`find_first` instead to resolve this.
+    """
 
 
 class IterMethod(Enum):
@@ -132,7 +168,7 @@ ValueMapType = dict[str, list[str]]
 ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
-MapperCallbackType = Callable[["Node", dict], None | Any]
+DotMapperCallbackType = Callable[["Node", dict], None | Any]
 
 #: Callback for `tree.save()`
 SerializeMapperType = Callable[["Node", dict], None | dict]
@@ -145,10 +181,10 @@ PredicateCallbackType = Callable[
     ["Node"], None | bool | IterationControl | type[IterationControl]
 ]
 
-#:
+#: Callback for `tree.find_all()`, `tree.find_first()`, ...
 MatchArgumentType = str | PredicateCallbackType | list | tuple | Any
 
-#:
+#: Callback for `tree.visit()`,  ...
 TraversalCallbackType = Callable[
     ["Node", Any],
     None
@@ -341,10 +377,10 @@ def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     return True
 
 
-def call_mapper(fn: MapperCallbackType | None, node: Node, data: dict) -> Any:
+def call_mapper(fn: DotMapperCallbackType | None, node: Node, data: dict) -> Any:
     """Call the function and normalize result and exceptions.
 
-    Handles `MapperCallbackType`:
+    Handles `DotMapperCallbackType`:
     Call `fn(node, data)` if defined and return the result.
     If `fn` is undefined or returns `None`, return `data`.
     """

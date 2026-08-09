@@ -44,11 +44,14 @@ __version__ = _detect_version()
 
 from nutree.common import (
     AmbiguousMatchError,
+    CycleDetectedError,
     DictWrapper,
+    DuplicateNodeIdError,
     IterMethod,
     SelectBranch,
     SkipBranch,
     StopTraversal,
+    StructureError,
     TreeError,
     UniqueConstraintError,
 )
@@ -59,17 +62,20 @@ from nutree.tree import Tree
 from nutree.typed_tree import TypedNode, TypedTree
 
 __all__ = [
-    "Tree",
-    "Node",
     "AmbiguousMatchError",
+    "CycleDetectedError",
+    "DictWrapper",
     "diff_node_formatter",
     "DiffClassification",
-    "DictWrapper",
+    "DuplicateNodeIdError",
     "IterMethod",
     "load_tree_from_fs",
+    "Node",
     "SelectBranch",
     "SkipBranch",
     "StopTraversal",
+    "StructureError",
+    "Tree",
     "TreeError",
     "TypedNode",
     "TypedTree",

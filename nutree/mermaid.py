@@ -186,6 +186,7 @@ def node_to_mermaid_flowchart(
         mmdc_options = {}
 
     def _write(fp: IO[str]) -> None:
+        """Write Mermaid formatted output to the given file pointer."""
         for line in _node_to_mermaid_flowchart_iter(
             node=node,
             as_markdown=as_markdown,

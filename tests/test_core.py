@@ -60,7 +60,12 @@ class TestBasics:
         records.add_child("Get Yer Ya-Ya's Out!")
 
         books = tree.add_child("Books")
-        books.add_child("The Little Prince")
+        tlp = books.add_child("The Little Prince")
+
+        assert books, "node with children is truthy"
+        assert len(books) == 1, "len(nodes) is count of direct children"
+        assert tlp, "leaf node is truthy"
+        assert len(tlp) == 0, "len(nodes) is count of direct children"
 
         assert fixture.check_content(
             tree,
@@ -655,6 +660,37 @@ class TestTraversal:
         s = [n.data for n in tree.iterator(IterMethod.RANDOM_ORDER)]
         assert len(s) == 8
 
+    def test_iter_parents(self):
+        """
+        Tree<'fixture'>
+        ├── A
+        │   ├── a1
+        │   │   ├── a11
+        │   │   ╰── a12
+        │   ╰── a2
+        ╰── B
+            ╰── b1
+                ╰── b11
+        """
+        tree = fixture.create_tree_simple()
+
+        # print(tree.format(repr="{node.data}"))
+        a11 = tree["a12"]
+
+        s = ",".join(n.data for n in a11.parent_iterator())
+        assert s == "a1,A"
+
+        s = ",".join(n.data for n in a11.parent_iterator(add_self=True))
+        assert s == "a12,a1,A"
+
+        s = ",".join(n.data for n in a11.parent_iterator(bottom_up=False))
+        assert s == "A,a1"
+
+        s = ",".join(
+            n.data for n in a11.parent_iterator(bottom_up=False, add_self=True)
+        )
+        assert s == "A,a1,a12"
+
     def test_visit(self):
         """
         Tree<'fixture'>
@@ -1011,6 +1047,72 @@ class TestMutate:
                |  `- a12
                `- b1
                   `- b11
+            """,
+        )
+
+    def test_map_tree(self):
+        tree = fixture.create_tree_simple()
+
+        def mapper(data: str) -> str:
+            return data.upper()
+
+        tree_2 = tree.map(mapper)
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  `- B11
+            """,
+        )
+
+        tree_3 = tree.map(str.upper)
+
+        assert fixture.check_content(
+            tree_3,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  `- B11
+            """,
+        )
+
+    def test_map_tree_with_clones(self):
+        tree = fixture.create_tree_simple(clones=True)
+
+        def mapper(data):
+            return data.upper()
+
+        tree_2 = tree.map(mapper)
+
+        assert tree_2 is not tree, "map() should return a new tree"
+
+        assert fixture.check_content(
+            tree_2,
+            """
+            Tree<*>
+            +- A
+            |  +- A1
+            |  |  +- A11
+            |  |  `- A12
+            |  `- A2
+            `- B
+               `- B1
+                  +- A11
+                  `- B11
             """,
         )
 
