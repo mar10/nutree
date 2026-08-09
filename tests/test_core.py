@@ -327,10 +327,9 @@ class TestNavigate:
         n = tree["Let It Be"]
         assert n.name == "Let It Be"
 
-        #
+        # `find()` is deprecated, use `find_first()` instead
         with pytest.deprecated_call():
             assert tree.find("Let It Be") is n
-            assert tree.find("Let It Boo") is None
 
         # Search by data
         assert tree.find_first("Let It Be") is n

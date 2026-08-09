@@ -81,7 +81,7 @@ class TestMermaid:
         """Save/load as  object tree with clones."""
         tree = fixture.create_typed_tree_simple(clones=True, name="Root")
 
-        with pytest.raises(ValueError, match="target must be a Path, str, or"):
+        with pytest.raises(TypeError, match="target must be a Path, str, or"):
             tree.to_mermaid_flowchart(15)  # type: ignore
 
         with pytest.raises(RuntimeError, match="Need a filepath to"):

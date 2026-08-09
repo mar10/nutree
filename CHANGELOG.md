@@ -4,15 +4,17 @@
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
 ## 1.2.0 (unreleased)
-- BREAKING: Drop Python 3.9 (EOL 2025-10)
 - BREAKING:
+  - Drop Python 3.9 (EOL 2025-10)
   - Some methods now raise `TypeError` instead of `ValueError` when 
     parameters have the wrong type or are missing.
-- BREAKING: Rename `MapperCallbackType` to `DotMapperCallbackType`
+  - Rename `MapperCallbackType` to `DotMapperCallbackType`
+
 - DEPRECATE: `Tree.find()` is deprecated, use `Tree.find_first()` instead."
 - DEPRECATE: Calling method `{name}()` by adding `()` to the attribute name via `__getattr__` is deprecated.
   This allowed calling simple methods from within `repr=TEMPLATE` parameter
    e.g. `repr="{node.path()}"`. Use `repr=CALLBACK` instead.
+
 - `tree[x]` now also accepts `Node` instances.
 - `x in tree` now uses the same lookup logic as `tree[x]`.
 - `reversed(tree)` now raises a TypError, since it didn't make sense.

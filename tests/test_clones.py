@@ -106,7 +106,7 @@ class TestClones:
         with pytest.raises(CycleDetectedError):
             tree["a2"].add(tree["A"])
 
-        res = tree.find("a1")
+        res = tree.find_first("a1")
         assert res
         assert res.data == "a1"
         assert res.is_clone()
