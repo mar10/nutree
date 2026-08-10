@@ -1,12 +1,13 @@
 # Changelog
 
-**NOTE** 
+**NOTE**
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
 ## 1.2.0 (unreleased)
+
 - BREAKING:
   - Drop Python 3.9 (EOL 2025-10)
-  - Some methods now raise `TypeError` instead of `ValueError` when 
+  - Some methods now raise `TypeError` instead of `ValueError` when
     parameters are missing or have the wrong type.
   - Rename `MapperCallbackType` to `DotMapperCallbackType`
 
@@ -15,12 +16,13 @@ Dropping Python versions that reached EOL will only cause a minor version bump.
   This allowed calling simple methods from within `repr=TEMPLATE` parameter
   e.g. `repr="{node.path()}"`. Use `repr=CALLBACK` instead.
 
+- `tree.copy()` and `tree.deepcopy()` inherit the name by default (no longer 'Copy of ...')
 - `tree[x]` now also accepts `Node` instances.
 - `x in tree` now uses the same lookup logic as `tree[x]`.
 - `reversed(tree)` now raises a TypError, since it didn't make sense.
 - Add method `tree.sorted()` returns a sorted copy.
 - Add `tree.deepcopy()`, so now we support `copy.copy(tree)` and `copy.deepcopy(tree)`.
-- `len(node)` returns number of direct children. 
+- `len(node)` returns number of direct children.
   However nodes are always truthy, even if they don't have children.
 - Add method `node.parent_iterator()`.
 - Add option `Tree(..., check_dag=True)` to enforce/relax DAG compliance (default: true).
@@ -31,21 +33,24 @@ Dropping Python versions that reached EOL will only cause a minor version bump.
 ## 1.1.0 (2025-02-09)
 
 - DEPRECATE: `TypedTree.iter_by_type()`. Use `iterator(..., kind)`instead.
-- New methods `TypedTree.iterator(..., kind=ANY_KIND)`, 
+- New methods `TypedTree.iterator(..., kind=ANY_KIND)`,
   `TypedNode.iterator(..., kind=ANY_KIND)`,
   and `TypedTree.count_descendants(leaves_only=False, kind=ANY_KIND)`
- 
+
 ## 1.0.0 (2024-12-27)
+
 - Add benchmarks (using [Benchman](https://github.com/mar10/benchman)).
 - Drop support for Python 3.8
 
 ## 0.11.1 (2024-11-08)
-- `t0.diff(t1, ...)` adds nodes from t1 when possible, so the new status is 
-  used for modified nodes. 
-- `t0.diff(t1, ...)` marks both, source and target nodes, as modified if 
+
+- `t0.diff(t1, ...)` adds nodes from t1 when possible, so the new status is
+  used for modified nodes.
+- `t0.diff(t1, ...)` marks both, source and target nodes, as modified if
   applicable.
 
 ## 0.11.0 (2024-11-07)
+
 - Implement check for node modifications in `tree.diff(..., compare=True)`.
 - `DictWrapper` supports comparision with `==`.
 

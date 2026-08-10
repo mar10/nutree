@@ -1307,7 +1307,7 @@ class TestCopy:
 
         tree_2 = tree_1.copy()
         assert tree_1.count == tree_2.count
-        assert tree_2.name == "Copy of Tree<'fixture'>"
+        assert tree_2.name == "fixture"
 
         tree_2 = tree_1.copy()
 
