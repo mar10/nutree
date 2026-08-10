@@ -1,7 +1,10 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-""" """
+
 # ruff: noqa: T201, T203 `print` found
+# ty: ignore[unresolved-attribute]
+
+""" """
 
 import pytest
 from nutree import Tree
@@ -113,7 +116,7 @@ class TestObjects:
 
         # forward-attributes are readonly
         with pytest.raises(AttributeError):
-            let_it_be_node.price = 9.99  # type: ignore
+            let_it_be_node.price = 9.99
 
 
 class TestDictWrapper:
@@ -142,9 +145,9 @@ class TestDictWrapper:
         assert dw._dict is d, "dict should be stored as reference"
 
         with pytest.raises(AttributeError):
-            _ = dw.a  # type: ignore
+            _ = dw.a
         with pytest.raises(AttributeError):
-            _ = dw.foo  # type: ignore
+            _ = dw.foo
 
         assert dw["a"] == 1, "DictWrapper should support item read access"
         with pytest.raises(KeyError):
@@ -210,17 +213,17 @@ class TestDictWrapper:
 
         with pytest.raises(AttributeError):
             # should not support attribute access via data
-            _ = node.data.a  # type: ignore
+            _ = node.data.a
 
         with pytest.raises(AttributeError):
             # should not allow access to non-existing attributes
-            _ = node.data.foo  # type: ignore
+            _ = node.data.foo
 
         assert node.data["a"] == 1, "should support item access via data"
 
         with pytest.raises(AttributeError, match="object has no attribute 'a'"):
             # Forwarding is read-only
-            _ = node.data.a = 99  # type: ignore
+            _ = node.data.a = 99
 
         # Index access is writable
         node.data["a"] = 99
@@ -274,7 +277,7 @@ class TestDictWrapper:
 
         # Frozen dataclasses are immutable
         with pytest.raises(FrozenInstanceError):
-            item.count += 1  # type: ignore
+            item.count += 1
 
         # We can also add by passing the data_id as keyword argument:
         _ = tree.add(item, data_id="123-456")

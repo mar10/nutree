@@ -136,8 +136,12 @@ ignore = [
 
 # --- ty Settings --------------------------------------------------------------
 [tool.ty.src]
-include = ["nutree"]
-# include = ["nutree", "tests"]
+# include = ["nutree"]
+include = ["nutree", "tests"]
+exclude = [
+    "tests/test_typing.py",
+    "tests/test_typing_concept.py",
+]
 
 [tool.ty.analysis]
 replace-imports-with-any = [

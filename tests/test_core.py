@@ -1,8 +1,9 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-""" """
 
 # ruff: noqa: T201, T203 `print` found
+# ty: ignore[unresolved-attribute]
+
 
 from __future__ import annotations
 
@@ -806,7 +807,7 @@ class TestTraversal:
         with pytest.raises(
             TypeError, match="callback should not return values except for"
         ):
-            res_2 = tree.visit(cb)  # type: ignore
+            res_2 = tree.visit(cb)
 
     def test_reversed(self):
         with pytest.raises(TypeError, match="Cannot reverse a tree"):

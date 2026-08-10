@@ -29,7 +29,7 @@ class Tree(Generic[TData, TNode]):
     node_factory: type[TNode] = cast(type[TNode], Node)
 
     def __init__(self):
-        self._root: Node = self.node_factory("__root__", None)  # type: ignore
+        self._root: Node = self.node_factory("__root__", None)
 
     def add(self, data: TData) -> TNode:
         node = self.root.add(data)
