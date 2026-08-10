@@ -250,7 +250,7 @@ class TextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_quote(self.template)  # type: ignore[reportOptionalMemberAccess]
+        return fab.get_quote(self.template)  # ty: ignore[unresolved-attribute]
 
 
 class BlindTextRandomizer(Randomizer):
@@ -296,7 +296,7 @@ class BlindTextRandomizer(Randomizer):
     def generate(self) -> Any:
         if self._skip_value():
             return
-        return fab.get_lorem_paragraph(  # type: ignore[reportOptionalMemberAccess]
+        return fab.get_lorem_paragraph(  # ty: ignore[unresolved-attribute]
             sentence_count=self.sentence_count,
             dialect=self.dialect,
             entropy=self.entropy,

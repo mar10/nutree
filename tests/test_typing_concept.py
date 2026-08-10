@@ -1,6 +1,4 @@
 # ruff: noqa: T201, T203 `print` found
-# pyright: reportIncompatibleMethodOverride=false
-# mypy: disable-error-code="override"
 
 # type: ignore
 

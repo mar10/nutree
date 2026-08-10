@@ -3,8 +3,7 @@
 """ """
 
 # ruff: noqa: T201, T203 `print` found
-# pyright: reportRedeclaration=false
-# pyright: reportOptionalMemberAccess=false
+
 from __future__ import annotations
 
 import re

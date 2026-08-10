@@ -2,7 +2,6 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 """ """
 # ruff: noqa: T201, T203 `print` found
-# pyright: reportOptionalMemberAccess=false
 
 import re
 from pathlib import Path

@@ -4,8 +4,6 @@
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
 modules.
 """
-# MyPy incorrctly flags 'Exception must be derived from BaseException'
-# mypy: disable-error-code="misc"
 
 from __future__ import annotations
 
