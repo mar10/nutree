@@ -3,12 +3,6 @@
 """
 Declare the :class:`~nutree.node.Node` class.
 """
-# Mypy reports some errors that are not reported by pyright, and there is no
-# way to suppress them with `type: ignore`, because then pyright will report
-# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
-# globally for mypy:
-
-# mypy: disable-error-code="truthy-function, arg-type"
 
 from __future__ import annotations
 
@@ -152,7 +146,7 @@ class Node(Generic[TData]):
 
         self._meta = meta
 
-        tree._register(self)  # type: ignore
+        tree._register(self)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
@@ -334,7 +328,7 @@ class Node(Generic[TData]):
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         return self.tree._set_data(
-            self,  # type: ignore
+            self,
             data,
             data_id=data_id,
             with_clones=with_clones,
@@ -710,15 +704,13 @@ class Node(Generic[TData]):
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             new_node = factory(
-                source_node.data,  # type: ignore
-                parent=self,  # type: ignore
+                source_node.data,
+                parent=self,
                 data_id=data_id,
                 node_id=node_id,
-            )
+            )  # type: ignore
         else:
             new_node = factory(child, parent=self, data_id=data_id, node_id=node_id)  # type: ignore
-
-        new_node = cast(Self, new_node)
 
         if before is True:
             before = 0  # prepend
@@ -847,7 +839,7 @@ class Node(Generic[TData]):
         if before is True:
             before = 0  # prepend
 
-        target_siblings = new_parent._children
+        target_siblings = cast(list[Self] | None, new_parent._children)
         if target_siblings is None:
             assert before in (None, True, False, 0), before
             new_parent._children = [self]
@@ -887,13 +879,13 @@ class Node(Generic[TData]):
         if not pc:  # store None instead of `[]`
             pc = self._parent._children = None
 
-        self._tree._unregister(self)  # type: ignore
+        self._tree._unregister(self)
 
     def remove_children(self) -> None:
         """Remove all children of this node, making it a leaf node."""
         _unregister = self._tree._unregister
         for n in self._iter_post():
-            _unregister(n)  # type: ignore
+            _unregister(n)
         self._children = None
         return
 
@@ -935,7 +927,7 @@ class Node(Generic[TData]):
         res: Self = self
         if add_self:
             res = target.add_child(self, before=before, deep=deep)
-            return cast(Self, res)  # if target is Tree, type is not inferred?
+            return res  # if target is Tree, type is not inferred?
 
         assert before is None
         if not self._children:
@@ -1300,7 +1292,7 @@ class Node(Generic[TData]):
 
         count = 0
         for node in self.iterator(add_self=add_self):
-            if not cb_match(node):
+            if not cast(PredicateCallbackType, cb_match)(node):
                 continue
             count += 1
             yield node
@@ -1385,7 +1377,7 @@ class Node(Generic[TData]):
 
         def _is_last(p: Self) -> bool:
             # Don't use `is_last_sibling()` which is overloaded by TypedNode
-            return p is p._parent._children[-1]  # type: ignore[index]
+            return p is p._parent._children[-1]  # ty: ignore[not-subscriptable]
 
         parts = []
         depth = 0
@@ -1445,7 +1437,7 @@ class Node(Generic[TData]):
             prefix = n._get_prefix(style, lstrip)
 
             if callable(repr):
-                s = repr(n)
+                s = cast(str, repr(n))  # ty: ignore[call-top-callable]
             else:
                 s = repr.format(node=n)
 
@@ -1466,7 +1458,7 @@ class Node(Generic[TData]):
                 repr = self.DEFAULT_RENDER_REPR
             for n in self.iterator(add_self=add_self):
                 if callable(repr):
-                    yield repr(n)
+                    yield cast(str, repr(n))  # ty: ignore[call-top-callable]
                 else:
                     yield repr.format(node=n)
             return

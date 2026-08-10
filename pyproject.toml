@@ -114,6 +114,9 @@ select = [
   "UP", # pyupgrade
 ]
 
+# extend-select = ["ANN", "PYI"]
+# preview = true
+
 ignore = [
   "E721",  #  Do not compare types, use `isinstance()`
 ]
@@ -133,7 +136,8 @@ ignore = [
 
 # --- ty Settings --------------------------------------------------------------
 [tool.ty.src]
-include = ["nutree", "tests"]
+include = ["nutree"]
+# include = ["nutree", "tests"]
 
 [tool.ty.analysis]
 replace-imports-with-any = [
@@ -142,8 +146,11 @@ replace-imports-with-any = [
     "pytest.**",
     "pympler.**",
     "rdflib.**",
-    "typing_extensions.**",
 ]
+
+# [tool.ty.rules]
+# missing-type-argument = "error"
+# possibly-unresolved-reference = "warn"
 
 # --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]

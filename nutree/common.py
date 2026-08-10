@@ -365,8 +365,9 @@ def get_version() -> str:
 
 def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     """Check for deprecated Python version."""
-    if sys.version_info < min_version:
-        min_ver = ".".join([str(s) for s in min_version[:3]])
+    min_version: tuple[int, ...] = tuple(map(int, min_version))[:2]
+    if sys.version_info[:2] < min_version:
+        min_ver = ".".join([str(s) for s in min_version])
         warnings.warn(
             f"Support for Python version less than `{min_ver}` is deprecated "
             f"(using {PYTHON_VERSION})",

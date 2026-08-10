@@ -60,7 +60,7 @@ if rdflib:
         _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
 
 else:  # rdflib unavailable # pragma: no cover
-    NUTREE_NS = None  # type: ignore
+    NUTREE_NS = None
 
 
 def _make_graph() -> Graph:

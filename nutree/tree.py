@@ -3,12 +3,6 @@
 """
 Declare the :class:`~nutree.tree.Tree` class.
 """
-# Mypy reports some errors that are not reported by pyright, and there is no
-# way to suppress them with `type: ignore`, because then pyright will report
-# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
-# globally for mypy:
-
-# mypy: disable-error-code="truthy-function"
 
 from __future__ import annotations
 

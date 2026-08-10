@@ -64,7 +64,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     node_factory = TypedNode
 
     def __init__(self):
-        self._root = TypedNode("__root__", "__root__", None)  # type: ignore
+        self._root = TypedNode("__root__", "__root__", None)
 
     def add(self, data: TData, kind: str) -> TypedNode[TData]:
         node = self.root.add(data, kind)
