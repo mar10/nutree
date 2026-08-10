@@ -26,7 +26,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run ruff via tox
+      - name: Run typychecker via tox -e ty
+        run: uvx --with tox-uv tox -e ty
+
+      - name: Run ruff via tox -e lint
         run: uvx --with tox-uv tox -e lint
 
   test:
