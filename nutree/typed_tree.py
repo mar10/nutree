@@ -495,13 +495,19 @@ class TypedNode(Node[TData]):
         )
 
     def copy(
-        self, *, add_self: bool = True, predicate: PredicateCallbackType | None = None
+        self,
+        *,
+        add_self: bool = True,
+        predicate: PredicateCallbackType | None = None,
     ) -> TypedTree[TData]:
         """Return a new :class:`~nutree.typed_tree.TypedTree` instance from this branch.
 
         See also :ref:`iteration-callbacks`.
         """
-        new_tree = cast("TypedTree[TData]", self._tree.__class__())
+        new_tree = cast(
+            "TypedTree[TData]",
+            self._tree.__class__(calc_data_id=self._tree._calc_data_id_hook),
+        )
         if add_self:
             root = new_tree.add(self, kind=self.kind)
         else:
@@ -644,15 +650,23 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         method for details.
         """
         if name is None:
-            name = f"Deep copy of {self}"
+            name = self.name
         if memo is None:
             memo = {}
-        new_tree = self.__class__(name)
+
+        new_tree = self.__class__(name, calc_data_id=self._calc_data_id_hook)
 
         def _copy_children(source_parent, target_parent) -> None:
             for c in source_parent.children:
                 new_data = copy.deepcopy(c.data, memo)
-                new_data_id = new_tree.calc_data_id(new_data)
+
+                # Let the new tree calculate the new data_id unless the original node
+                # had a custom data_id, in which case we keep it
+                if c.data_id == self.calc_data_id(c.data):
+                    new_data_id = None
+                else:
+                    new_data_id = c.data_id
+
                 new_node = target_parent.add(
                     new_data, deep=False, data_id=new_data_id, kind=c.kind
                 )

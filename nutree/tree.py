@@ -605,8 +605,10 @@ class Tree(Generic[TData, TNode]):
         the data objects.
         """
         if name is None:
-            name = f"Copy of {self}"
-        new_tree = self.__class__(name)
+            name = self.name
+
+        new_tree = self.__class__(name, calc_data_id=self._calc_data_id_hook)
+
         with self:
             new_tree.system_root._add_from(self.system_root, predicate=predicate)
         return new_tree
@@ -625,7 +627,6 @@ class Tree(Generic[TData, TNode]):
         self,
         *,
         name: str | None = None,
-        # predicate: PredicateCallbackType | None = None,
         memo: dict[int, Any] | None = None,
     ) -> Self:
         """Return a deep copy of this tree.
@@ -637,16 +638,24 @@ class Tree(Generic[TData, TNode]):
         method for details.
         """
         if name is None:
-            name = f"Deep copy of {self}"
+            name = self.name
         if memo is None:
             memo = {}
-        new_tree = self.__class__(name)
+
+        new_tree = self.__class__(name, calc_data_id=self._calc_data_id_hook)
 
         def _copy_children(source_parent: TNode, target_parent: TNode) -> None:
             for c in source_parent.children:
                 new_data = copy.deepcopy(c.data, memo)
-                new_data_id = new_tree.calc_data_id(new_data)
+
+                # Let the new tree calculate the new data_id unless the original node
+                # had a custom data_id, in which case we keep it
+                if c.data_id == self.calc_data_id(c.data):
+                    new_data_id = None
+                else:
+                    new_data_id = c.data_id
                 new_node = target_parent.add(new_data, deep=False, data_id=new_data_id)
+
                 _copy_children(c, new_node)
 
         with self:
