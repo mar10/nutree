@@ -162,8 +162,8 @@ Release Steps
 
 3. **Run quality checks locally** (optional but recommended)::
 
-       $ tox -e lint,pyright,mypy
-       $ tox
+    $ tox -e lint,ty
+    $ tox
 
 4. **Commit and tag**
 

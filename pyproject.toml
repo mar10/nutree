@@ -59,11 +59,9 @@ dev = [
     "fabulist",
     "ipykernel",
     "lxml",
-    "mypy",
     "notebook",
     "pre-commit",
     "pydot",
-    "pyright",
     "pytest",
     "pytest-cov",
     "pytest-html",
@@ -80,6 +78,7 @@ dev = [
     "tox-uv",
     # "twine",
     "yabs",
+    "ty>=0.0.69",
 ]
 
 [project.urls]
@@ -132,44 +131,19 @@ ignore = [
 # [tool.ruff.pydocstyle]
 # convention = "google"
 
-# --- Pyright Settings ---------------------------------------------------------
-[tool.pyright]
-typeCheckingMode = "standard"
+# --- ty Settings --------------------------------------------------------------
+[tool.ty.src]
 include = ["nutree", "tests"]
-reportMissingImports = "none"
-deprecateTypingAliases = true
 
-# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
-reportUnnecessaryTypeIgnoreComment = true
-
-# executionEnvironments = [
-#   { root = "nutree", typeCheckingMode = "strict" },
-#   { root = "tests", typeCheckingMode = "standard", reportUnnecessaryTypeIgnoreComment = false },
-# ]
-
-
-
-# --- Mypy Settings ------------------------------------------------------------
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-warn_unused_ignores = true
-# warn_redundant_casts = true
-# ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-  "fabulist",
-  "pydot",
-  "pytest",
-  "pympler",
-  "pympler.asizeof",
-  "rdflib",
-  "rdflib.namespace",
-  "typing_extensions",
+[tool.ty.analysis]
+replace-imports-with-any = [
+    "fabulist.**",
+    "pydot.**",
+    "pytest.**",
+    "pympler.**",
+    "rdflib.**",
+    "typing_extensions.**",
 ]
-ignore_missing_imports = true
 
 # --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]
