@@ -55,7 +55,12 @@ def _check_modified(
     return False
 
 
-def _copy_children(source: Node, dest: Node, add_set: set, meta: tuple | None) -> None:
+def _copy_children(
+    source: Node,
+    dest: Node,
+    add_set: set[int],
+    meta: tuple[str, DiffClassification] | None,
+) -> None:
     assert source.has_children() and not dest.has_children()
     for n in source.children:
         n_dest = dest.append_child(n)

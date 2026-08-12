@@ -2,7 +2,7 @@
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
 
 # ruff: noqa: T201, T203 `print` found
-# ty: ignore[unresolved-attribute]
+# ty: ignore[unresolved-attribute, missing-type-argument]
 
 from __future__ import annotations
 

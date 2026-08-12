@@ -136,7 +136,6 @@ ignore = [
 
 # --- ty Settings --------------------------------------------------------------
 [tool.ty.src]
-# include = ["nutree"]
 include = ["nutree", "tests"]
 exclude = [
     "tests/test_typing.py",
@@ -152,9 +151,9 @@ replace-imports-with-any = [
     "rdflib.**",
 ]
 
-# [tool.ty.rules]
-# missing-type-argument = "error"
-# possibly-unresolved-reference = "warn"
+[tool.ty.rules]
+missing-type-argument = "error"
+possibly-unresolved-reference = "warn"
 
 # --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]
@@ -172,10 +171,6 @@ markers = [
 # branch = true
 omit = [
     "tests/*",
-    # "setup.py",
-    # nutree/leaves_cli.py
-    # nutree/cli_common.py
-    # nutree/monitor/*  
 ]
 
 [tool.coverage.report]

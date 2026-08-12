@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any
 
-from nutree.common import DotMapperCallbackType, call_mapper
+from nutree.common import DotMapperCallbackType, call_dot_mapper
 
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
@@ -28,9 +28,9 @@ def node_to_dot(
     *,
     add_self: bool = False,
     unique_nodes: bool = True,
-    graph_attrs: dict | None = None,
-    node_attrs: dict | None = None,
-    edge_attrs: dict | None = None,
+    graph_attrs: dict[str, Any] | None = None,
+    node_attrs: dict[str, Any] | None = None,
+    edge_attrs: dict[str, Any] | None = None,
     node_mapper: DotMapperCallbackType | None = None,
     edge_mapper: DotMapperCallbackType | None = None,
 ) -> Iterator[str]:
@@ -50,7 +50,7 @@ def node_to_dot(
         return n._data_id if unique_nodes else n._node_id
 
     def _attr_str(
-        attr_def: dict,
+        attr_def: dict[str, Any],
         mapper: DotMapperCallbackType | None = None,
         node: Node | None = None,
     ) -> str:
@@ -59,7 +59,7 @@ def node_to_dot(
             # if attr_def is None:
             #     attr_def = {}
             assert node, "node required for mapper"
-            call_mapper(mapper, node, attr_def)
+            call_dot_mapper(mapper, node, attr_def)
         if not attr_def:
             return ""
         attr_str = " ".join(f'{k}="{v}"' for k, v in attr_def.items())  # noqa: B028
@@ -122,9 +122,9 @@ def tree_to_dotfile(
     format: str | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
-    graph_attrs: dict | None = None,
-    node_attrs: dict | None = None,
-    edge_attrs: dict | None = None,
+    graph_attrs: dict[str, Any] | None = None,
+    node_attrs: dict[str, Any] | None = None,
+    edge_attrs: dict[str, Any] | None = None,
     node_mapper: DotMapperCallbackType | None = None,
     edge_mapper: DotMapperCallbackType | None = None,
 ) -> None:

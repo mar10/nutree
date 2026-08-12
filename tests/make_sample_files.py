@@ -9,6 +9,7 @@ Run this to generate sample images and files.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from nutree.diff import DiffClassification, diff_node_formatter
 from nutree.node import Node
@@ -31,14 +32,14 @@ def write_str_diff_png():
 
     tree_2.print(repr=diff_node_formatter)
 
-    def node_mapper(node: Node, attr_def: dict):
+    def node_mapper(node: Node, attr_def: dict[str, Any]):
         dc = node.get_meta("dc")
         if dc == DiffClassification.ADDED:
             attr_def["color"] = "#00c000"
         elif dc == DiffClassification.REMOVED:
             attr_def["color"] = "#c00000"
 
-    def edge_mapper(node: Node, attr_def: dict):
+    def edge_mapper(node: Node, attr_def: dict[str, Any]):
         # https://renenyffenegger.ch/notes/tools/Graphviz/examples/index
         # https://graphs.grevian.org/reference
         # https://graphviz.org/doc/info/attrs.html
@@ -108,7 +109,7 @@ def write_object_diff_png():
 
     UNIQUE_NODES = True
 
-    def node_mapper(node: Node, attr_def: dict):
+    def node_mapper(node: Node, attr_def: dict[str, Any]):
         # https://graphviz.org/docs/nodes/
 
         dc = node.get_meta("dc")
@@ -140,7 +141,7 @@ def write_object_diff_png():
         if node.get_meta("dc_modified"):
             attr_def["fillcolor"] = "#fff0d0"  # "gold" "#FFD700"
 
-    def edge_mapper(node: Node, attr_def: dict):
+    def edge_mapper(node: Node, attr_def: dict[str, Any]):
         # https://renenyffenegger.ch/notes/tools/Graphviz/examples/index
         # https://graphviz.org/docs/edges
         dc = node.get_meta("dc")
