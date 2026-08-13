@@ -565,4 +565,4 @@ Note that the IDE can now **make better suggestions**
 
 and **detect type errors**:
 
-![ty_type_error.png](take_the_tour_files/pyright_type_error.png)
+![pyright_type_error.png](take_the_tour_files/pyright_type_error.png)
