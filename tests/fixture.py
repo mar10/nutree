@@ -433,7 +433,7 @@ def run_timings(
 
     if number == 0:
         # determine number so that 0.2 <= total time < 2.0
-        callback = None  # type: ignore
+        callback = None
         if verbose:
 
             def callback(number: int, time_taken: float):

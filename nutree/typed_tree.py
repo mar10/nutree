@@ -1,16 +1,19 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
+
+# Type checker suppressions for this file:
+#
+# We allow
+#   Invalid override of method `FOO`: Definition is incompatible with `Node.FOO`
+#   info: incompatible return types: `list[TypedNode[TData@TypedNode]]`
+#         is not assignable to `list[Node[TData@TypedNode]]`
+#   info: This violates the Liskov Substitution Principle
+#
+# ty: ignore[invalid-method-override]
+
 """
 Declare the :class:`~nutree.tree.TypedTree` class.
 """
-# pyright: reportIncompatibleMethodOverride=false
-
-# Mypy reports some errors that are not reported by pyright, and there is no
-# way to suppress them with `type: ignore`, because then pyright will report
-# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
-# globally for mypy:
-
-# mypy: disable-error-code="override, assignment, arg-type"
 
 from __future__ import annotations
 
@@ -38,22 +41,15 @@ from nutree.common import (
     SerializeMapperType,
     UniqueConstraintError,
     ValueMapType,
-    call_mapper,
+    call_dot_mapper,
 )
 from nutree.node import Node, TData
 from nutree.tree import Tree
-
-# class TAnyKind:
-#     """Special argument value for some methods that access child nodes."""
 
 
 @final
 class ANY_KIND:
     """Special argument value for some methods that access child nodes."""
-
-
-#: Special argument value for some methods that access child nodes
-# ANY_KIND = sentinel.ANY_KIND
 
 
 # ------------------------------------------------------------------------------
@@ -73,10 +69,6 @@ class TypedNode(Node[TData]):
     #: Default value for ``repr`` argument when formatting data for print/display.
     DEFAULT_RENDER_REPR = "{node.kind} → {node.data}"
 
-    # #: Default value for ``repr`` argument when formatting data for export,
-    # #: like DOT, RDF, ...
-    # DEFAULT_NAME_REPR = "{node.data!r}"
-
     def __init__(
         self,
         kind: str,
@@ -85,7 +77,7 @@ class TypedNode(Node[TData]):
         parent: Self,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-        meta: dict | None = None,
+        meta: dict[str, Any] | None = None,
     ):
         # tree._register() checks for this attribute in __init__():
         self._kind: str = kind
@@ -241,7 +233,7 @@ class TypedNode(Node[TData]):
             kc = self._parent.children
         else:
             kc = self._parent.get_children(self.kind)
-        return kc.index(cast(Self, self))
+        return kc.index(self)
 
     def is_first_sibling(self, *, any_kind: bool = False) -> bool:
         """Return true if this node is the first sibling, i.e. the first child
@@ -540,9 +532,9 @@ class TypedNode(Node[TData]):
         *,
         add_self: bool = False,
         unique_nodes: bool = True,
-        graph_attrs: dict | None = None,
-        node_attrs: dict | None = None,
-        edge_attrs: dict | None = None,
+        graph_attrs: dict[str, Any] | None = None,
+        node_attrs: dict[str, Any] | None = None,
+        edge_attrs: dict[str, Any] | None = None,
         node_mapper: DotMapperCallbackType | None = None,
         edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
@@ -552,7 +544,7 @@ class TypedNode(Node[TData]):
         """
 
         # TypedNodes can provide labelled edges:
-        def _edge_mapper(node: Node, data: dict) -> dict | None:
+        def _edge_mapper(node: Node, data: dict[str, Any]) -> dict[str, Any] | None:
             data["label"] = node.kind
             if edge_mapper:
                 return edge_mapper(node, data)
@@ -577,7 +569,7 @@ class _SystemRootTypedNode(TypedNode):
     """Invisible system root node."""
 
     def __init__(self, tree: TypedTree) -> None:
-        self._tree: TypedTree = tree  # type: ignore
+        self._tree: TypedTree = tree
         self._parent = None  # type: ignore
         self._node_id = ROOT_NODE_ID
         self._data_id = ROOT_DATA_ID
@@ -625,7 +617,9 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         self._system_root = self.root_node_factory(self)
 
     @classmethod
-    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
+    def deserialize_mapper(
+        cls, parent: Node, data: dict[str, Any]
+    ) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         if "str" in data and len(data) <= 2:
             # This can happen if the source was generated without a
@@ -794,7 +788,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         *,
         compression: bool | int = False,
         mapper: SerializeMapperType | None = None,
-        meta: dict | None = None,
+        meta: dict[str, Any] | None = None,
         key_map: KeyMapType | bool = True,
         value_map: ValueMapType | bool = True,
     ) -> None:
@@ -805,7 +799,6 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         # TypedTrees can assume reasaonable defaults for key_map and value_map
         # (key_map is evaluated in base class from TypedTree.DEFAULT_KEY_MAP)
 
-        # print("value_map    ", value_map)
         if value_map is True or isinstance(value_map, dict):
             if value_map is True:
                 value_map = self.DEFAULT_VALUE_MAP.copy()
@@ -815,7 +808,6 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
                 for n in self:
                     counter[n.kind] += 1
                 value_map.update({"kind": list(counter.keys())})
-                # print("value_map -> ", value_map)
         else:
             assert value_map is False, value_map
 
@@ -830,7 +822,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
     @classmethod
     def _from_list(
-        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
+        cls, obj: list[dict[int, Any]], *, mapper: DeserializeMapperType | None = None
     ) -> Self:
         tree = cls()
 
@@ -846,7 +838,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
             if isinstance(data, str):
                 # This can only happen if the source was generated by a plain Tree
-                n = parent.add_child(data, kind=cls.DEFAULT_CHILD_TYPE)  # type: ignore
+                n = parent.add_child(data, kind=cls.DEFAULT_CHILD_TYPE)
             elif isinstance(data, int):
                 first_clone = node_idx_map[data]
                 n = parent.add_child(
@@ -855,7 +847,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
             else:
                 kind = data.get("kind", cls.DEFAULT_CHILD_TYPE)
                 data_id = data.get("data_id")
-                data_obj = call_mapper(mapper, parent, data)
+                data_obj = call_dot_mapper(mapper, parent, data)
                 n = parent.add_child(data_obj, kind=kind, data_id=data_id)
             # elif isinstance(data, dict) and "str" in data:
             #     # This can happen if the source was generated without a
@@ -874,7 +866,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         target: IO[str] | str | Path,
         *,
         mapper: DeserializeMapperType | None = None,
-        file_meta: dict | None = None,
+        file_meta: dict[str, Any] | None = None,
     ) -> Self:
         """Create a new :class:`TypedTree` instance from a JSON file stream.
 

@@ -1,9 +1,10 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
-""" """
-# ruff: noqa: T201, T203 `print` found
-# pyright: reportAttributeAccessIssue=false
 
+# ruff: noqa: T201, T203 `print` found
+# ty: ignore[unresolved-attribute]
+
+import pytest
 from nutree.typed_tree import TypedTree
 
 from . import fixture
@@ -80,6 +81,9 @@ class TestRDF:
         # Basic triple matching: All cause types
         # Note that Literal will be `None` if rdflib is not available
         from nutree.rdf import NUTREE_NS, Literal
+
+        if Literal is None:
+            raise pytest.skip("rdflib not available")
 
         cause_kind = Literal("cause")
         n = 0

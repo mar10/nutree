@@ -1,6 +1,4 @@
 # ruff: noqa: T201, T203 `print` found
-# pyright: reportIncompatibleMethodOverride=false
-# mypy: disable-error-code="override"
 
 # type: ignore
 
@@ -31,7 +29,7 @@ class Tree(Generic[TData, TNode]):
     node_factory: type[TNode] = cast(type[TNode], Node)
 
     def __init__(self):
-        self._root: Node = self.node_factory("__root__", None)  # type: ignore
+        self._root: Node = self.node_factory("__root__", None)
 
     def add(self, data: TData) -> TNode:
         node = self.root.add(data)
@@ -64,7 +62,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     node_factory = TypedNode
 
     def __init__(self):
-        self._root = TypedNode("__root__", "__root__", None)  # type: ignore
+        self._root = TypedNode("__root__", "__root__", None)
 
     def add(self, data: TData, kind: str) -> TypedNode[TData]:
         node = self.root.add(data, kind)

@@ -3,12 +3,6 @@
 """
 Declare the :class:`~nutree.tree.Tree` class.
 """
-# Mypy reports some errors that are not reported by pyright, and there is no
-# way to suppress them with `type: ignore`, because then pyright will report
-# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
-# globally for mypy:
-
-# mypy: disable-error-code="truthy-function"
 
 from __future__ import annotations
 
@@ -52,7 +46,7 @@ from nutree.common import (
     TraversalCallbackType,
     UniqueConstraintError,
     ValueMapType,
-    call_mapper,
+    call_dot_mapper,
     check_python_version,
     get_version,
     open_as_compressed_output_stream,
@@ -89,7 +83,7 @@ class _SystemRootNode(Node):
         self._node_id = ROOT_NODE_ID
         self._data_id = ROOT_DATA_ID
         self._data = tree.name
-        self._children = []
+        self._children: list[Node] = []
         self._meta = None
 
 
@@ -445,12 +439,16 @@ class Tree(Generic[TData, TNode]):
         return
 
     @classmethod
-    def serialize_mapper(cls, node: Node, data: dict) -> dict | None:
+    def serialize_mapper(
+        cls, node: Node, data: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Used as default `mapper` argument for :meth:`save`."""
         return data
 
     @classmethod
-    def deserialize_mapper(cls, parent: Node, data: dict) -> str | object | None:
+    def deserialize_mapper(
+        cls, parent: Node, data: dict[str, Any]
+    ) -> str | object | None:
         """Used as default `mapper` argument for :meth:`load`."""
         raise NotImplementedError(
             f"Override this method or pass a mapper callback to evaluate {data}."
@@ -847,7 +845,9 @@ class Tree(Generic[TData, TNode]):
         new_tree.sort(key=key, reverse=reverse, deep=deep)
         return new_tree
 
-    def to_dict_list(self, *, mapper: SerializeMapperType | None = None) -> list[dict]:
+    def to_dict_list(
+        self, *, mapper: SerializeMapperType | None = None
+    ) -> list[dict[str, Any]]:
         """Call Node's :meth:`~nutree.node.Node.to_dict` method for all
         child nodes and return list of results."""
         res = []
@@ -858,7 +858,7 @@ class Tree(Generic[TData, TNode]):
 
     @classmethod
     def from_dict(
-        cls, obj: list[dict], *, mapper: DeserializeMapperType | None = None
+        cls, obj: list[dict[str, Any]], *, mapper: DeserializeMapperType | None = None
     ) -> Self:
         """Return a new :class:`Tree` instance from a list of dicts.
 
@@ -888,7 +888,7 @@ class Tree(Generic[TData, TNode]):
         *,
         compression: bool | int = False,
         mapper: SerializeMapperType | None = None,
-        meta: dict | None = None,
+        meta: dict[str, Any] | None = None,
         key_map: KeyMapType | bool = True,
         value_map: ValueMapType | bool = True,
     ) -> None:
@@ -960,7 +960,10 @@ class Tree(Generic[TData, TNode]):
 
     @classmethod
     def _uncompress_entry(
-        cls, data: dict | str, inverse_key_map: dict, value_map: ValueMapType
+        cls,
+        data: dict[str, Any] | str,
+        inverse_key_map: dict[str, str],
+        value_map: ValueMapType,
     ) -> None:
         # if isinstance(data, str):
         #     return
@@ -979,7 +982,7 @@ class Tree(Generic[TData, TNode]):
     @classmethod
     def _from_list(
         cls,
-        obj: list[tuple[int, str | dict]],
+        obj: list[tuple[int, str | dict[str, Any]]],
         *,
         mapper: DeserializeMapperType | None = None,
     ) -> Self:
@@ -999,7 +1002,7 @@ class Tree(Generic[TData, TNode]):
             else:
                 assert isinstance(data, dict), data
                 data_id = data.get("data_id")
-                data = call_mapper(mapper, parent, data)
+                data = call_dot_mapper(mapper, parent, data)
                 n = parent.add(data, data_id=data_id)
             # else:
             #     raise RuntimeError(f"Need mapper for {data}")
@@ -1014,7 +1017,7 @@ class Tree(Generic[TData, TNode]):
         target: IO[str] | str | Path,
         *,
         mapper: DeserializeMapperType | None = None,
-        file_meta: dict | None = None,
+        file_meta: dict[str, Any] | None = None,
         auto_uncompress: bool = True,
     ) -> Self:
         """Create a new :class:`Tree` instance from a file path or JSON file stream.
@@ -1049,7 +1052,7 @@ class Tree(Generic[TData, TNode]):
 
         # Uncompress key/value maps
         key_map = obj["meta"].get("$key_map", {})
-        inverse_key_map = {v: k for k, v in key_map.items()}
+        inverse_key_map: dict[str, Any] = {v: k for k, v in key_map.items()}
         # print("inverse_key_map", inverse_key_map)
 
         value_map = obj["meta"].get("$value_map", {})
@@ -1069,9 +1072,9 @@ class Tree(Generic[TData, TNode]):
         *,
         add_root: bool = True,
         unique_nodes: bool = True,
-        graph_attrs: dict | None = None,
-        node_attrs: dict | None = None,
-        edge_attrs: dict | None = None,
+        graph_attrs: dict[str, Any] | None = None,
+        node_attrs: dict[str, Any] | None = None,
+        edge_attrs: dict[str, Any] | None = None,
         node_mapper: DotMapperCallbackType | None = None,
         edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
@@ -1096,9 +1099,9 @@ class Tree(Generic[TData, TNode]):
         format: str | None = None,
         add_root: bool = True,
         unique_nodes: bool = True,
-        graph_attrs: dict | None = None,
-        node_attrs: dict | None = None,
-        edge_attrs: dict | None = None,
+        graph_attrs: dict[str, Any] | None = None,
+        node_attrs: dict[str, Any] | None = None,
+        edge_attrs: dict[str, Any] | None = None,
         node_mapper: DotMapperCallbackType | None = None,
         edge_mapper: DotMapperCallbackType | None = None,
     ) -> None:
@@ -1129,7 +1132,7 @@ class Tree(Generic[TData, TNode]):
         direction: MermaidDirectionType = "TD",
         title: str | bool | None = True,
         format: MermaidFormatType | None = None,
-        mmdc_options: dict | None = None,
+        mmdc_options: dict[str, Any] | None = None,
         add_root: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
@@ -1227,7 +1230,7 @@ class Tree(Generic[TData, TNode]):
         return True
 
     @classmethod
-    def build_random_tree(cls, structure_def: dict) -> Self:
+    def build_random_tree(cls, structure_def: dict[str, Any]) -> Self:
         """Build a random tree for .
 
         Returns a new :class:`Tree` instance with random nodes, as defined by

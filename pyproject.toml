@@ -59,11 +59,9 @@ dev = [
     "fabulist",
     "ipykernel",
     "lxml",
-    "mypy",
     "notebook",
     "pre-commit",
     "pydot",
-    "pyright",
     "pytest",
     "pytest-cov",
     "pytest-html",
@@ -80,6 +78,7 @@ dev = [
     "tox-uv",
     # "twine",
     "yabs",
+    "ty>=0.0.69",
 ]
 
 [project.urls]
@@ -115,6 +114,9 @@ select = [
   "UP", # pyupgrade
 ]
 
+# extend-select = ["ANN", "PYI"]
+# preview = true
+
 ignore = [
   "E721",  #  Do not compare types, use `isinstance()`
 ]
@@ -132,44 +134,26 @@ ignore = [
 # [tool.ruff.pydocstyle]
 # convention = "google"
 
-# --- Pyright Settings ---------------------------------------------------------
-[tool.pyright]
-typeCheckingMode = "standard"
+# --- ty Settings --------------------------------------------------------------
+[tool.ty.src]
 include = ["nutree", "tests"]
-reportMissingImports = "none"
-deprecateTypingAliases = true
-
-# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
-reportUnnecessaryTypeIgnoreComment = true
-
-# executionEnvironments = [
-#   { root = "nutree", typeCheckingMode = "strict" },
-#   { root = "tests", typeCheckingMode = "standard", reportUnnecessaryTypeIgnoreComment = false },
-# ]
-
-
-
-# --- Mypy Settings ------------------------------------------------------------
-[tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-warn_unused_ignores = true
-# warn_redundant_casts = true
-# ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-  "fabulist",
-  "pydot",
-  "pytest",
-  "pympler",
-  "pympler.asizeof",
-  "rdflib",
-  "rdflib.namespace",
-  "typing_extensions",
+exclude = [
+    "tests/test_typing.py",
+    "tests/test_typing_concept.py",
 ]
-ignore_missing_imports = true
+
+[tool.ty.analysis]
+replace-imports-with-any = [
+    "fabulist.**",
+    "pydot.**",
+    "pytest.**",
+    "pympler.**",
+    "rdflib.**",
+]
+
+[tool.ty.rules]
+missing-type-argument = "error"
+possibly-unresolved-reference = "warn"
 
 # --- Pytest and Coverage Settings ---------------------------------------------
 [tool.pytest.ini_options]
@@ -187,10 +171,6 @@ markers = [
 # branch = true
 omit = [
     "tests/*",
-    # "setup.py",
-    # nutree/leaves_cli.py
-    # nutree/cli_common.py
-    # nutree/monitor/*  
 ]
 
 [tool.coverage.report]

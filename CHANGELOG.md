@@ -29,6 +29,8 @@ Dropping Python versions that reached EOL will only cause a minor version bump.
 - Add method `tree.map(fn)`
 - Support Python 3.14, 3.15
 - Use [uv](https://docs.astral.sh/uv/)
+- Use [ty](https://docs.astral.sh/ty/) instead of [pyright](https://microsoft.github.io/pyright) 
+  and [mypy](https://mypy-lang.org)
 
 ## 1.1.0 (2025-02-09)
 

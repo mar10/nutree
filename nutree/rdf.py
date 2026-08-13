@@ -1,17 +1,21 @@
 # (c) 2021-2024 Martin Wendt; see https://github.com/mar10/nutree
 # Licensed under the MIT license: https://www.opensource.org/licenses/mit-license.php
+
+# pragma: exclude-file-from-coverage
+
+# Type checker suppressions for this file:
+#
+# We allow some type checker errors in this file, because we want to support the case
+# where `rdflib` is not installed.
+# In that case, the type checker will complain about missing attributes,
+# but we don't want to require `rdflib` for type checking.
+#
+# ty: ignore[call-non-callable, unresolved-attribute]
+# pyright: reportInvalidTypeForm=false
+
 """
 Functions and declarations to implement `rdflib <https://github.com/RDFLib/rdflib>`_.
 """
-# pragma: exclude-file-from-coverage
-
-# pyright: reportOptionalCall=false
-# pyright: reportInvalidTypeForm=false
-# pyright: reportGeneralTypeIssues=false
-# pyright: reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false
-
-# mypy: disable-error-code="arg-type, assignment, misc, return-value"
 
 from __future__ import annotations
 
@@ -42,6 +46,20 @@ RDFMapperCallbackType = Callable[[Graph, IdentifiedNode, "Node"], None | bool]
 
 
 if rdflib:
+    assert DefinedNamespace is not None
+    assert all(
+        (
+            rdflib,
+            Graph,
+            IdentifiedNode,
+            Literal,
+            URIRef,
+            RDF,
+            XSD,
+            DefinedNamespace,
+            Namespace,
+        )
+    )
 
     class NUTREE_NS(DefinedNamespace):
         """
@@ -60,7 +78,7 @@ if rdflib:
         _NS = Namespace("http://wwwendt.de/namespace/nutree/rdf/0.1/")
 
 else:  # rdflib unavailable # pragma: no cover
-    NUTREE_NS = None  # type: ignore
+    NUTREE_NS = None
 
 
 def _make_graph() -> Graph:

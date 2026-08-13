@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from operator import attrgetter, itemgetter
 from pathlib import Path
+from typing import Any
 
 from nutree.tree import Node, Tree
 
@@ -44,7 +45,7 @@ class FileSystemTree(Tree[FileSystemEntry]):
     DEFAULT_KEY_MAP = {}  # don't replace 's' with 'str'
 
     @classmethod
-    def serialize_mapper(cls, node: Node, data: dict) -> dict:
+    def serialize_mapper(cls, node: Node, data: dict[str, Any]) -> dict[str, Any]:
         """Callback for use with :meth:`~nutree.tree.Tree.save`."""
         inst = node.data
         if inst.is_dir:
@@ -54,7 +55,7 @@ class FileSystemTree(Tree[FileSystemEntry]):
         return data
 
     @classmethod
-    def deserialize_mapper(cls, parent: Node, data: dict) -> FileSystemEntry:
+    def deserialize_mapper(cls, parent: Node, data: dict[str, Any]) -> FileSystemEntry:
         """Callback for use with :meth:`~nutree.tree.Tree.load`."""
         # v = data["v"]
         if "d" in data:

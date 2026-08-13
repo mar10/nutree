@@ -12,7 +12,7 @@ import io
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
-from typing import IO, TYPE_CHECKING, Literal
+from typing import IO, TYPE_CHECKING, Any, Literal
 
 from nutree.common import DataIdType
 
@@ -170,7 +170,7 @@ def node_to_mermaid_flowchart(
     direction: MermaidDirectionType = "TD",
     title: str | bool | None = True,
     format: MermaidFormatType | None = None,
-    mmdc_options: dict | None = None,
+    mmdc_options: dict[str, Any] | None = None,
     add_root: bool = True,
     unique_nodes: bool = True,
     headers: Iterable[str] | None = None,

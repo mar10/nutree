@@ -511,8 +511,8 @@ or with `unique_nodes=True`:
 
 ## Type Hints
 
-Nutree comes fully typed (passing [pyright](https://microsoft.github.io/pyright/#/) 
-standard checks). This improves type-safety and auto-complete features inside 
+Nutree comes fully typed (validated with [ty](https://docs.astral.sh/ty/)).
+This improves type-safety and auto-complete features inside 
 IDEs.
 
 Assuming we have a hierrchy of objects:

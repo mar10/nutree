@@ -4,8 +4,6 @@
 Functions and declarations used by the :mod:`nutree.tree` and :mod:`nutree.node`
 modules.
 """
-# MyPy incorrctly flags 'Exception must be derived from BaseException'
-# mypy: disable-error-code="misc"
 
 from __future__ import annotations
 
@@ -22,13 +20,6 @@ from typing import IO, TYPE_CHECKING, Any, Literal
 if TYPE_CHECKING:  # Imported by type checkers, but prevent circular includes
     from nutree.node import Node
     from nutree.tree import Tree
-
-    # TTree = TypeVar("TTree", bound=Tree)
-    # TNode = TypeVar("TNode", bound=Node)
-
-
-#: A sentinel object that can be used to detect if a parameter was passed.
-# sentinel = unittest.mock.sentinel
 
 #: Used as ID for the system root node
 ROOT_DATA_ID: str = "__root__"
@@ -168,13 +159,13 @@ ValueMapType = dict[str, list[str]]
 ValueDictMapType = dict[str, dict[str, int]]
 
 #: Generic callback for `tree.to_dot()`, ...
-DotMapperCallbackType = Callable[["Node", dict], None | Any]
+DotMapperCallbackType = Callable[["Node", dict[str, Any]], None | Any]
 
 #: Callback for `tree.save()`
-SerializeMapperType = Callable[["Node", dict], None | dict]
+SerializeMapperType = Callable[["Node", dict[str, Any]], None | dict[str, Any]]
 
 #: Callback for `tree.load()`
-DeserializeMapperType = Callable[["Node", dict], str | object]
+DeserializeMapperType = Callable[["Node", dict[str, Any]], str | object]
 
 #: Generic callback for `tree.filter()`, `tree.copy()`, ...
 PredicateCallbackType = Callable[
@@ -255,8 +246,8 @@ class DictWrapper:
 
     __slots__ = ("_dict",)
 
-    def __init__(self, dict_inst: dict | None = None, **values: Any) -> None:
-        self._dict: dict = {}
+    def __init__(self, dict_inst: dict[Any, Any] | None = None, **values: Any) -> None:
+        self._dict: dict[Any, Any] = {}
         if dict_inst is not None:
             # A dictionary was passed: store a reference to that instance
             if not isinstance(dict_inst, dict):
@@ -335,7 +326,9 @@ class DictWrapper:
     #         raise AttributeError(name) from None
 
     @classmethod
-    def serialize_mapper(cls, nutree_node: Node, data: dict) -> None | dict:
+    def serialize_mapper(
+        cls, nutree_node: Node, data: dict[str, Any]
+    ) -> None | dict[str, Any]:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -347,7 +340,9 @@ class DictWrapper:
         return nutree_node.data._dict.copy()
 
     @classmethod
-    def deserialize_mapper(cls, nutree_node: Node, data: dict) -> str | object:
+    def deserialize_mapper(
+        cls, nutree_node: Node, data: dict[str, Any]
+    ) -> str | object:
         """Serialize the data object to a dictionary.
 
         Example::
@@ -365,8 +360,9 @@ def get_version() -> str:
 
 def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     """Check for deprecated Python version."""
-    if sys.version_info < min_version:
-        min_ver = ".".join([str(s) for s in min_version[:3]])
+    min_version: tuple[int, ...] = tuple(map(int, min_version))[:2]
+    if sys.version_info[:2] < min_version:
+        min_ver = ".".join([str(s) for s in min_version])
         warnings.warn(
             f"Support for Python version less than `{min_ver}` is deprecated "
             f"(using {PYTHON_VERSION})",
@@ -377,7 +373,9 @@ def check_python_version(min_version: tuple[str | int, str | int]) -> bool:
     return True
 
 
-def call_mapper(fn: DotMapperCallbackType | None, node: Node, data: dict) -> Any:
+def call_dot_mapper(
+    fn: DotMapperCallbackType | None, node: Node, data: dict[Any, Any]
+) -> Any:
     """Call the function and normalize result and exceptions.
 
     Handles `DotMapperCallbackType`:
@@ -392,7 +390,9 @@ def call_mapper(fn: DotMapperCallbackType | None, node: Node, data: dict) -> Any
     return res
 
 
-def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
+def call_predicate(
+    fn: PredicateCallbackType, node: Node
+) -> IterationControl | None | Any:
     """Call the function and normalize result and exceptions.
 
     Handles `PredicateCallbackType`:
@@ -404,7 +404,7 @@ def call_predicate(fn: Callable, node: Node) -> IterationControl | None | Any:
     try:
         res = fn(node)
         if res in (SkipBranch, SelectBranch, StopTraversal):
-            return res()
+            return res()  # ty: ignore[call-non-callable]
     except IterationControl as e:
         return e  # SkipBranch, SelectBranch, StopTraversal
     except StopIteration as e:  # Also accept this builtin exception

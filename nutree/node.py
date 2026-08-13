@@ -3,12 +3,6 @@
 """
 Declare the :class:`~nutree.node.Node` class.
 """
-# Mypy reports some errors that are not reported by pyright, and there is no
-# way to suppress them with `type: ignore`, because then pyright will report
-# an 'Unnecessary "# type: ignore" comment'. For now, we disable the errors
-# globally for mypy:
-
-# mypy: disable-error-code="truthy-function, arg-type"
 
 from __future__ import annotations
 
@@ -61,7 +55,7 @@ from nutree.common import (
     UniqueConstraintError,
     ValueDictMapType,
     ValueMapType,
-    call_mapper,
+    call_dot_mapper,
     call_predicate,
     call_traversal_cb,
 )
@@ -131,7 +125,7 @@ class Node(Generic[TData]):
         parent: Self,
         data_id: DataIdType | None = None,
         node_id: int | None = None,
-        meta: dict | None = None,
+        meta: dict[str, Any] | None = None,
     ):
         self._data: TData = data
         self._parent: Self = parent
@@ -150,9 +144,9 @@ class Node(Generic[TData]):
         else:
             self._node_id = int(node_id)
 
-        self._meta = meta
+        self._meta: dict[str, Any] | None = meta
 
-        tree._register(self)  # type: ignore
+        tree._register(self)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}, data_id={self.data_id}>"
@@ -275,7 +269,7 @@ class Node(Generic[TData]):
         return self._node_id
 
     @property
-    def meta(self) -> dict | None:
+    def meta(self) -> dict[str, Any] | None:
         """Return the node's metadata dictionary or None if empty.
 
         See also :meth:`get_meta`, :meth:`set_meta`, :meth:`update_meta`,
@@ -309,7 +303,7 @@ class Node(Generic[TData]):
                 self._meta = None
         return
 
-    def update_meta(self, values: dict, *, replace: bool = False) -> None:
+    def update_meta(self, values: dict[str, Any], *, replace: bool = False) -> None:
         """Add `values` dict to current metadata.
 
         If `replace` is true, previous metatdata will be cleared.
@@ -334,7 +328,7 @@ class Node(Generic[TData]):
     ) -> None:
         """Change node's `data` and/or `data_id` and update bookkeeping."""
         return self.tree._set_data(
-            self,  # type: ignore
+            self,
             data,
             data_id=data_id,
             with_clones=with_clones,
@@ -710,15 +704,13 @@ class Node(Generic[TData]):
                 raise UniqueConstraintError(f"data_id conflict: {source_node}")
 
             new_node = factory(
-                source_node.data,  # type: ignore
-                parent=self,  # type: ignore
+                source_node.data,
+                parent=self,
                 data_id=data_id,
                 node_id=node_id,
-            )
+            )  # type: ignore
         else:
             new_node = factory(child, parent=self, data_id=data_id, node_id=node_id)  # type: ignore
-
-        new_node = cast(Self, new_node)
 
         if before is True:
             before = 0  # prepend
@@ -847,7 +839,7 @@ class Node(Generic[TData]):
         if before is True:
             before = 0  # prepend
 
-        target_siblings = new_parent._children
+        target_siblings = cast(list[Self] | None, new_parent._children)
         if target_siblings is None:
             assert before in (None, True, False, 0), before
             new_parent._children = [self]
@@ -887,13 +879,13 @@ class Node(Generic[TData]):
         if not pc:  # store None instead of `[]`
             pc = self._parent._children = None
 
-        self._tree._unregister(self)  # type: ignore
+        self._tree._unregister(self)
 
     def remove_children(self) -> None:
         """Remove all children of this node, making it a leaf node."""
         _unregister = self._tree._unregister
         for n in self._iter_post():
-            _unregister(n)  # type: ignore
+            _unregister(n)
         self._children = None
         return
 
@@ -935,7 +927,7 @@ class Node(Generic[TData]):
         res: Self = self
         if add_self:
             res = target.add_child(self, before=before, deep=deep)
-            return cast(Self, res)  # if target is Tree, type is not inferred?
+            return res  # if target is Tree, type is not inferred?
 
         assert before is None
         if not self._children:
@@ -990,7 +982,6 @@ class Node(Generic[TData]):
         def _visit(other: Self) -> None:
             """Return True if any descendant returned True."""
 
-            # print("_visit", parent_stack, other)
             for n in other.children:
                 parent_stack.append((False, n))
 
@@ -1081,7 +1072,7 @@ class Node(Generic[TData]):
         return
 
     def from_dict(
-        self, obj: list[dict], *, mapper: DeserializeMapperType | None = None
+        self, obj: list[dict[str, Any]], *, mapper: DeserializeMapperType | None = None
     ) -> None:
         """Append copies of all source children to self."""
         # TODO:
@@ -1092,7 +1083,7 @@ class Node(Generic[TData]):
             if mapper:
                 # mapper may add item['data_id']
                 # data = mapper(parent=self, item=item)
-                data_obj = call_mapper(mapper, self, item)
+                data_obj = call_dot_mapper(mapper, self, item)
             else:
                 data_obj = item["data"]
 
@@ -1300,7 +1291,7 @@ class Node(Generic[TData]):
 
         count = 0
         for node in self.iterator(add_self=add_self):
-            if not cb_match(node):
+            if not cast(PredicateCallbackType, cb_match)(node):
                 continue
             count += 1
             yield node
@@ -1373,7 +1364,7 @@ class Node(Generic[TData]):
                 c.sort_children(key=key, reverse=reverse, deep=True)
         return
 
-    def _get_prefix(self, style: tuple | list, lstrip: int) -> str:
+    def _get_prefix(self, style: tuple[str, ...] | list[str], lstrip: int) -> str:
         if len(style) == 4:
             s0, s1, s2, s3 = style
             s4 = s2
@@ -1385,7 +1376,7 @@ class Node(Generic[TData]):
 
         def _is_last(p: Self) -> bool:
             # Don't use `is_last_sibling()` which is overloaded by TypedNode
-            return p is p._parent._children[-1]  # type: ignore[index]
+            return p is p._parent._children[-1]  # ty: ignore[not-subscriptable]
 
         parts = []
         depth = 0
@@ -1416,7 +1407,7 @@ class Node(Generic[TData]):
         self,
         *,
         repr: ReprArgType | None = None,
-        style: str | list | tuple | None = None,
+        style: str | list[str] | tuple[str, ...] | None = None,
         add_self: bool = True,
     ) -> Iterator[str]:
         if not isinstance(style, (list, tuple)):
@@ -1445,7 +1436,7 @@ class Node(Generic[TData]):
             prefix = n._get_prefix(style, lstrip)
 
             if callable(repr):
-                s = repr(n)
+                s = cast(str, repr(n))  # ty: ignore[call-top-callable]
             else:
                 s = repr.format(node=n)
 
@@ -1457,7 +1448,7 @@ class Node(Generic[TData]):
         self,
         *,
         repr: ReprArgType | None = None,
-        style: str | None = None,
+        style: str | list[str] | tuple[str, ...] | None = None,
         add_self: bool = True,
     ) -> Iterator[str]:
         """This variant of :meth:`format` returns a line generator."""
@@ -1466,7 +1457,7 @@ class Node(Generic[TData]):
                 repr = self.DEFAULT_RENDER_REPR
             for n in self.iterator(add_self=add_self):
                 if callable(repr):
-                    yield repr(n)
+                    yield cast(str, repr(n))  # ty: ignore[call-top-callable]
                 else:
                     yield repr.format(node=n)
             return
@@ -1476,7 +1467,7 @@ class Node(Generic[TData]):
         self,
         *,
         repr: ReprArgType | None = None,
-        style: str | None = None,
+        style: str | list[str] | tuple[str, ...] | None = None,
         add_self: bool = True,
         join: str = "\n",
     ) -> str:
@@ -1506,17 +1497,15 @@ class Node(Generic[TData]):
         iter_lines = self.format_iter(repr=repr, style=style, add_self=add_self)
         return join.join(iter_lines)
 
-    def to_dict(self, *, mapper: SerializeMapperType | None = None) -> dict:
+    def to_dict(self, *, mapper: SerializeMapperType | None = None) -> dict[str, Any]:
         """Return a nested dict of this node and its children."""
-        res: dict = {
+        res: dict[str, Any] = {
             "data": str(self.data),
         }
         # Add custom data_id if not calculated to the hash by default.
         if self._data_id != hash(self._data):
             res["data_id"] = self._data_id
-        res = call_mapper(mapper, self, res)
-        # if mapper:
-        #     res = mapper(self, res)
+        res = call_dot_mapper(mapper, self, res)
         if self._children:
             res["children"] = cl = []
             for n in self._children:
@@ -1525,7 +1514,10 @@ class Node(Generic[TData]):
 
     @classmethod
     def _compress_entry(
-        cls, data: dict | str, key_map: KeyMapType, value_map: ValueDictMapType
+        cls,
+        data: dict[str, Any] | str,
+        key_map: KeyMapType,
+        value_map: ValueDictMapType,
     ) -> None:
         if isinstance(data, str):
             return
@@ -1634,7 +1626,7 @@ class Node(Generic[TData]):
 
             # Let caller serialize custom data objects
             if mapper and isinstance(data, dict):
-                data = call_mapper(mapper, node, data)
+                data = call_dot_mapper(mapper, node, data)
 
             # Compress data if requested
             if key_map or value_map:
@@ -1648,9 +1640,9 @@ class Node(Generic[TData]):
         *,
         add_self: bool = False,
         unique_nodes: bool = True,
-        graph_attrs: dict | None = None,
-        node_attrs: dict | None = None,
-        edge_attrs: dict | None = None,
+        graph_attrs: dict[str, Any] | None = None,
+        node_attrs: dict[str, Any] | None = None,
+        edge_attrs: dict[str, Any] | None = None,
         node_mapper: DotMapperCallbackType | None = None,
         edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
@@ -1687,7 +1679,7 @@ class Node(Generic[TData]):
         direction: MermaidDirectionType = "TD",
         title: str | bool | None = True,
         format: MermaidFormatType | None = None,
-        mmdc_options: dict | None = None,
+        mmdc_options: dict[str, Any] | None = None,
         add_self: bool = True,
         unique_nodes: bool = True,
         headers: Iterable[str] | None = None,
