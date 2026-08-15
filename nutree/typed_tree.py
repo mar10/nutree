@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import IO, cast, final
 
 # typing.Self requires Python 3.11
-from typing_extensions import Any, Self
+from typing_extensions import Any, Self, deprecated
 
 from nutree.common import (
     ROOT_DATA_ID,
@@ -789,6 +789,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         """Return the last top-level node of ``kind``, or ``None``."""
         return self.system_root.last_child(kind=kind)
 
+    @deprecated("Use Tree.iterator(..., kind=...) instead.")
     def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
         """Yield nodes of ``kind``.
 

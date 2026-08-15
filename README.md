@@ -12,10 +12,9 @@
 
 > _Nutree_ lets you organize and query arbitrary Python objects as a tree — with clones, diffing, and graph export built in.
 
-Trees and nodes behave like familiar Python containers wherever that makes sense — len(tree) counts nodes, 
-iterating walks the tree depth-first, and in tests membership. 
-Lookup (tree[value]) matches by id or by the wrapped data, not by position, 
-since a tree has no natural order. 
+Trees and nodes behave like familiar Python containers wherever that makes sense — `len(tree)` counts nodes, 
+`for node in tree: ...` walks the tree depth-first, and `value in tree` tests membership. 
+Lookup (`tree[value]`) matches by id or by the wrapped data (not by position, since a tree has no natural order). 
 
 **Nutree Facts**
 

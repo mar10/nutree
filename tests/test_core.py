@@ -329,7 +329,7 @@ class TestNavigate:
 
         # `find()` is deprecated, use `find_first()` instead
         with pytest.deprecated_call():
-            assert tree.find("Let It Be") is n
+            assert tree.find("Let It Be") is n  # ty: ignore[deprecated]
 
         # Search by data
         assert tree.find_first("Let It Be") is n

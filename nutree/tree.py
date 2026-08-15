@@ -22,7 +22,7 @@ from typing import (
 )
 
 # typing.Self requires Python 3.11
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from nutree.common import (
     FILE_FORMAT_VERSION,
@@ -796,6 +796,7 @@ class Tree(Generic[TData, TNode]):
             return self._node_by_id.get(node_id)
         raise NotImplementedError
 
+    @deprecated("Use Tree.find_first() instead.")
     def find(self, *args, **kwargs):
         """Alias for :meth:`find_first`.
 
