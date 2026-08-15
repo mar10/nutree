@@ -16,6 +16,11 @@ Trees and nodes behave like familiar Python containers wherever that makes sense
 `for node in tree: ...` walks the tree depth-first, and `value in tree` tests membership. 
 Lookup (`tree[value]`) matches by id or by the wrapped data (not by position, since a tree has no natural order). 
 
+> [!TIP]
+> [Take the Tour](https://nutree.readthedocs.io/en/latest/take_the_tour.html) and
+> [Read the Docs](https://nutree.readthedocs.io/) for more.
+
+
 **Nutree Facts**
 
 <a href="https://nutree.readthedocs.io/en/latest/ug_clones.html">Handle multiple references of single objects ('clones')</a> <br>
