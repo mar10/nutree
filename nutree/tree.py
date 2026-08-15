@@ -147,7 +147,7 @@ class Tree(Generic[TData, TNode]):
         #: Enable cycle detection and prevent duplicate data for one parent
         # in `add_child()`.
         #: Note that is always enabled for TypedTree.
-        self.check_dag = check_dag
+        self._check_dag = check_dag
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}<{self.name!r}>"
@@ -323,6 +323,11 @@ class Tree(Generic[TData, TNode]):
             node._children = None
             node._meta = None
         return
+
+    @property
+    def check_dag(self) -> bool:
+        """Return true if cycle detection and duplicate data checks are enabled."""
+        return self._check_dag
 
     @property
     def children(self) -> list[TNode]:
