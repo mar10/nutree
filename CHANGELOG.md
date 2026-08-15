@@ -3,7 +3,9 @@
 **NOTE**
 Dropping Python versions that reached EOL will only cause a minor version bump.
 
-## 1.2.0 (unreleased)
+## 1.2.1 (unreleased)
+
+## 1.2.0 (2026-08-15)
 
 - BREAKING:
   - Drop Python 3.9 (EOL 2025-10)
