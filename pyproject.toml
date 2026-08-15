@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "nutree"
 version = "1.1.1a1"
-description = "A Python library for tree data structures with an intuitive, yet powerful, API."
+description = "Organize and query arbitrary Python objects as a tree — with clones, diffing, and graph export built in."
 readme = "README.md"
 license = {file = "LICENSE.txt"}
 authors = [

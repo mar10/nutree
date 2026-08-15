@@ -134,7 +134,7 @@ class Tree(Generic[TData, TNode]):
         check_dag: bool = True,
     ) -> None:
         self._lock = threading.RLock()
-        #: Tree name used for logging
+        #: Tree name used for formatting output
         self.name: str = str(id(self) if name is None else name)
         self._root: Node = self.root_node_factory(self)  # type: ignore
         self._node_by_id: dict[int, TNode] = {}
@@ -144,9 +144,8 @@ class Tree(Generic[TData, TNode]):
         self._calc_data_id_hook: CalcIdCallbackType | None = calc_data_id
         #: Enable aliasing when accessing node instances.
         self._forward_attrs: bool = forward_attrs
-        #: Enable cycle detection and prevent duplicate data for one parent
-        # in `add_child()`.
-        #: Note that is always enabled for TypedTree.
+        # Enable cycle detection and prevent duplicate data for one parent
+        # in `add_child()`. Note that is always enabled for TypedTree.
         self._check_dag = check_dag
 
     def __repr__(self) -> str:
@@ -287,7 +286,7 @@ class Tree(Generic[TData, TNode]):
         try:
             clone_list = self._nodes_by_data_id[node._data_id]  # may raise KeyError
             # if we get here, we are adding a clone and should check DAG compliance
-            if self.check_dag and node._parent:
+            if self._check_dag and node._parent:
                 self._check_insert(node)
             clone_list.append(node)
         except KeyError:
