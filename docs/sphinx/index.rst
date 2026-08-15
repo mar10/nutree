@@ -7,7 +7,7 @@ nutree
 |pypi_badge| |nbsp| |gha_badge| |nbsp| |coverage_badge| |nbsp| |lic_badge| 
 |nbsp| |rtd_badge| |nbsp| |so_badge|
 
-*A Python library for tree data structures with an intuitive, yet powerful, API.*
+*_Nutree_ lets you organize and query arbitrary Python objects as a tree — with clones, diffing, and graph export built in.*
 
 :Project:   https://github.com/mar10/nutree/
 :Version:   |version|, Date: |today|

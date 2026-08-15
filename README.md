@@ -10,46 +10,33 @@
 <!-- [![Released with: Yabs](https://img.shields.io/badge/released%20with-yabs-yellowgreen)](https://github.com/mar10/yabs) -->
 <!-- [![StackOverflow: nutree](https://img.shields.io/badge/StackOverflow-nutree-blue.svg)](https://stackoverflow.com/questions/tagged/nutree) -->
 
-> _Nutree_ is a Python library for tree data structures with an intuitive,
-> yet powerful, API.
+> _Nutree_ lets you organize and query arbitrary Python objects as a tree — with clones, diffing, and graph export built in.
 
-Nutree trees and nodes follow Python's container conventions where it makes 
-sense for a tree structure, while deliberately diverging where a literal 
-list/Sequence analogy would be misleading. 
-
-`__len__` returns the total number of nodes in the tree (or direct children of a node),
-`__iter__` performs a depth-first traversal over descendants, 
-and `__contains__` tests membership using the same matching rules as lookup.
-
-`__getitem__` is value-based rather than positional: an int is matched against id(node)
-and node.data_id. Other values are matched against node.data.
-A lookup that finds no match raises KeyError; one that finds more than one match 
-raises AmbiguousMatchError, which points you to find_first() or find_all() for 
-explicit control. 
-Because there is no meaningful notion of position in a tree, slicing and `__reversed__` 
-are intentionally not implemented — use traversal methods (iterate(), 
-order-specific walks) when you need directional or ordered access instead.
+Trees and nodes behave like familiar Python containers wherever that makes sense — len(tree) counts nodes, 
+iterating walks the tree depth-first, and in tests membership. 
+Lookup (tree[value]) matches by id or by the wrapped data, not by position, 
+since a tree has no natural order. 
 
 **Nutree Facts**
 
-Handle multiple references of single objects ('clones') <br>
-Search by name pattern, id, or object reference <br>
-Compare two trees and calculate patches <br>
-Unobtrusive handling of arbitrary objects <br>
-Save as DOT file and graphwiz diagram <br>
-Nodes can be plain strings or objects <br>
-(De)Serialize to (compressed) JSON <br>
-Save as Mermaid flow diagram <br>
-Multiple traversal methods <br>
-Generate random trees <br>
-Convert to RDF graph <br>
-Fully type annotated <br>
-Typed child nodes <br>
-Memory efficient <br>
-Pretty print <br>
-Navigation <br>
-Filtering <br>
-Fast <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_clones.html">Handle multiple references of single objects ('clones')</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_search_and_navigate.html#searching">Search by name pattern, id, or object reference</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_diff.html#diff-and-merge">Compare two trees and calculate patches</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_objects.html#objects">Unobtrusive handling of arbitrary objects</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_graphs.html#save-dot">Save as DOT file and graphwiz diagram</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_objects.html#objects">Nodes can be plain strings or objects</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_serialize.html#serialize">(De)Serialize to (compressed) JSON</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_graphs.html#save-mermaid">Save as Mermaid flow diagram</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_search_and_navigate.html#traversal">Multiple traversal methods</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_randomize.html#randomize">Generate random trees</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_graphs.html#save-rdf">Convert to RDF graph</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/rg_modules.html#api-reference">Fully type annotated</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_graphs.html#typed-tree">Typed child nodes</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_advanced.html#meta-data">Memory efficient</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_pretty_print.html#pretty-print">Pretty print</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_search_and_navigate.html#navigate">Navigation</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_mutation.html#mutation">Filtering</a> <br>
+<a href="https://nutree.readthedocs.io/en/latest/ug_benchmarks.html">Fast</a> <br>
 
 **Example**
 
@@ -95,14 +82,15 @@ print(records_node.first_child())
 Node<'Let It Be', data_id=510268653885439170>
 ```
 
-Nodes may be strings or arbitrary objects:
+Nodes can holdarbitrary objects (not just strings):
 
 ```py
 alice = Person("Alice", age=23, guid="{123-456}")
 tree.add(alice)
 
 # Lookup nodes by object, data_id, name pattern, ...
-assert isinstance(tree[alice].data, Person)
+alice_node = tree[alice]
+assert isinstance(alice_node.data, Person)
 
 del tree[alice]
 ```
