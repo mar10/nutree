@@ -191,8 +191,7 @@ jobs:
           # Normalize project version to the released tag value first,
           # then derive next development version in a deterministic way.
           uv version "$RELEASED" --frozen
-          uv version --bump patch --frozen
-          uv version --bump dev --frozen
+          uv version --bump patch --bump dev --frozen
 
           NEXT_DEV=$(uv version --short)
           echo "Bumped $RELEASED -> $NEXT_DEV"
