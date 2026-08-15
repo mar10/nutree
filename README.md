@@ -94,4 +94,5 @@ assert isinstance(alice_node.data, Person)
 del tree[alice]
 ```
 
+[Take the Tour](https://nutree.readthedocs.io/en/latest/take_the_tour.html) and
 [Read the Docs](https://nutree.readthedocs.io/) for more.
