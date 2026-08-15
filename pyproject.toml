@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 # --- Project Metadata ---------------------------------------------------------
 [project]
 name = "nutree"
-version = "1.2.0"
+version = "1.2.1.dev1"
 description = "Organize and query arbitrary Python objects as a tree — with clones, diffing, and graph export built in."
 readme = "README.md"
 license = {file = "LICENSE.txt"}
