@@ -49,19 +49,21 @@ from nutree.tree import Tree
 
 @final
 class ANY_KIND:
-    """Special argument value for some methods that access child nodes."""
+    """Sentinel meaning that child-node operations should accept any kind."""
 
 
 # ------------------------------------------------------------------------------
 # - TypedNode
 # ------------------------------------------------------------------------------
+
+
 class TypedNode(Node[TData]):
     """
-    A special node variant, derived from :class:`~nutree.node.Node` and
-    used by :class:`~nutree.typed_tree.TypedTree`.
+    :class:`~nutree.node.Node` variant used by :class:`~nutree.typed_tree.TypedTree`.
 
-    In addition to :class:`~nutree.node.Node`, we have a `kind` member to
-    define the node's type.
+    In addition to the wrapped data, a typed node has a string ``kind`` that
+    identifies its role in the hierarchy. Methods that accept a ``kind`` filter
+    by that value; :class:`~nutree.typed_tree.ANY_KIND` disables the filter.
     """
 
     __slots__ = ("_kind",)
@@ -100,7 +102,7 @@ class TypedNode(Node[TData]):
         return self._kind
 
     def get_children(self, kind: str | type[ANY_KIND]) -> list[Self]:
-        """Return list of direct child nodes of a given type (list may be empty)."""
+        """Return direct children of ``kind`` (or all kinds with :class:`ANY_KIND`)."""
         all_children = self._children
         if not all_children:
             return []
@@ -109,7 +111,7 @@ class TypedNode(Node[TData]):
         return list(filter(lambda n: n._kind == kind, all_children))
 
     def first_child(self, kind: str | type[ANY_KIND]) -> Self | None:
-        """First direct child node or None if no children exist."""
+        """Return the first direct child of ``kind``, or ``None`` if absent."""
         all_children = self._children
         if not all_children:
             return None
@@ -122,7 +124,7 @@ class TypedNode(Node[TData]):
         return None
 
     def last_child(self, kind: str | type[ANY_KIND]) -> Self | None:
-        """Last direct child node or None if no children exist."""
+        """Return the last direct child of ``kind``, or ``None`` if absent."""
         all_children = self._children
         if not all_children:
             return None
@@ -142,7 +144,11 @@ class TypedNode(Node[TData]):
         add_self: bool = False,
         kind: str | type[ANY_KIND] = ANY_KIND,
     ) -> Iterator[TypedNode[TData]]:
-        """Return an iterator that walks the tree in the specified order."""
+        """Iterate descendants in ``method`` order, optionally filtered by kind.
+
+        Pass :class:`ANY_KIND` to include all kinds. See
+        :meth:`~nutree.node.Node.iterator` and :class:`~nutree.common.IterMethod`.
+        """
         if kind is ANY_KIND:
             yield from super().iterator(method=method, add_self=add_self)
             return
@@ -155,7 +161,10 @@ class TypedNode(Node[TData]):
         return
 
     def has_children(self, kind: str | type[ANY_KIND]) -> bool:
-        """Return true if this node has one or more children."""
+        """Return whether this node has children of ``kind``.
+
+        Pass :class:`ANY_KIND` to test for children of any kind.
+        """
         if kind is ANY_KIND:
             return bool(self._children)
         return len(self.get_children(kind)) > 1
@@ -163,7 +172,7 @@ class TypedNode(Node[TData]):
     def count_descendants(
         self, *, leaves_only: bool = False, kind: str | type[ANY_KIND] = ANY_KIND
     ) -> int:
-        """Return number of descendant nodes, not counting self."""
+        """Count descendants, optionally restricted to ``kind`` or leaves."""
         if kind is ANY_KIND:
             return super().count_descendants(leaves_only=leaves_only)
         all = not leaves_only
@@ -176,7 +185,11 @@ class TypedNode(Node[TData]):
     def get_siblings(
         self, *, add_self: bool = False, any_kind: bool = False
     ) -> list[Self]:
-        """Return a list of all sibling entries of self (excluding self) if any."""
+        """Return siblings of the same kind, excluding this node by default.
+
+        Set ``any_kind`` to include siblings of every kind and ``add_self`` to
+        include this node in the result.
+        """
         if any_kind:
             return super().get_siblings(add_self=add_self)
         children = self._parent.children
@@ -184,7 +197,10 @@ class TypedNode(Node[TData]):
         return [n for n in children if (add_self or n is not self) and n.kind == rel]
 
     def first_sibling(self, *, any_kind: bool = False) -> Self:
-        """Return first sibling `of the same kind` (may be self)."""
+        """Return the first sibling of the same kind, which may be this node.
+
+        Set ``any_kind`` to consider siblings of every kind.
+        """
         pc = self._parent.children
         if any_kind:
             return pc[0]
@@ -194,7 +210,10 @@ class TypedNode(Node[TData]):
         raise AssertionError("Internal error")  # pragma: no cover
 
     def last_sibling(self, *, any_kind: bool = False) -> Self:
-        """Return last sibling `of the same kind` (may be self)."""
+        """Return the last sibling of the same kind, which may be this node.
+
+        Set ``any_kind`` to consider siblings of every kind.
+        """
         pc = self._parent.children
         if any_kind:
             return pc[-1]
@@ -204,7 +223,11 @@ class TypedNode(Node[TData]):
         raise AssertionError("Internal error")  # pragma: no cover
 
     def prev_sibling(self, *, any_kind: bool = False) -> Self | None:
-        """Return predecessor `of the same kind` or None if node is first sibling."""
+        """Return the previous sibling, or ``None`` if there is no match.
+
+        By default, only siblings of the same kind are considered. Set
+        ``any_kind`` to consider every kind.
+        """
         pc = self._parent.children
         own_idx = pc.index(self)
         if own_idx > 0:
@@ -215,7 +238,11 @@ class TypedNode(Node[TData]):
         return None
 
     def next_sibling(self, *, any_kind: bool = False) -> Self | None:
-        """Return successor `of the same kind` or None if node is last sibling."""
+        """Return the next sibling, or ``None`` if there is no match.
+
+        By default, only siblings of the same kind are considered. Set
+        ``any_kind`` to consider every kind.
+        """
         pc = self._parent.children
         pc_len = len(pc)
         own_idx = pc.index(self)
@@ -228,7 +255,10 @@ class TypedNode(Node[TData]):
         return None
 
     def get_index(self, *, any_kind: bool = False) -> int:
-        """Return index in sibling list."""
+        """Return this node's index among same-kind siblings.
+
+        Set ``any_kind`` to use the complete child list.
+        """
         if any_kind:
             kc = self._parent.children
         else:
@@ -236,15 +266,21 @@ class TypedNode(Node[TData]):
         return kc.index(self)
 
     def is_first_sibling(self, *, any_kind: bool = False) -> bool:
-        """Return true if this node is the first sibling, i.e. the first child
-        of its parent."""
+        """Return whether this node is the first relevant sibling.
+
+        By default, siblings of the same kind are considered. Set ``any_kind``
+        to consider every kind.
+        """
         if any_kind:
             return self is self._parent.children[0]
         return self is self.first_sibling(any_kind=False)
 
     def is_last_sibling(self, *, any_kind: bool = False) -> bool:
-        """Return true if this node is the last sibling, i.e. the last child
-        **of this kind** of its parent."""
+        """Return whether this node is the last relevant sibling.
+
+        By default, siblings of the same kind are considered. Set ``any_kind``
+        to consider every kind.
+        """
         if any_kind:
             return self is self._parent.children[-1]
         return self is self.last_sibling(any_kind=False)
@@ -278,13 +314,15 @@ class TypedNode(Node[TData]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> Self:
-        """See ...
+        """Append or insert a typed node or branch below this node.
 
         Args:
-            kind: the type of the new child node. Pass None to use the same
-                type as `child` (if that is a node) or default to `"child"`.
+            kind: Kind of the new node. If ``None``, use ``child.kind`` when
+                ``child`` is a node, otherwise
+                :attr:`~nutree.typed_tree.TypedTree.DEFAULT_CHILD_TYPE`.
 
-        See also :meth:`~nutree.node.Node.add_child` method for details.
+        See :meth:`~nutree.node.Node.add_child` for the ``before`` and ``deep``
+        options.
         """
         # assert not isinstance(child, TypedNode) or child.kind == self.kind
         # TODO: kind is optional if child is a TypedNode
@@ -393,7 +431,7 @@ class TypedNode(Node[TData]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> Self:
-        """Alias for :meth:`add_child`)."""
+        """Alias for :meth:`add_child`."""
         return self.add_child(
             child,
             kind=kind,
@@ -538,7 +576,7 @@ class TypedNode(Node[TData]):
         node_mapper: DotMapperCallbackType | None = None,
         edge_mapper: DotMapperCallbackType | None = None,
     ) -> Iterator[str]:
-        """Generate a DOT formatted graph representation.
+        """Generate a DOT graph representation with kind-labelled edges.
 
         See :ref:`graphs` for details.
         """
@@ -582,13 +620,13 @@ class _SystemRootTypedNode(TypedNode):
 # ------------------------------------------------------------------------------
 # - TypedTree
 # ------------------------------------------------------------------------------
+
+
 class TypedTree(Tree[TData, TypedNode[TData]]):
     """
-    A special tree variant, derived from :class:`~nutree.tree.Tree`,
-    that uses :class:`~nutree.typed_tree.TypedNode` objects, which maintain
-    an addition `kind` attribute.
+    :class:`~nutree.tree.Tree` variant whose nodes have a string ``kind``.
 
-    See :ref:`typed-tree` for details.
+    See :ref:`typed-tree` for the typed-node model and kind-specific operations.
     """
 
     node_factory: type[TypedNode] = cast(type[TypedNode], TypedNode)
@@ -703,7 +741,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TypedNode[TData]:
-        """Add a toplevel node (same as shortcut :meth:`add`).
+        """Add a top-level typed node; an alias for :meth:`add`.
 
         See Node's :meth:`~nutree.typed_tree.TypedNode.add_child` method for details.
         """
@@ -730,9 +768,9 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TypedNode[TData]:
-        """Alias for shortcut :meth:`add_child`).
+        """Add a top-level typed node; an alias for :meth:`add_child`.
 
-        See Node's :meth:`~nutree.typed_tree.TypedNode.add_child` method for details.
+        See :meth:`~nutree.typed_tree.TypedNode.add_child` for details.
         """
         return self.system_root.add_child(
             child,
@@ -744,15 +782,19 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         )
 
     def first_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
-        """Return the first toplevel node."""
+        """Return the first top-level node of ``kind``, or ``None``."""
         return self.system_root.first_child(kind=kind)
 
     def last_child(self, kind: str | type[ANY_KIND]) -> TypedNode[TData] | None:
-        """Return the last toplevel node."""
+        """Return the last top-level node of ``kind``, or ``None``."""
         return self.system_root.last_child(kind=kind)
 
     def iter_by_type(self, kind: str | type[ANY_KIND]) -> Iterator[TypedNode[TData]]:
-        """@deprecated: Use :meth:`iterator` with `kind` argument instead."""
+        """Yield nodes of ``kind``.
+
+        .. deprecated:: 1.1
+            Use :meth:`iterator` with the ``kind`` argument instead.
+        """
         warnings.warn(
             "Tree.iter_by_type() is deprecated since v1.1, "
             "use Tree.iterator(..., kind=...) instead.",
@@ -767,6 +809,11 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         *,
         kind: str | type[ANY_KIND] = ANY_KIND,
     ) -> Iterator[TypedNode[TData]]:
+        """Iterate nodes in ``method`` order, optionally filtered by ``kind``.
+
+        Pass :class:`ANY_KIND` to include all kinds. See
+        :meth:`~nutree.tree.Tree.iterator`.
+        """
         if kind == ANY_KIND:
             yield from super().iterator(method=method)
             return
@@ -779,7 +826,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
     def count_descendants(
         self, *, leaves_only: bool = False, kind: str | type[ANY_KIND] = ANY_KIND
     ) -> int:
-        """Return number of nodes, optionally restricted to type."""
+        """Count descendants, optionally restricted to ``kind`` or leaves."""
         return self.system_root.count_descendants(leaves_only=leaves_only, kind=kind)
 
     def save(
@@ -792,9 +839,10 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         key_map: KeyMapType | bool = True,
         value_map: ValueMapType | bool = True,
     ) -> None:
-        """Store tree in a compact JSON file stream.
+        """Store this typed tree in a compact JSON file or text stream.
 
-        See also :ref:`serialize` and :meth:`to_list_iter` and :meth:`load` methods.
+        The default key and value maps include the node ``kind`` field. See
+        :ref:`serialize`, :meth:`~nutree.tree.Tree.to_list_iter`, and :meth:`load`.
         """
         # TypedTrees can assume reasaonable defaults for key_map and value_map
         # (key_map is evaluated in base class from TypedTree.DEFAULT_KEY_MAP)
@@ -868,10 +916,9 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
         mapper: DeserializeMapperType | None = None,
         file_meta: dict[str, Any] | None = None,
     ) -> Self:
-        """Create a new :class:`TypedTree` instance from a JSON file stream.
+        """Create a :class:`TypedTree` from a JSON file or text stream.
 
-        See also Tree's :meth:`~nutree.tree.Tree.save()` and
-        :meth:`~nutree.tree.Tree.load()` methods.
+        See :meth:`~nutree.tree.Tree.save` and :meth:`~nutree.tree.Tree.load`.
         """
         return super().load(target, mapper=mapper, file_meta=file_meta)
 

@@ -69,33 +69,24 @@ TNode = TypeVar("TNode", bound="Node", default="Node[TData]")
 # ------------------------------------------------------------------------------
 # - Node
 # ------------------------------------------------------------------------------
+
+
 class Node(Generic[TData]):
     """
-    A Node represents a single element in the tree.
-    It is a shallow wrapper around a user data instance, that adds navigation,
-    modification, and other functionality.
+    Wrapper around one data object in a :class:`~nutree.tree.Tree`.
 
-    Node objects are rarely created using this contructor, but indirectly by
-    invoking helper methods like :meth:`~nutree.node.Node.add_child`, etc.
+    A node adds navigation, modification, metadata, traversal, and serialization
+    helpers to the wrapped object. Nodes are normally created indirectly through
+    :meth:`~nutree.tree.Tree.add` or :meth:`add_child`.
 
-    `data`
-        is the arbitrary object that this node will hold.
-    `parent`
-        is the parent :meth:`~nutree.node.Node` instance. This node will
-        also inherit the tree reference from it.
-    `data_id`
-        is an optional integer or string that will be used as ID
-        (instead of calculating ``hash(data)``).
-        A tree may contain more than one node with the same data and data_id.
-        In this case we call the nodes 'clones'.
-    `node_id`
-        is an optional integer, that is used as unique ID for this node.
-        Even 'clones' must have unique node IDs. The default is calculated as
-        `id(self)`.
-    `meta`
-        is an optional dictionary. See also :meth:`~nutree.node.Node.get_meta`,
-        :meth:`~nutree.node.Node.set_meta`, :meth:`~nutree.node.Node.update_meta`,
-        and :meth:`~nutree.node.Node.clear_meta`.
+    Args:
+        data: Arbitrary object wrapped by this node.
+        parent: Parent node. The new node inherits its tree from the parent.
+        data_id: Optional ID used instead of ``hash(data)``. Multiple nodes may
+            share a data ID; these nodes are called clones.
+        node_id: Optional unique node ID. The default is ``id(self)``.
+        meta: Optional metadata dictionary. See :meth:`get_meta`,
+            :meth:`set_meta`, :meth:`update_meta`, and :meth:`clear_meta`.
 
     """
 
@@ -218,9 +209,9 @@ class Node(Generic[TData]):
 
     @property
     def parent(self) -> Self | None:
-        """Return parent node or None for toplevel nodes.
+        """Return the parent node, or ``None`` for top-level nodes.
 
-        See also :meth:`~nutree.node.Node.up`.
+        See :meth:`up` when the system root node is needed.
         """
         p = self._parent
         return p if p._parent else None
@@ -229,7 +220,7 @@ class Node(Generic[TData]):
         """Return ancestor node.
 
         Unlike :meth:`~nutree.node.Node.parent`, this method returns the
-        system root node for toplevel nodes.
+        system root node for top-level nodes.
 
         One use case is method chaining when creating trees::
 
@@ -437,21 +428,21 @@ class Node(Generic[TData]):
         return self._parent._children[0]  # type: ignore
 
     def prev_sibling(self) -> Self | None:
-        """Predecessor or None, if node is first sibling."""
+        """Return the previous sibling, or ``None`` if this is the first."""
         if self.is_first_sibling():
             return None
         idx = self._parent._children.index(self)  # type: ignore
         return self._parent._children[idx - 1]  # type: ignore
 
     def next_sibling(self) -> Self | None:
-        """Return successor or None, if node is last sibling."""
+        """Return the next sibling, or ``None`` if this is the last."""
         if self.is_last_sibling():
             return None
         idx = self._parent._children.index(self)  # type: ignore
         return self._parent._children[idx + 1]  # type: ignore
 
     def last_sibling(self) -> Self:
-        """Return last node, that share own parent (may be `self`)."""
+        """Return the last node sharing this node's parent."""
         return self._parent._children[-1]  # type: ignore
 
     def get_clones(self, *, add_self: bool = False) -> list[Self]:
@@ -462,11 +453,14 @@ class Node(Generic[TData]):
         return [n for n in clones if n is not self]
 
     def depth(self) -> int:
-        """Return the distance to the root node (1 for toplevel nodes)."""
+        """Return the distance to the system root (1 for top-level nodes)."""
         return self.calc_depth()
 
     def count_descendants(self, *, leaves_only: bool = False) -> int:
-        """Return number of descendant nodes, not counting self."""
+        """Count descendants, excluding this node.
+
+        If ``leaves_only`` is true, count only descendants without children.
+        """
         all = not leaves_only
         i = 0
         for node in self.iterator():
@@ -475,7 +469,7 @@ class Node(Generic[TData]):
         return i
 
     def calc_depth(self) -> int:
-        """Return the distance to the root node (1 for toplevel nodes)."""
+        """Return the distance to the system root (1 for top-level nodes)."""
         depth = 0
         pe = self._parent
         while pe is not None:
@@ -506,20 +500,19 @@ class Node(Generic[TData]):
     # --------------------------------------------------------------------------
 
     def is_system_root(self) -> bool:
-        """Return true if this node is the invisible system root
-        :class:`~nutree.tree._SystemRootNode`."""
+        """Return whether this node is the invisible system root."""
         return self._parent is None
 
     def is_top(self) -> bool:
-        """Return true if this node has no parent."""
+        """Return whether this node is a top-level node."""
         return self._parent._parent is None
 
     def is_leaf(self) -> bool:
-        """Return true if this node is an end node, i.e. has no children."""
+        """Return whether this node has no children."""
         return not self._children
 
     def is_clone(self) -> bool:
-        """Return true if this node's data is referenced at least one more time."""
+        """Return whether another node references the same data ID."""
         return bool(len(self._tree._nodes_by_data_id.get(self._data_id)) > 1)  # type: ignore
 
     def is_first_sibling(self) -> bool:
@@ -537,14 +530,14 @@ class Node(Generic[TData]):
         return bool(self._children)
 
     def get_top(self) -> Self:
-        """Return toplevel ancestor (may be self)."""
+        """Return the top-level ancestor, which may be this node."""
         root = self
         while root._parent._parent:
             root = root._parent
         return root
 
     def is_descendant_of(self, other: Self) -> bool:
-        """Return true if this node is direct or indirect child of `other`."""
+        """Return whether this node is a direct or indirect child of ``other``."""
         parent = self._parent
         while parent is not None and parent._parent is not None:
             if parent is other:
@@ -553,11 +546,11 @@ class Node(Generic[TData]):
         return False
 
     def is_ancestor_of(self, other: Self) -> bool:
-        """Return true if this node is a parent, grandparent, ... of `other`."""
+        """Return whether this node is a parent or other ancestor of ``other``."""
         return other.is_descendant_of(self)
 
     def get_common_ancestor(self, other: Self) -> Self | None:
-        """Return the nearest node that contains `self` and `other` (may be None)."""
+        """Return the nearest common ancestor, or ``None`` for separate trees."""
         if self._tree is other._tree:
             other_parent_set = {
                 n._node_id for n in other.get_parent_list(add_self=True)
@@ -625,7 +618,7 @@ class Node(Generic[TData]):
         object. |br|
         If `deep` is true, the children are copied recursively.
 
-        If `child` is a :class:`~nutree.tree.Tree`, all of its topnodes are
+        If `child` is a :class:`~nutree.tree.Tree`, all of its top-level nodes are
         added recursively (unless `deep` is false).
 
         If `child` is neither a :class:`~nutree.node.Node` nor a
@@ -1074,7 +1067,13 @@ class Node(Generic[TData]):
     def from_dict(
         self, obj: list[dict[str, Any]], *, mapper: DeserializeMapperType | None = None
     ) -> None:
-        """Append copies of all source children to self."""
+        """Append nodes described by nested dictionaries to this node.
+
+        Each dictionary must contain ``data`` unless ``mapper`` is provided.
+        The optional mapper converts a serialized dictionary into a data object
+        and may also provide a custom ``data_id``. Nested ``children`` entries
+        are loaded recursively. See :meth:`to_dict` and :ref:`serialize`.
+        """
         # TODO:
         # if mapper is None:
         #     mapper = self._tree.DEFAULT_DESERIALZATION_MAPPER
@@ -1139,30 +1138,26 @@ class Node(Generic[TData]):
         method: IterMethod = IterMethod.PRE_ORDER,
         memo: Any | None = None,
     ) -> None | Any:
-        """Call `callback(node, memo)` for all subnodes.
+        """Call ``callback(node, memo)`` for all descendants.
 
         The callback may return :class:`SkipBranch` (or an instance
         thereof) to omit child nodes but continue traversal otherwise.
         Raising `SkipBranch` has the same effect.
 
-        The callback may return ``False`` or :class:`StopIteration` to immediately
-        interrupt traversal.
-        Raising `StopTraversal(value)` has the same effect but also allows to
-        specify a return value for the visit method. |br|
-        See also :ref:`iteration-callbacks`.
+        The callback may return ``False`` to stop traversal immediately.
+        Raising :class:`StopTraversal` also stops traversal and can provide a
+        return value for this method. See :ref:`iteration-callbacks`.
 
         Args:
             callback (function(node, memo)):
-                Callback ``function(node, memo)``
+                Callback with signature ``function(node, memo)``.
             add_self (bool):
-                If true, this node will also be visited (typically as first call).
+                If true, visit this node as well as its descendants.
             method (IterMethod):
-                Traversal method, defaults to pre-order, depth-first search.
+                Traversal order; defaults to pre-order depth-first search.
             memo (Any):
-                This value will be passed to all calls and may be useful to
-                implement caching or collect and return traversal results.
-                If no `memo` argument is passed, an empty dict is created at
-                start, which has a life-span of the traversal only.
+                Value passed to every callback. If omitted, a temporary empty
+                dictionary is created for the traversal.
         """
         try:
             handler = getattr(self.__class__, f"_visit_{method.value}")
@@ -1251,7 +1246,11 @@ class Node(Generic[TData]):
     def iterator(
         self, method: IterMethod = IterMethod.PRE_ORDER, *, add_self: bool = False
     ) -> Iterator[Self]:
-        """Generator that walks the hierarchy."""
+        """Iterate descendants in the requested traversal order.
+
+        Set ``add_self`` to include this node in the result. See
+        :class:`~nutree.common.IterMethod` for the supported orders.
+        """
         try:
             handler = getattr(self, f"_iter_{method.value}")
         except AttributeError:
@@ -1689,7 +1688,7 @@ class Node(Generic[TData]):
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
-        Optionally convert to a Graphviz display formats.
+        ``format`` optionally renders the flowchart using Mermaid CLI.
         See :ref:`graphs` for details.
         """
         return node_to_mermaid_flowchart(

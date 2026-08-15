@@ -90,30 +90,25 @@ class _SystemRootNode(Node):
 # ------------------------------------------------------------------------------
 # - Tree
 # ------------------------------------------------------------------------------
+
+
 class Tree(Generic[TData, TNode]):
     """
-    A Tree object is a shallow wrapper around a single, invisible system root node.
-    All visible toplevel nodes are direct children of this root node.
-    Trees expose methods to iterate, search, copy, filter, serialize, etc.
+    Container for a hierarchy of :class:`~nutree.node.Node` objects.
 
-    A `name` string can be passed for enhanced printing.
+    A tree wraps one invisible system root node; all visible top-level nodes are
+    direct children of it. Trees provide methods to iterate, search, copy, filter,
+    and serialize the hierarchy.
 
-    `calc_data_id` can be a callback function that calculates data IDs from data
-    objects (by default ``hash(data)`` is used).
-
-    Set `forward_attrs` to true, to enable aliasing of node attributes,
-    i.e. make `node.data.NAME` accessible as `node.NAME`. |br|
-    **Note:** Use with care, see also :ref:`forward-attributes`.
-
-    `check_dag` can be set to false to disable validations that ensure the node
-    structure is compliant with Directed Acyclic Graphs (DAG).
-    This means that no nodes with the same data_id being added as descendants of
-    each other or under the same parent.
-    This *may* be useful, e.g. when a node stores a list of children
-    that may repeat, such as BOM (Bill of Materials) parts.
-    However, this is not a common use case and should be used with care since it
-    can lead to cycles in the tree structure.
-    `check_dag` is always enabled for :class:`TypedTree` instances.
+    Args:
+        name: Optional name used when formatting or logging the tree.
+        calc_data_id: Callback used to calculate data IDs. By default,
+            ``hash(data)`` is used. See :meth:`calc_data_id`.
+        forward_attrs: If true, expose attributes of ``node.data`` through the
+            node. See :ref:`forward-attributes`.
+        check_dag: If false, disable checks that prevent duplicate data below
+            one parent and cycles. It is always enabled for
+            :class:`~nutree.typed_tree.TypedTree`.
     """
 
     node_factory: type[TNode] = cast(type[TNode], Node)
@@ -162,7 +157,7 @@ class Tree(Generic[TData, TNode]):
         self[data].remove()
 
     def __enter__(self) -> Self:
-        """Implement ``with tree: ...`` syntax to acquire an RLock."""
+        """Acquire the tree's reentrant lock for a ``with tree:`` block."""
         self._lock.acquire()
         return self
 
@@ -179,13 +174,14 @@ class Tree(Generic[TData, TNode]):
         raise NotImplementedError("Use `is` instead of `==`.")
 
     def __getitem__(self, data: object) -> TNode:
-        """Implement ``tree[data]`` syntax to lookup a node.
+        """Look up a node using ``tree[data]`` syntax.
 
         `data` may be a Node, node_id, data_id or any data object.
 
-        If a match is found (trying node_id first, then data_id, then data),
-        the corresponding node is returned.
-        If no match is found, a KeyError is raised.
+        Lookup tries a node ID first, then a data ID, then the data object.
+        If exactly one match is found, the corresponding node is returned;
+        otherwise :class:`KeyError` or :class:`~nutree.common.AmbiguousMatchError`
+        is raised.
 
         :class:`~nutree.common.AmbiguousMatchError` is raised if multiple matches
         are found.
@@ -330,13 +326,11 @@ class Tree(Generic[TData, TNode]):
 
     @property
     def children(self) -> list[TNode]:
-        """Return list of direct child nodes, i.e. toplevel nodes
-        (list may be empty)."""
+        """Return the direct child nodes, i.e. the top-level nodes."""
         return self.system_root.children
 
     def get_toplevel_nodes(self) -> list[TNode]:
-        """Return list of direct child nodes, i.e. toplevel nodes (may be
-        empty, alias for :meth:`children`)."""
+        """Return the top-level nodes; an alias for :attr:`children`."""
         return self.system_root.children
 
     @property
@@ -350,12 +344,10 @@ class Tree(Generic[TData, TNode]):
 
     @property
     def count_unique(self) -> int:
-        """Return the total number of `unique` nodes.
+        """Return the number of unique data IDs in the tree.
 
-        Multiple references to the same data object ('clones') are only counted
-        once.
-        This is different from :meth:`count`, which returns the number of `all`
-        nodes.
+        Multiple nodes that reference the same data object (clones) are counted
+        once. This differs from :attr:`count`, which counts every node.
         """
         return len(self._nodes_by_data_id)
 
@@ -455,11 +447,11 @@ class Tree(Generic[TData, TNode]):
         )
 
     def first_child(self) -> TNode | None:
-        """Return the first toplevel node."""
+        """Return the first top-level node, or ``None`` if the tree is empty."""
         return self.system_root.first_child()
 
     def last_child(self) -> TNode | None:
-        """Return the last toplevel node."""
+        """Return the last top-level node, or ``None`` if the tree is empty."""
         return self.system_root.last_child()
 
     def get_random_node(self) -> TNode:
@@ -547,7 +539,7 @@ class Tree(Generic[TData, TNode]):
         join: str = "\n",
         file: IO[str] | None = None,
     ) -> None:
-        """Convenience method that simply runs print(self. :meth:`format()`)."""
+        """Print the formatted tree to ``file``."""
         print(
             self.format(repr=repr, style=style, title=title, join=join),
             file=file,
@@ -562,7 +554,7 @@ class Tree(Generic[TData, TNode]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TNode:
-        """Add a toplevel node (same as shortcut :meth:`add`).
+        """Add a top-level node; an alias for :meth:`add`.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """
@@ -587,7 +579,7 @@ class Tree(Generic[TData, TNode]):
         data_id: DataIdType | None = None,
         node_id: int | None = None,
     ) -> TNode:
-        """Add a toplevel node (same as shortcut :meth:`add`).
+        """Add a top-level node; an alias for :meth:`add_child`.
 
         See Node's :meth:`~nutree.node.Node.add_child` method for details.
         """
@@ -780,7 +772,7 @@ class Tree(Generic[TData, TNode]):
         """Return the first matching node or `None`.
 
         Note that 'first' sometimes means 'one arbitrary' matching node, which
-        is not neccessarily the first of a specific iteration method.
+        is not necessarily the first node in a particular iteration order.
         See also Node's :meth:`~nutree.node.Node.find_first` method and
         :ref:`iteration-callbacks`.
         """
@@ -807,7 +799,8 @@ class Tree(Generic[TData, TNode]):
     def find(self, *args, **kwargs):
         """Alias for :meth:`find_first`.
 
-        @deprecated: Use :meth:`find_first` instead.
+        .. deprecated:: 1.2
+            Use :meth:`find_first` instead.
         """
         warnings.warn(
             "Tree.find() is deprecated since v1.2, use Tree.find_first() instead.",
@@ -877,7 +870,12 @@ class Tree(Generic[TData, TNode]):
         key_map: KeyMapType | None = None,
         value_map: ValueMapType | None = None,
     ) -> Iterator[tuple[DataIdType, FlatJsonDictType | str | int]]:
-        """Yield a parent-referencing list of child nodes."""
+        """Yield nodes as a compact, parent-referencing list.
+
+        ``mapper`` serializes custom data objects. ``key_map`` and ``value_map``
+        optionally replace repeated keys and values with compact representations.
+        See :ref:`serialize`.
+        """
         yield from self.system_root.to_list_iter(
             mapper=mapper, key_map=key_map, value_map=value_map
         )
@@ -892,17 +890,18 @@ class Tree(Generic[TData, TNode]):
         key_map: KeyMapType | bool = True,
         value_map: ValueMapType | bool = True,
     ) -> None:
-        """Store tree in a compact JSON file stream.
+        """Store this tree in compact JSON.
 
-        If `target` is a string, it is interpreted as a file path. Otherwise it
-        must be a file object.
+        ``target`` may be a file path, :class:`~pathlib.Path`, or text file
+        object. ``mapper`` serializes custom data objects and ``meta`` adds
+        fields to the file header.
 
-        If `compression` is true, the file is compressed using gzip
-        (zipfile.ZIP_DEFLATED).
-        Other values are: zipfile.ZIP_STORED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA.
-        Pass False to disable compression and store as plain json.
+        If ``compression`` is true, use gzip-compatible ZIP compression.
+        Other supported values are ``ZIP_STORED``, ``ZIP_BZIP2``, and
+        ``ZIP_LZMA``. Pass ``False`` to store uncompressed JSON. ``key_map`` and
+        ``value_map`` control optional compact representations.
 
-        See also :ref:`serialize` and :meth:`to_list_iter` and :meth:`load` methods.
+        See :ref:`serialize`, :meth:`to_list_iter`, and :meth:`load`.
         """
         if isinstance(target, (str, Path)):
             # with Path(target).open("wt", encoding="utf8") as fp:
@@ -1020,12 +1019,13 @@ class Tree(Generic[TData, TNode]):
         file_meta: dict[str, Any] | None = None,
         auto_uncompress: bool = True,
     ) -> Self:
-        """Create a new :class:`Tree` instance from a file path or JSON file stream.
+        """Create a :class:`Tree` from a file path or JSON text stream.
 
-        If ``file_meta`` is a dict, it receives the content if the file's
-        ``meta`` header.
+        If ``file_meta`` is a dictionary, it is updated with the file's
+        ``meta`` header. Compressed files are detected automatically unless
+        ``auto_uncompress`` is false.
 
-        See also :meth:`save`.
+        See :meth:`save`.
         """
         if isinstance(target, (str, Path)):
             # Check for zip file
@@ -1107,7 +1107,7 @@ class Tree(Generic[TData, TNode]):
     ) -> None:
         """Serialize a DOT formatted graph representation.
 
-        Optionally convert to a Graphviz display formats.
+        ``format`` optionally converts the DOT output to a Graphviz format.
         See :ref:`graphs` for details.
         """
         tree_to_dotfile(
@@ -1142,7 +1142,7 @@ class Tree(Generic[TData, TNode]):
     ) -> None:
         """Serialize a Mermaid flowchart representation.
 
-        Optionally convert to a Graphviz display formats.
+        ``format`` optionally renders the flowchart using Mermaid CLI.
         See :ref:`graphs` for details.
         """
         self.system_root.to_mermaid_flowchart(
@@ -1176,7 +1176,7 @@ class Tree(Generic[TData, TNode]):
         ordered: bool = False,
         reduce: bool = False,
     ) -> Tree:
-        """Compare this tree against `other` and return a merged, annotated copy.
+        """Compare this tree with ``other`` and return an annotated union.
 
         The resulting tree contains a union of all nodes from this and the
         other tree.
@@ -1185,13 +1185,9 @@ class Tree(Generic[TData, TNode]):
         in `other`, will have ``node.get_meta("dc") == DiffClassification.ADDED``
         defined.
 
-        The `compare` callback can be used to customize the comparison of nodes
-        It should return True if the nodes are considered equal, False otherwise.
-
-        If `ordered` is true, changes in the child order are also considered a
-        change. |br|
-        If `reduce` is true, unchanged nodes are removed, leaving a compact tree
-        with only the modifications.
+        ``compare`` customizes node equality and should return ``True`` for
+        equivalent nodes. If ``ordered`` is true, child order is compared too.
+        If ``reduce`` is true, unchanged nodes are removed from the result.
 
         See :ref:`diff-and-merge` for details.
         """
