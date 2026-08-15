@@ -677,9 +677,10 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
         New :class:`~nutree.typed_tree.TypedTree`
         and :class:`~nutree.typed_tree.TypedNode` instances are created.
-        The new nodes reference deep-copied data objects.
+        The new nodes reference deep-copied data objects (created using the system
+        `copy.deepcopy` function).
 
-        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
+        See Node's :meth:`~nutree.tree.Tree.copy` and :ref:`iteration-callbacks`
         method for details.
         """
         if name is None:
@@ -710,7 +711,7 @@ class TypedTree(Tree[TData, TypedNode[TData]]):
 
         return new_tree
 
-    def _check_insert(self, node: Node):
+    def _check_insert(self, node: TypedNode[TData]):
         """Raise error if inserting a node would violate DAG restrictions."""
         # We can assume that node.parent is set and that node already has at
         # least one clone registered in self._nodes_by_data_id, when this is

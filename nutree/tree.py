@@ -643,9 +643,10 @@ class Tree(Generic[TData, TNode]):
         """Return a deep copy of this tree.
 
         New :class:`Tree` and :class:`Node` instances are created.
-        The new nodes reference deep-copied data objects.
+        The new nodes reference deep-copied data objects (created using the system
+        `copy.deepcopy` function).
 
-        See Node's :meth:`~nutree.node.Node.copy_to` and :ref:`iteration-callbacks`
+        See Node's :meth:`~nutree.tree.Tree.copy` and :ref:`iteration-callbacks`
         method for details.
         """
         if name is None:
