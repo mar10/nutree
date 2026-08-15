@@ -59,7 +59,7 @@ and create some instances
 
 ```python
 development_dep = Department("Development")
-test__dep = Department("Test")
+test_dep = Department("Test")
 marketing_dep = Department("Marketing")
 
 alice = Person("Alice", 25)
@@ -78,7 +78,7 @@ from nutree import Tree
 tree = Tree("Organization")
 
 dev_node = tree.add(development_dep)
-test_node = dev_node.add(test__dep)
+test_node = dev_node.add(test_dep)
 mkt_node = tree.add(marketing_dep)
 
 tree.add(alice)
@@ -90,13 +90,13 @@ tree.print()
 ```
 
     Tree<'Organization'>
-    ├── <__main__.Department object at 0x118c3fbc0>
-    │   ├── <__main__.Department object at 0x118646c30>
-    │   │   ╰── <__main__.Person object at 0x118c68170>
-    │   ╰── <__main__.Person object at 0x118c3f770>
-    ├── <__main__.Department object at 0x118c3ffe0>
-    │   ╰── <__main__.Person object at 0x118c68bf0>
-    ╰── <__main__.Person object at 0x118c3ffb0>
+    ├── <__main__.Department object at 0x106a66e40>
+    │   ├── <__main__.Department object at 0x106a65610>
+    │   │   ╰── <__main__.Person object at 0x10c02e4e0>
+    │   ╰── <__main__.Person object at 0x10c02ede0>
+    ├── <__main__.Department object at 0x106a64170>
+    │   ╰── <__main__.Person object at 0x10c02e5a0>
+    ╰── <__main__.Person object at 0x10c02e150>
 
 
 Tree nodes store a reference to the object in the `node.data` attribute.
@@ -134,7 +134,7 @@ tree[alice]
 
 
 
-    Node<'Person<Alice (25)>', data_id=294404091>
+    Node<'Person<Alice (25)>', data_id=281030165>
 
 
 
@@ -153,7 +153,7 @@ tree[alice].data
 
 
 
-    <__main__.Person at 0x118c3ffb0>
+    <__main__.Person at 0x10c02e150>
 
 
 
@@ -163,15 +163,26 @@ we can use the tree container to achieve this:
 
 
 ```python
-# tree[alice].parent.data
+str(tree[claire].parent.data)
+```
+
+
+
+
+    'Department<Test>'
+
+
+
+
+```python
 tree[alice].get_siblings()
 ```
 
 
 
 
-    [Node<'Department<Development>', data_id=294404028>,
-     Node<'Department<Marketing>', data_id=294404094>]
+    [Node<'Department<Development>', data_id=275408612>,
+     Node<'Department<Marketing>', data_id=275407895>]
 
 
 
@@ -493,7 +504,7 @@ Tree<"diff('T0', 'T1')">
 ╰── Department<Marketing>
     ├── Person<Alicia, 23> - [Moved here], [Modified]
     ├── Person<Charleen, 43>
-    ╰── Person<Dave, 55> - [Modified]
+    ╰── Person<Dave, 54> - [Modified]
 ```
 
 It is also possible to visualize as png, for example:
@@ -511,8 +522,8 @@ or with `unique_nodes=True`:
 
 ## Type Hints
 
-Nutree comes fully typed (validated with [ty](https://docs.astral.sh/ty/)).
-This improves type-safety and auto-complete features inside 
+Nutree comes fully typed (passing [pyright](https://microsoft.github.io/pyright/#/) 
+standard checks). This improves type-safety and auto-complete features inside 
 IDEs.
 
 Assuming we have a hierrchy of objects:

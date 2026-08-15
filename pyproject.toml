@@ -76,7 +76,6 @@ dev = [
     "sphinx-rtd-theme",
     "tox",
     "tox-uv",
-    # "twine",
     "yabs",
     "ty>=0.0.69",
 ]
